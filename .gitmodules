@@ -1,0 +1,12 @@
+[submodule "third-party/duckdb"]
+	path = third-party/duckdb
+	url = https://github.com/duckdb/duckdb
+[submodule "third-party/fmt"]
+	path = third-party/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "third-party/json"]
+	path = third-party/json
+	url = https://github.com/nlohmann/json
+[submodule "third-party/sqlitecpp"]
+	path = third-party/sqlitecpp
+	url = https://github.com/SRombauts/SQLiteCpp
