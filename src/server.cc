@@ -4,6 +4,7 @@
 #include "common.h"
 #include "server.h"
 #include <stdexcept>
+#include "router.h"
 
 
 std::string dump_headers(const httplib::Headers &headers) {
@@ -75,13 +76,16 @@ Server::~Server() {
 }
 
 
-std::string dateUTC() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm utc_tm = *std::gmtime(&now_c);
-    std::ostringstream oss;
-    oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%SZ");
-    return oss.str();
+std::map<std::string, __Handler> routes_get;
+std::map<std::string, __Handler> routes_post;
+void *register_route(std::string route, __Handler h) {
+  routes_get[route] = h;
+  return nullptr;
+}
+
+void *register_route_post(std::string route, __Handler h) {
+  routes_post[route] = h;
+  return nullptr;
 }
 
 Server::Server() {
@@ -90,125 +94,42 @@ Server::Server() {
     throw std::runtime_error("server error lol");
   }
 
+  for (const auto route : routes_get) {
+    svr->Get(route.first, [route, this](const httplib::Request &req, httplib::Response &res) {
+      route.second(req, res, this);
+    });
+  }
 
-  std::ifstream userkeyf("user.key");
-  std::ifstream userpemf("user.pem");
-  std::string key((std::istreambuf_iterator<char>(userkeyf)), std::istreambuf_iterator<char>());
-  std::string pem((std::istreambuf_iterator<char>(userpemf)), std::istreambuf_iterator<char>());
+  for (const auto route : routes_post) {
+    info("{}", route.first);
+    svr->Post(route.first, [route, this](const httplib::Request &req, httplib::Response &res) {
+      route.second(req, res, this);
+    });
+  }
 
   svr->Get("/", [](const httplib::Request&, httplib::Response &res) {
     res.set_content("aaaaaaaaaaaaaaa", "text/plain");
   });
 
-  svr->Get("/.well-known/webfinger", [](const httplib::Request &req, httplib::Response &res){
-    std::string resource = req.get_param_value("resource");
-    std::cout << "r: " << resource << "\n";
+  // svr->set_error_handler([](const httplib::Request & /*req*/, httplib::Response &res) {
+  //   const char *fmt = "<p>Error Status: <span style='color:red;'>%d</span></p>";
+  //   char buf[BUFSIZ];
+  //   snprintf(buf, sizeof(buf), fmt, res.status);
+  //   res.set_content(buf, "text/html");
+  // });
 
-    if (resource.rfind("acct:", 0) == 0) {
-      resource.erase(0, 5);
-    }
-
-    json j = {
-      {"links", {
-        {
-          {"rel", "self"},
-          {"type", "application/activity+json"},
-          {"href", USERPAGE(ct->userid)}
-        },
-        {
-          {"rel", "http://webfinger.net/rel/profile-page"},
-          {"type", "text/html"},
-          {"href", USERPAGE(ct->userid)}
-        },
-        {
-          {"rel", "http://ostatus.org/schema/1.0/subscribe"},
-          {"template", API("authorize-follow?acct={uri}")}
-        }
-      }},
-
-      {"subject", req.get_param_value("resource")}
-    };
-
-    res.set_content(j.dump(), "application/jrd+json; charset=utf-8");
-  });
-
-  svr->Get("/.well-known/host-meta", [](const httplib::Request& req, httplib::Response &res){
-
-      res.set_content(R"(
-      <XRD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
-        <Link rel="lrdd" type="application/jrd+json" template="https://rizz.velzie.rip/.well-known/webfinger?resource={uri}" />
-        <Link rel="lrdd" type="application/xrd+xml" template="https://rizz.velzie.rip/.well-known/webfinger?resource={uri}" />
-      </XRD>
-      )", "application/xml");
-
-  });
-
-  svr->Get("/users/:id", [pem](const httplib::Request& req, httplib::Response &res){
-    std::string uid = req.path_params.at("id");
-    std::cout << "AAAA USER" << uid << "\n";
-    std::string userurl = USERPAGE(uid);
-
-    json j = {
-      {"@context", ct->context},
-      {"type", "Person"},
-      {"id", userurl},
-      {"inbox", userurl + "/inbox"},
-      {"outbox", userurl + "/inbox"},
-      {"followers", userurl + "/followers"},
-      {"following", userurl + "/following"},
-      {"featured", userurl + "/featured"},
-      {"sharedinbox", API("inbox")},
-      {"endpoints", { 
-        {"sharedInbox", API("sharedinbox")} 
-      } },
-      {"publicKey", {
-        {"id", userurl},
-        {"owner", userurl},
-        {"publicKeyPem", pem},
-      }},
-      {"url", userurl},
-      {"preferredUsername", uid},
-      {"name", "the rizzler..."},
-      {"summary", "yeah i'm doing this again"},
-      {"discoverable", true},
-      {"noindex", true},
-      {"attachment", {}},
-      {"alsoKnownAs", {}}
-    };
-
-    res.set_content(j.dump(), "application/activity+json");
-  });
-
-  svr->Get("/notes/:id", [](const httplib::Request &req, httplib::Response &res){
-
-    std::string id = "0";
-    std::string idurl = API("notes/"+id);
-    json j = {
-      {"@context", ct->context},
-      {"id", idurl},
-      {"type", "Note"},
-      {"summary", nullptr},
-      {"inReplyTo", nullptr},
-      {"published", dateUTC()},
-      {"url", idurl},
-      {"attributedTo", USERPAGE(ct->userid)},
-      {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
-      {"cc", {USERPAGE(ct->userid)+"/followers"}},
-      {"sensitive", false},
-      {"content", "i cant think of anything funny to put here sorry"},
-      {"attachment", {}},
-      {"tag", {}}
-    };
-
-    res.set_content(j.dump(), "application/activity+json");
-  });
-
-
-  svr->set_error_handler([](const httplib::Request & /*req*/, httplib::Response &res) {
-    const char *fmt = "<p>Error Status: <span style='color:red;'>%d</span></p>";
+  svr->set_exception_handler([](const auto& req, auto& res, std::exception_ptr ep) {
+    auto fmt = "<h1>Error 500</h1><p>%s</p>";
     char buf[BUFSIZ];
-    snprintf(buf, sizeof(buf), fmt, res.status);
+    try {
+      std::rethrow_exception(ep);
+    } catch (std::exception &e) {
+      snprintf(buf, sizeof(buf), fmt, e.what());
+    } catch (...) { // See the following NOTE
+      snprintf(buf, sizeof(buf), fmt, "Unknown Exception");
+    }
     res.set_content(buf, "text/html");
+    res.status = 500;
   });
 
   svr->set_logger([](const httplib::Request &req, const httplib::Response &res) {

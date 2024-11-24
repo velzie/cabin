@@ -75,9 +75,6 @@ void writeKey() {
   pemf << pem;
 }
 
-  std::string domainname = "https://rizz.velzie.rip/";
-
-
 Config default_config = {
   .domain = "your.domain",
   .host = "0.0.0.0",
@@ -107,12 +104,13 @@ Cottage::Cottage(std::string config_path) {
   json j = json::parse(std::string((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>()));
   cfg = j.template get<Config>();
 
-  printf("[cottage] loaded (%s)\n", cfg.domain.c_str());
+  info("loaded ({})", cfg.domain);
 }
 
 std::shared_ptr<Cottage> ct;
 
 int main() {
+  // spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
   ct = std::make_shared<Cottage>("config.json");
 
   std::ifstream contextst("context.json");
@@ -121,11 +119,10 @@ int main() {
   std::thread tserver([](){
       ct->server.Start();
   });
-  //https://wetdry.world/@boxy/113534539745761207
-  APClient cli("wetdry.world");
-  std::cout << "What\n";
-  auto c = cli.Get("/@boxy/113534539745761207");
-  std::cout <<"zx"<<c->status<< c->body<<"\n";
+
+  // APClient cli("wetdry.world");
+  // auto c = cli.Get("/@boxy/113534539745761207");
+  // trace("{} : ({})", c->status, c->body);
 
   tserver.join();
 

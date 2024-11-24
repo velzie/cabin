@@ -1,8 +1,12 @@
 #pragma once
+#include "spdlog/spdlog.h"
 
-#include "server.h"
-#include <fmt/core.h>
+#include "../src/server.h"
 #include <nlohmann/json.hpp>
+
+#define VERSION_LONG "0.1-commit"
+#define SOFTWARE "cottage"
+#define HOMEPAGE "https://github.com/velzie/cottage"
 
 #ifdef USE_DB
 #include "SQLiteCpp/Database.h"
@@ -14,9 +18,9 @@
 #endif
 
 using json = nlohmann::json;
+using namespace spdlog;
 #define FMT fmt::format
 
-void x();
 struct Config {
   std::string domain;
 

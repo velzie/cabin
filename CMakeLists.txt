@@ -1,25 +1,34 @@
 cmake_minimum_required(VERSION 3.10)
 project(cottage C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenSSL REQUIRED)
 
 add_subdirectory(third-party/json)
-add_subdirectory(third-party/fmt)
+# add_subdirectory(third-party/fmt)
 add_subdirectory(third-party/sqlitecpp)
+add_subdirectory(third-party/spdlog)
 
 include_directories(include)
 
 set(SOURCES 
+  third-party/httplib.cc
+
   src/main.cc
   src/http.cc
-  src/httplib.cc
   src/server.cc
+
+  src/routes/federation/webfinger.cc
+  src/routes/federation/meta.cc
+  src/routes/federation/notes.cc
+  src/routes/federation/instance.cc
+
+  src/routes/web/main.cc
 )
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 
 add_executable(cottage ${SOURCES})
 
-target_link_libraries(cottage nlohmann_json::nlohmann_json OpenSSL::SSL fmt::fmt SQLiteCpp)
+target_link_libraries(cottage nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp spdlog)
