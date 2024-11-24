@@ -5,8 +5,8 @@
 #include <nlohmann/json.hpp>
 
 #define VERSION_LONG "0.1-commit"
-#define SOFTWARE "cottage"
-#define HOMEPAGE "https://github.com/velzie/cottage"
+#define SOFTWARE "cabin"
+#define HOMEPAGE "https://github.com/velzie/cabin"
 
 #ifdef USE_DB
 #include "SQLiteCpp/Database.h"
@@ -29,10 +29,10 @@ struct Config {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain);
 
-class Cottage {
+class Cabin {
   public:
-  Cottage(std::string config_path);
-  ~Cottage();
+  Cabin(std::string config_path);
+  ~Cabin();
 
   Config cfg;
   json context;
@@ -43,7 +43,7 @@ class Cottage {
 };
 
 
-extern std::shared_ptr<Cottage> ct;
+extern std::shared_ptr<Cabin> ct;
 
 
 #define API(path) ct->baseurl + path

@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-project(cottage C CXX)
+project(cabin C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenSSL REQUIRED)
 
 add_subdirectory(third-party/json)
-# add_subdirectory(third-party/fmt)
 add_subdirectory(third-party/sqlitecpp)
 add_subdirectory(third-party/spdlog)
+add_subdirectory(third-party/dbg-macro)
+add_subdirectory(third-party/backward-cpp)
 
 include_directories(include)
 
@@ -29,6 +30,6 @@ set(SOURCES
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 
-add_executable(cottage ${SOURCES})
+add_executable(cabin ${SOURCES})
 
-target_link_libraries(cottage nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp spdlog)
+target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp spdlog Backward::Interface dbg_macro)

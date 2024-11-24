@@ -1,3 +1,4 @@
+#include <stdexcept>
 #define USE_DB
 
 #include <fstream>
@@ -12,9 +13,11 @@
 #include <stdio.h>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
+#include <backward.hpp>
 #include <thread>
 #include "common.h"
 #include "http.h"
+#include <dbg.h>
 
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
@@ -81,11 +84,11 @@ Config default_config = {
   .port = 2001,
 };
 
-Cottage::~Cottage() {
+Cabin::~Cabin() {
   delete db;
 }
-Cottage::Cottage(std::string config_path) {
-  db = new SQLite::Database("cottage.db3", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+Cabin::Cabin(std::string config_path) {
+  db = new SQLite::Database(SOFTWARE".db3", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
   std::ifstream s(config_path);
 
@@ -107,21 +110,31 @@ Cottage::Cottage(std::string config_path) {
   info("loaded ({})", cfg.domain);
 }
 
-std::shared_ptr<Cottage> ct;
+std::shared_ptr<Cabin> ct;
+backward::SignalHandling sh;
 
 int main() {
   // spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
-  ct = std::make_shared<Cottage>("config.json");
+  ct = std::make_shared<Cabin>("config.json");
 
   std::ifstream contextst("context.json");
+  
   ct->context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
 
   std::thread tserver([](){
       ct->server.Start();
   });
 
-  // APClient cli("wetdry.world");
-  // auto c = cli.Get("/@boxy/113534539745761207");
+
+  json j = {
+    {"id", API("follows/0")},
+    {"type", "Follow"},
+    {"actor", USERPAGE(ct->userid)},
+    {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
+  };
+
+  // APClient cli("booping.synth.download");
+  // auto c = cli.Post("/inbox", j);
   // trace("{} : ({})", c->status, c->body);
 
   tserver.join();

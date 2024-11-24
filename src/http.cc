@@ -130,7 +130,7 @@ httplib::Result APClient::Get(std::string pathname) {
       {"Algorithm", "rsa-sha256"},
       {"Signature", signatureHeader},
       {"Date", date},
-      {"User-Agent", "cottage"},
+      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", ct->baseurl)},
   });
 }
 
@@ -158,6 +158,6 @@ httplib::Result APClient::Post(std::string pathname, json data) {
       {"Signature", signatureHeader},
       {"Digest", digest},
       {"Date", date},
-      {"User-Agent", "cottage"},
+      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", ct->baseurl)},
   }, payload, "application/activity+json");
 }

@@ -64,10 +64,6 @@ std::string log(const httplib::Request &req, const httplib::Response &res) {
   if (ua != req.headers.end()) {
     sr += FMT("ua: {}\n", ua->second);
   }
-  auto sig = req.headers.find("Signature");
-  if (sig != req.headers.end()) {
-    sr += FMT("sig: {}\n", sig->second);
-  }
   return sr;
 }
 

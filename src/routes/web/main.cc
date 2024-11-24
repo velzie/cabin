@@ -3,7 +3,7 @@
 
 GET(root, "/") {
   res.set_content(R"(
-    <h1>cottage server</h1>
+    <h1>cabin</h1>
     <p>instance hosted using cabin</p>
   )", "text/html");
 }
