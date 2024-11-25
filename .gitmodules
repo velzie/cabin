@@ -2,20 +2,20 @@
 	path = third-party/duckdb
 	url = https://github.com/duckdb/duckdb
 [submodule "third-party/fmt"]
-	path = third-party/fmt
+	path = .third-party/fmt
 	url = https://github.com/fmtlib/fmt
 [submodule "third-party/json"]
-	path = third-party/json
+	path = .third-party/json
 	url = https://github.com/nlohmann/json
 [submodule "third-party/sqlitecpp"]
-	path = third-party/sqlitecpp
+	path = .third-party/sqlitecpp
 	url = https://github.com/SRombauts/SQLiteCpp
 [submodule "third-party/spdlog"]
-	path = third-party/spdlog
+	path = .third-party/spdlog
 	url = https://github.com/gabime/spdlog
 [submodule "third-party/dbg-macro"]
-	path = third-party/dbg-macro
+	path = .third-party/dbg-macro
 	url = https://github.com/sharkdp/dbg-macro
 [submodule "third-party/backward-cpp"]
-	path = third-party/backward-cpp
+	path = .third-party/backward-cpp
 	url = https://github.com/bombela/backward-cpp
