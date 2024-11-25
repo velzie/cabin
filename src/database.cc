@@ -26,7 +26,13 @@ void Cabin::InitDB() {
     );
   )");
 
-  int version = db->execAndGet("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1").getInt();
+  auto query = STATEMENT("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1");
+  int version;
+  if (query.executeStep()) {
+    version = query.getColumn("version").getInt();
+  } else {
+    version = 0;
+  }
   info("DB version {}", version);
 
   auto migration = migrations_up.rbegin();

@@ -15,5 +15,9 @@ MIGRATION_UP(init, 1) {
 }
 
 MIGRATION_DOWN(init, 1) {
+  db->exec(R"(
+    DROP TABLE note
+  )");
 
+  setVersion(db, 0);
 }

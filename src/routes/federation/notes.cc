@@ -16,10 +16,11 @@ GET(notes, "/notes/:id") {
   std::string id = req.path_params.at("id");
   std::string idurl = API("notes/"+id);
 
-  auto q = STATEMENT("SELECT * FROM note WHERE id = ? LIMIT 1");
-  q.bind(id);
-  q.exec();
-  dbg(q.getColumn("content"));
+  auto q = STATEMENT("SELECT content FROM note WHERE id = ? LIMIT 1");
+  q.bind(1, std::stoi(id));
+  assert(!q.exec());
+
+  dbg(q.getColumn(0));
 
   
   json j = {
