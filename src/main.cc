@@ -17,7 +17,6 @@
 #include <thread>
 #include "common.h"
 #include "http.h"
-#include <dbg.h>
 
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
@@ -84,12 +83,11 @@ Config default_config = {
   .port = 2001,
 };
 
+
 Cabin::~Cabin() {
   delete db;
 }
 Cabin::Cabin(std::string config_path) {
-  db = new SQLite::Database(SOFTWARE".db3", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
-
   std::ifstream s(config_path);
 
   if (!s) {
@@ -118,20 +116,21 @@ int main() {
   ct = std::make_shared<Cabin>("config.json");
 
   std::ifstream contextst("context.json");
-  
   ct->context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
+
+  ct->InitDB();
 
   std::thread tserver([](){
       ct->server.Start();
   });
 
 
-  json j = {
-    {"id", API("follows/0")},
-    {"type", "Follow"},
-    {"actor", USERPAGE(ct->userid)},
-    {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
-  };
+  // json j = {
+  //   {"id", API("follows/0")},
+  //   {"type", "Follow"},
+  //   {"actor", USERPAGE(ct->userid)},
+  //   {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
+  // };
 
   // APClient cli("booping.synth.download");
   // auto c = cli.Post("/inbox", j);

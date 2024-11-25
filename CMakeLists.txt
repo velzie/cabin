@@ -5,20 +5,21 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenSSL REQUIRED)
 
-add_subdirectory(third-party/json)
-add_subdirectory(third-party/sqlitecpp)
-add_subdirectory(third-party/spdlog)
-add_subdirectory(third-party/dbg-macro)
-add_subdirectory(third-party/backward-cpp)
+add_subdirectory(.third-party/json)
+add_subdirectory(.third-party/sqlitecpp)
+add_subdirectory(.third-party/spdlog)
+add_subdirectory(.third-party/dbg-macro)
+add_subdirectory(.third-party/backward-cpp)
 
 include_directories(include)
 
 set(SOURCES 
-  third-party/httplib.cc
+  .third-party/httplib.cc
 
   src/main.cc
   src/http.cc
   src/server.cc
+  src/database.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
@@ -26,6 +27,9 @@ set(SOURCES
   src/routes/federation/instance.cc
 
   src/routes/web/main.cc
+
+
+  src/migrations/init1.cc
 )
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)

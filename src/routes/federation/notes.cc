@@ -1,5 +1,7 @@
-#include "common.h"
+#include "SQLiteCpp/Statement.h"
+#define USE_DB
 #include "router.h"
+#include "common.h"
 
 std::string dateUTC() {
     auto now = std::chrono::system_clock::now();
@@ -11,8 +13,15 @@ std::string dateUTC() {
 }
 
 GET(notes, "/notes/:id") {
-  std::string id = "0";
+  std::string id = req.path_params.at("id");
   std::string idurl = API("notes/"+id);
+
+  auto q = STATEMENT("SELECT * FROM note WHERE id = ? LIMIT 1");
+  q.bind(id);
+  q.exec();
+  dbg(q.getColumn("content"));
+
+  
   json j = {
     {"@context", ct->context},
     {"id", idurl},

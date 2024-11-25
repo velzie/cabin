@@ -1,5 +1,7 @@
 #pragma once
 #include "spdlog/spdlog.h"
+#define DBG_MACRO_NO_WARNING
+#include <dbg.h>
 
 #include "../src/server.h"
 #include <nlohmann/json.hpp>
@@ -7,6 +9,10 @@
 #define VERSION_LONG "0.1-commit"
 #define SOFTWARE "cabin"
 #define HOMEPAGE "https://github.com/velzie/cabin"
+
+
+
+#define STATEMENT(string) SQLite::Statement(*ct->db, string);
 
 #ifdef USE_DB
 #include "SQLiteCpp/Database.h"
@@ -33,6 +39,8 @@ class Cabin {
   public:
   Cabin(std::string config_path);
   ~Cabin();
+
+  void InitDB();
 
   Config cfg;
   json context;
