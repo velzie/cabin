@@ -24,6 +24,7 @@
 #endif
 
 using json = nlohmann::json;
+using string = std::string;
 using namespace spdlog;
 #define FMT fmt::format
 
@@ -56,3 +57,4 @@ extern std::shared_ptr<Cabin> ct;
 
 #define API(path) ct->baseurl + path
 #define USERPAGE(id) API("users/") + id
+#define NOTE(id) API("notes/" + id)

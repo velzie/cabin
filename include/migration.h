@@ -22,7 +22,8 @@ void *register_migration_down(int ver, MigrationHandler);
 
 
 inline void setVersion(SQLite::Database *db, int ver) {
+  db->exec("DELETE FROM schema_version");
   SQLite::Statement q(*db, R"(INSERT INTO schema_version (version) VALUES (?))");
-  q.bind(ver);
+  q.bind(1, ver);
   q.exec();
 }

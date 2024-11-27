@@ -5,6 +5,8 @@
 #include "server.h"
 #include <stdexcept>
 #include "router.h"
+#include <execinfo.h> 
+#include <backward.hpp>
 
 
 std::string dump_headers(const httplib::Headers &headers) {
@@ -72,8 +74,8 @@ Server::~Server() {
 }
 
 
-std::map<std::string, __Handler> routes_get;
-std::map<std::string, __Handler> routes_post;
+std::unordered_map<std::string, __Handler> routes_get;
+std::unordered_map<std::string, __Handler> routes_post;
 void *register_route(std::string route, __Handler h) {
   routes_get[route] = h;
   return nullptr;
@@ -113,12 +115,24 @@ Server::Server() {
   //   snprintf(buf, sizeof(buf), fmt, res.status);
   //   res.set_content(buf, "text/html");
   // });
+  svr->set_default_headers({
+      {"Access-Control-Allow-Origin", "*"}
+  });
+  svr->Options(".*", [](const httplib::Request& req, httplib::Response &res){
+      res.status = 204;
+      res.set_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+      res.set_header("Access-Control-Allow-Headers", "*");
+      res.set_header("Access-Control-Allow-Credentials", "true");
+  });
 
   svr->set_exception_handler([](const auto& req, auto& res, std::exception_ptr ep) {
     auto fmt = "<h1>Error 500</h1><p>%s</p>";
     char buf[BUFSIZ];
+      // using namespace backward;
+      // StackTrace st; st.load_here(200);
+      // Printer p; p.print(st);
+    std::rethrow_exception(ep);
     try {
-      std::rethrow_exception(ep);
     } catch (std::exception &e) {
       snprintf(buf, sizeof(buf), fmt, e.what());
     } catch (...) { // See the following NOTE

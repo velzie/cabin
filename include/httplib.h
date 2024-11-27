@@ -1,3 +1,4 @@
+#define CPPHTTPLIB_NO_EXCEPTIONS
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 //
 //  httplib.h

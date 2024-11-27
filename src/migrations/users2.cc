@@ -13,7 +13,7 @@ MIGRATION_UP(init, 2) {
 
       username TEXT,
       displayname TEXT,
-      summary TEXT,
+      summary TEXT
     )
   )");
 
