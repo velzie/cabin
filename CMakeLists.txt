@@ -21,6 +21,8 @@ set(SOURCES
   src/server.cc
   src/database.cc
 
+  src/services/user.cc
+
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
   src/routes/federation/notes.cc
@@ -28,12 +30,18 @@ set(SOURCES
 
   src/routes/web/main.cc
 
+  src/routes/mastodon/helpers.cc
+  src/routes/mastodon/apps.cc
+  src/routes/mastodon/accounts.cc
+  src/routes/mastodon/statuses.cc
+
+  src/routes/pleroma/frontend.cc
 
   src/migrations/init1.cc
+  src/migrations/users2.cc
 )
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
-
+add_compile_options(-fsanitize=address -rdynamic)
+add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
 target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp spdlog Backward::Interface dbg_macro)
