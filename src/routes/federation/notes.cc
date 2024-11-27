@@ -1,26 +1,23 @@
 #include "SQLiteCpp/Statement.h"
+#include <type_traits>
 #define USE_DB
 #include "router.h"
 #include "common.h"
 
-std::string dateUTC() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm utc_tm = *std::gmtime(&now_c);
-    std::ostringstream oss;
-    oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%SZ");
-    return oss.str();
-}
-
+#include "../../utils.h"
 GET(notes, "/notes/:id") {
   std::string id = req.path_params.at("id");
   std::string idurl = API("notes/"+id);
 
-  auto q = STATEMENT("SELECT content FROM note WHERE id = ? LIMIT 1");
-  q.bind(1, std::stoi(id));
-  assert(!q.exec());
+  auto q = STATEMENT("SELECT content FROM note WHERE localid = ? LIMIT 1");
+  q.bind(1, id);
 
-  dbg(q.getColumn(0));
+  if (!q.executeStep()) {
+    res.status = 404;
+    return;
+  }
+
+  std::string content = q.getColumn("content");
 
   
   json j = {
@@ -29,13 +26,13 @@ GET(notes, "/notes/:id") {
     {"type", "Note"},
     {"summary", nullptr},
     {"inReplyTo", nullptr},
-    {"published", dateUTC()},
+    {"published", utils::dateISO()},
     {"url", idurl},
     {"attributedTo", USERPAGE(ct->userid)},
     {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
     {"cc", {USERPAGE(ct->userid)+"/followers"}},
     {"sensitive", false},
-    {"content", "i cant think of anything funny to put here sorry"},
+    {"content", content},
     {"attachment", {}},
     {"tag", {}}
   };
