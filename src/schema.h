@@ -1,3 +1,4 @@
+#pragma once
 #define USE_DB
 #include <common.h>
 #include <SQLiteCpp/Statement.h>

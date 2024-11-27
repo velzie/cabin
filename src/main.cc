@@ -1,3 +1,4 @@
+#include <openssl/http.h>
 #include <stdexcept>
 #define USE_DB
 
@@ -24,6 +25,25 @@ Config default_config = {
   .port = 2001,
 };
 
+URL::URL(string s) {
+  char *_scheme;
+  char *_user;
+  char *_host;
+  char *_port;
+  int _port_num;
+  char *_path;
+  char *_query;
+  char *_frag;
+
+  OSSL_parse_url(s.c_str(), &_scheme, &_user, &_host, &_port, &_port_num, &_path, &_query, &_frag);
+
+  scheme = _scheme;
+  host = _host;
+  port = _port;
+  path = _path;
+  query = _query;
+  frag = _frag;
+}
 
 Cabin::~Cabin() {
   delete db;

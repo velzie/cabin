@@ -6,7 +6,7 @@
 
 
 
-json renderUser(User &user) {
+json MSrenderUser(User &user) {
    return {
     {"id", user.localid},
     {"username", user.username},
@@ -30,7 +30,7 @@ json renderUser(User &user) {
   };
 }
 
-json renderNote(Note &note) {
+json MSrenderNote(Note &note) {
 
   User u;
   auto s = STATEMENT("SELECT * FROM user WHERE apid = ?");
@@ -59,7 +59,7 @@ json renderNote(Note &note) {
     {"content", note.content},
     {"reblog", nullptr},
     {"application", nullptr},
-    {"account", renderUser(u)},
+    {"account", MSrenderUser(u)},
     {"media_attachments", json::array()},
     {"mentions", json::array()},
     {"tags", json::array()},

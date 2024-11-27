@@ -6,6 +6,7 @@
 #include <optional>
 #include "../../utils.h"
 #include "../../schema.h"
+#include "../../services/user.h"
 
 void handle_activity(json body) {
   std::cout << body.dump() << "\n";
@@ -18,6 +19,7 @@ void handle_activity(json body) {
     if (object["type"] != "Note") return;
 
 
+    update_remote_user(object["attributedTo"]);
     Note n = {
       .apid = object["id"],
       .localid = utils::genid(),
@@ -84,8 +86,8 @@ GET(user, "/users/:id") {
     {"summary", u.summary},
     {"discoverable", true},
     {"noindex", true},
-    {"attachment", {}},
-    {"alsoKnownAs", {}}
+    {"attachment", json::array()},
+    {"alsoKnownAs", json::array()}
   };
 
   res.set_content(j.dump(), "application/activity+json");

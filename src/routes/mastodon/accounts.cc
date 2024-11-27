@@ -68,7 +68,7 @@ GET(account, "/api/v1/accounts/:id") {
   }
   u.load(q);
 
-  auto j = renderUser(u);
+  auto j = MSrenderUser(u);
 
   res.set_content(j.dump(), "application/json");
 }
@@ -94,7 +94,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   while (notes.executeStep()) {
     Note n;
     n.load(notes);
-    response.push_back(renderNote(n));
+    response.push_back(MSrenderNote(n));
   }
 
 

@@ -230,7 +230,7 @@ GET(instance, "/api/:v/instance") {
         {"statuses_count", 72605},
         {"last_status_at", "2022-10-31"},
         {"noindex", false},
-        {"emojis", {}},
+        {"emojis", json::array()},
         {"fields", {
           {
             {"name", "Patreon"},

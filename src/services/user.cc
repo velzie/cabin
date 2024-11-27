@@ -4,10 +4,13 @@
 #include <openssl/pem.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <httplib.h>
 
 #include <common.h>
 
+#include "../http.h"
 #include "../schema.h"
+#include "../utils.h"
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
   bool success = false;
@@ -58,13 +61,51 @@ cleanup:
 
 
 
+void update_remote_user(string apid) {
+  URL url(apid);
+  APClient cli(url.host);
 
+  auto response = cli.Get(url.path);
+  assert(response->status == 200);
+
+  json user = json::parse(response->body);
+
+
+  User u = {
+    .apid = apid,
+    .local = false,
+    
+    .username = user["preferredUsername"],
+    .displayname = user["name"],
+    .summary = user["summary"]
+  };
+
+  auto query = STATEMENT("SELECT localid FROM user where apid = ?");
+  query.bind(1, apid);
+  if (query.executeStep()) {
+    // user exists, update
+    string localid = query.getColumn("localid");
+    
+    // TODO orm stuff etc
+    auto delq = STATEMENT("DELETE FROM user WHERE apid = ?");
+    delq.bind(1, apid);
+    delq.exec();
+
+    u.localid = localid;
+    u.insert();
+  } else {
+    u.localid = utils::genid();
+    u.insert();
+  }
+}
 
 
 void registeruser() {
   string privkey;
   string pubkey;
   generateRSAKeyPair(privkey, pubkey);
+
+  // update_remote_user("https://booping.synth.download/users/a005c9wl4pwj0arp");
 
 
   // User u = {

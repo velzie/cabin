@@ -4,25 +4,63 @@
 #include "../../schema.h"
 #include "../../utils.h"
 #include "local.h"
+#include "../../services/note.h"
 
 POST(post_status, "/api/v1/statuses") {
-  string id = utils::genid();
   json body = json::parse(req.body);
 
-  Note note = {
-    .apid = NOTE(id),
-    .localid = id,
-    .content = body["status"],
-    .owner = USERPAGE("gyat"),
-    .published = utils::millis(),
-    .local = 1,
-    .sensitive = 0,
+  Note note = NoteService::create("gyat", body["content"]);
+  
+  json j = MSrenderNote(note);
+  res.set_content(j.dump(), "application/json");
+}
+
+GET(status, "/api/v1/statuses/:id") {
+  string id = req.path_params.at("id");
+
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    res.status = 404;
+    return;
+  }
+
+  json j = MSrenderNote(n.value());
+  res.set_content(j.dump(), "application/json");
+}
+
+GET(status_context, "/api/v1/statuses/:id/context") {
+  string id = req.path_params.at("id");
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    res.status = 404;
+    return;
+  }
+
+
+  json ancestors = json::array();
+  json descendants = json::array();
+
+
+  json j = {
+    {"ancestors", ancestors},
+    {"descendants", descendants},
   };
 
-  note.insert();
-
-  json j = renderNote(note);
   res.set_content(j.dump(), "application/json");
 }
 
 
+GET(timelines, "/api/v1/timelines/:id") {
+  auto q = STATEMENT("SELECT * FROM note");
+
+
+  json response = json::array();
+  while (q.executeStep()) {
+    Note n;
+    n.load(q);
+
+    response.push_back(MSrenderNote(n));
+  }
+
+  res.set_content(response.dump(), "application/json");
+}
