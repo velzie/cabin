@@ -82,16 +82,19 @@ GET(nodeinfo, "/.well-known/nodeinfo") {
   res.set_content(j.dump(), "application/json; charset=utf-8");
 }
 
-GET(nodeinfo_20, "/nodeinfo/2.0") {
+
+GET(diaspora_nodeinfo, "/nodeinfo/:version") {
+  string version = req.path_params.at("version");
+
+  if (version.find(".json") != string::npos) {
+    version.erase(version.size() - 5, 5);
+    return res.set_redirect(API(FMT("nodeinfo/{}", version)));
+  }
+
+
   res.set_content(
       NodeMeta("2.0").dump(),
-      "application/json; profile=\"http://nodeinfo.diaspora.software/ns/schema/2.0#\"; charset=utf-8"
+      FMT("application/json; profile=\"http://nodeinfo.diaspora.software/ns/schema/{}#\"; charset=utf-8", version)
   );
 }
 
-GET(nodeinfo_21, "/nodeinfo/2.1") {
-  res.set_content(
-      NodeMeta("2.1").dump(),
-      "application/json; profile=\"http://nodeinfo.diaspora.software/ns/schema/2.1#\"; charset=utf-8"
-  );
-}

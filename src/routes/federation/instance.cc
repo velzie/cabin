@@ -1,12 +1,40 @@
+#include <stdexcept>
+#define USE_DB
+
 #include "common.h"
 #include "router.h"
 #include <optional>
+#include "../../utils.h"
+#include "../../schema.h"
 
 void handle_activity(json body) {
   std::cout << body.dump() << "\n";
-  std::string type = body["Type"];
+  std::string type = body["type"];
 
   info("recieved {} activity", type);
+
+  if (type == "Create") {
+    auto object = body["object"];
+    if (object["type"] != "Note") return;
+
+
+    Note n = {
+      .apid = object["id"],
+      .localid = utils::genid(),
+
+      .content = object["content"],
+      .owner = object["attributedTo"],
+      .published = utils::isoToMillis(object["published"]),
+
+      .local = false,
+      .sensitive = object["sensitive"]
+    };
+
+    if (!n.insert()) {
+      throw std::runtime_error("");
+    }
+
+  }
 }
 
 POST(inbox, "/inbox") {
@@ -22,12 +50,15 @@ GET(user, "/users/:id") {
   std::string uid = req.path_params.at("id");
   std::string userurl = USERPAGE(uid);
 
-  std::ifstream userkeyf("user.key");
-  std::ifstream userpemf("user.pem");
-  std::string key((std::istreambuf_iterator<char>(userkeyf)), std::istreambuf_iterator<char>());
-  std::string pem((std::istreambuf_iterator<char>(userpemf)), std::istreambuf_iterator<char>());
 
-
+  User u;
+  auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
+  q.bind(1, uid);
+  if (!q.executeStep()) {
+    res.status = 404;
+    return;
+  }
+  u.load(q);
 
   json j = {
     {"@context", ct->context},
@@ -45,12 +76,12 @@ GET(user, "/users/:id") {
     {"publicKey", {
       {"id", userurl},
       {"owner", userurl},
-      {"publicKeyPem", pem},
+      {"publicKeyPem", u.publicKey},
     }},
     {"url", userurl},
-    {"preferredUsername", uid},
-    {"name", "the rizzler..."},
-    {"summary", "yeah i'm doing this again"},
+    {"preferredUsername", u.username},
+    {"name", u.displayname},
+    {"summary", u.summary},
     {"discoverable", true},
     {"noindex", true},
     {"attachment", {}},
