@@ -7,10 +7,19 @@
 
 
 json MSrenderUser(User &user) {
+
+  string acct;
+  URL id(user.apid);
+  if (id.host == ct->cfg.domain) {
+    acct = user.username;
+  } else {
+    acct = FMT("{}@{}", id.host);
+  }
+
    return {
     {"id", user.localid},
     {"username", user.username},
-    {"acct", user.username}, // TODO for a remote user this should fqn
+    {"acct", acct},
     {"display_name", user.displayname},
     {"locked", false},
     {"bot", false},

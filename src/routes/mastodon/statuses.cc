@@ -63,11 +63,7 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
     {"type", "Like"}
   };
 
-  dbg(activity.dump());
-
   auto resp = cli.Post("/inbox", activity);
-  dbg(resp->status);
-  dbg(resp->body);
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {
@@ -103,6 +99,7 @@ GET(timelines, "/api/v1/timelines/:id") {
 
     response.push_back(MSrenderNote(n));
   }
+  std::reverse(response.begin(), response.end());
 
   res.set_content(response.dump(), "application/json");
 }
