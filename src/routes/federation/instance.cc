@@ -19,6 +19,9 @@ void handle_activity(json body) {
     auto object = body["object"];
     if (object["type"] != "Note") return;
 
+    if (NoteService::lookup(object["id"]).has_value()) {
+      return;
+    }
 
     UserService::fetchRemote(object["attributedTo"]);
     Note n = {

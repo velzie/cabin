@@ -82,4 +82,17 @@ namespace NoteService {
     n.load(q);
     return n;
   }
+
+  optional<Note> lookup_ap(const string apid) {
+    auto q = STATEMENT("SELECT * FROM note WHERE apid = ?");
+    q.bind(1, apid);
+
+    if (!q.executeStep()) {
+      return nullopt;
+    }
+  
+    Note n;
+    n.load(q);
+    return n;
+  }
 }
