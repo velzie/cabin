@@ -72,50 +72,65 @@ namespace UserService {
     u.load(q);
     return u;
   }
-}
+
+  optional<User> lookup_ap(const string id) {
+    auto q = STATEMENT("SELECT * FROM user WHERE apid = ?");
+    q.bind(1, id);
+
+    if (!q.executeStep()) {
+      return nullopt;
+    }
+  
+    User u;
+    u.load(q);
+    return u;
+  }
 
 
 
-void update_remote_user(string apid) {
-  URL url(apid);
+  User fetchRemote(const string apid) {
+    URL url(apid);
 
 
-  auto ia = UserService::lookup("gyat");
-  APClient cli(ia.value(), url.host);
+    auto ia = UserService::lookup("gyat");
+    APClient cli(ia.value(), url.host);
 
-  auto response = cli.Get(url.path);
-  assert(response->status == 200);
+    auto response = cli.Get(url.path);
+    assert(response->status == 200);
 
-  json user = json::parse(response->body);
+    json user = json::parse(response->body);
 
 
-  User u = {
-    .apid = apid,
-    .local = false,
-    
-    .username = user["preferredUsername"],
-    .displayname = user["name"],
-    .summary = user["summary"]
-  };
+    User u = {
+      .apid = apid,
+      .local = false,
+      
+      .username = user["preferredUsername"],
+      .displayname = user["name"],
+      .summary = user["summary"]
+    };
 
-  auto query = STATEMENT("SELECT localid FROM user where apid = ?");
-  query.bind(1, apid);
-  if (query.executeStep()) {
-    // user exists, update
-    string localid = query.getColumn("localid");
-    
-    // TODO orm stuff etc
-    auto delq = STATEMENT("DELETE FROM user WHERE apid = ?");
-    delq.bind(1, apid);
-    delq.exec();
+    auto query = STATEMENT("SELECT localid FROM user where apid = ?");
+    query.bind(1, apid);
+    if (query.executeStep()) {
+      // user exists, update
+      string localid = query.getColumn("localid");
+      
+      // TODO orm stuff etc
+      auto delq = STATEMENT("DELETE FROM user WHERE apid = ?");
+      delq.bind(1, apid);
+      delq.exec();
 
-    u.localid = localid;
-    u.insert();
-  } else {
-    u.localid = utils::genid();
-    u.insert();
+      u.localid = localid;
+      u.insert();
+    } else {
+      u.localid = utils::genid();
+      u.insert();
+    }
+    return u;
   }
 }
+
 
 
 void registeruser() {

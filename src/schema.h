@@ -72,23 +72,23 @@ struct User {
 struct Note {
   string apid;
   string localid;
+  int local;
 
   string content;
   string owner;
   std::time_t published;
 
-  int local;
   int sensitive;
 
   ORM(note,
     F(apid)
     F(localid)
+    F(local)
 
     F(content)
     F(owner)
     F(published)
 
-    F(local)
     F(sensitive)
   )
 };

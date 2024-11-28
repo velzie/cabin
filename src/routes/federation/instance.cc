@@ -7,6 +7,7 @@
 #include "../../utils.h"
 #include "../../schema.h"
 #include "../../services/user.h"
+#include "../../services/note.h"
 
 void handle_activity(json body) {
   std::cout << body.dump() << "\n";
@@ -19,23 +20,25 @@ void handle_activity(json body) {
     if (object["type"] != "Note") return;
 
 
-    update_remote_user(object["attributedTo"]);
+    UserService::fetchRemote(object["attributedTo"]);
     Note n = {
       .apid = object["id"],
       .localid = utils::genid(),
+      .local = false,
 
       .content = object["content"],
       .owner = object["attributedTo"],
       .published = utils::isoToMillis(object["published"]),
 
-      .local = false,
       .sensitive = object["sensitive"]
     };
 
     if (!n.insert()) {
       throw std::runtime_error("");
     }
-
+  } else if (type == "Announce") {
+    string object = body["object"];
+    Note note = NoteService::fetchRemote(object);
   }
 }
 
