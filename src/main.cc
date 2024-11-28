@@ -17,7 +17,9 @@
 #include <backward.hpp>
 #include <thread>
 #include "common.h"
+#include "schema.h"
 #include "http.h"
+#include "services/user.h"
 
 Config default_config = {
   .domain = "your.domain",
@@ -88,17 +90,18 @@ int main() {
   });
 
 
-  // json j = {
-  //   {"id", API("follows/0")},
-  //   {"type", "Follow"},
-  //   {"actor", USERPAGE(ct->userid)},
-  //   {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
-  // };
 
-  // APClient cli("booping.synth.download");
-  // auto c = cli.Post("/inbox", j);
-  // trace("{} : ({})", c->status, c->body);
-
+  auto u = UserService::lookup("gyat");
+  json j = {
+    {"id", API("follows/0")},
+    {"type", "Follow"},
+    {"actor", USERPAGE(ct->userid)},
+    {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
+  };
+  APClient cli(u.value(), "booping.synth.download");
+  auto c = cli.Post("/inbox", j);
+  error("{} : ({})", c->status, c->body);
+  
   tserver.join();
 
   return 0;

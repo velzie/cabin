@@ -38,8 +38,9 @@ set(SOURCES
 
   src/routes/pleroma/frontend.cc
 
-  src/migrations/init1.cc
-  src/migrations/users2.cc
+  src/migrations/1-init.cc
+  src/migrations/2-users.cc
+  src/migrations/3-likes.cc
 )
 add_compile_options(-fsanitize=address -rdynamic)
 add_link_options(-fsanitize=address -rdynamic)

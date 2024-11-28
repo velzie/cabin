@@ -63,7 +63,7 @@ GET(hostmeta, "/.well-known/host-meta") {
     <XRD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
       <Link rel="lrdd" type="application/jrd+json" template="{}" />
     </XRD>
-    )", API("/.well-known/webfinger?resource={uri}")), "application/xml");
+    )", API(".well-known/webfinger?resource={uri}")), "application/xml");
 }
 
 GET(nodeinfo, "/.well-known/nodeinfo") {

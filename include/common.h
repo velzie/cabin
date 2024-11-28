@@ -25,6 +25,8 @@
 
 using json = nlohmann::json;
 using string = std::string;
+#define optional std::optional
+#define nullopt std::nullopt
 using namespace spdlog;
 #define FMT fmt::format
 
@@ -46,7 +48,7 @@ class Cabin {
   Config cfg;
   json context;
   std::string baseurl = "https://rizz.velzie.rip/";
-  std::string userid = "test2";
+  std::string userid = "gyat";
   _Database *db;
   Server server;
 };
@@ -55,6 +57,21 @@ class Cabin {
 extern std::shared_ptr<Cabin> ct;
 
 
+class URL {
+  public:
+  string scheme;
+  string host;
+  string port;
+  string path;
+  string query;
+  string frag;
+
+  URL(string s);
+};
+
+#define ARR json::array()
+
 #define API(path) ct->baseurl + path
 #define USERPAGE(id) API("users/") + id
 #define NOTE(id) API("notes/" + id)
+#define LIKE(id) API("likes/" + id)

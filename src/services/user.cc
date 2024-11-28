@@ -8,9 +8,9 @@
 
 #include <common.h>
 
-#include "../http.h"
 #include "../schema.h"
 #include "../utils.h"
+#include "../http.h"
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
   bool success = false;
@@ -24,7 +24,7 @@ bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuf
   long privateKeyLength = 0, publicKeyLength = 0;
 
   if (!ctx) goto err;
-  if (EVP_PKEY_keygen_init(ctx) <= 0) goto err;
+if (EVP_PKEY_keygen_init(ctx) <= 0) goto err;
   if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, bits) <= 0) goto err;
 
   if (EVP_PKEY_keygen(ctx, &pkey) <= 0) goto err;
@@ -59,11 +59,29 @@ cleanup:
   return success;
 }
 
+namespace UserService {
+  optional<User> lookup(const string id) {
+    auto q = STATEMENT("SELECT * FROM user WHERE localid = ?");
+    q.bind(1, id);
+
+    if (!q.executeStep()) {
+      return nullopt;
+    }
+  
+    User u;
+    u.load(q);
+    return u;
+  }
+}
+
 
 
 void update_remote_user(string apid) {
   URL url(apid);
-  APClient cli(url.host);
+
+
+  auto ia = UserService::lookup("gyat");
+  APClient cli(ia.value(), url.host);
 
   auto response = cli.Get(url.path);
   assert(response->status == 200);
@@ -104,6 +122,11 @@ void registeruser() {
   string privkey;
   string pubkey;
   generateRSAKeyPair(privkey, pubkey);
+
+
+  // APClient cli("booping.synth.download");
+  // auto r = cli.Get("/users/a005c9wl4pwj0arp");
+  // dbg(r->body);
 
   // update_remote_user("https://booping.synth.download/users/a005c9wl4pwj0arp");
 

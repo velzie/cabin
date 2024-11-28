@@ -1,4 +1,6 @@
+#define USE_DB
 #include "common.h"
+#include "schema.h"
 #include "http.h"
 #include <fmt/core.h>
 #include <httplib.h>
@@ -29,17 +31,16 @@ std::string base64Encode(const unsigned char *data, size_t length) {
   return encodedStr;
 }
 
-std::string signWithPrivateKey(const std::string &filePath,
+std::string signWithPrivateKey(const std::string &privkey,
                                const std::string &data) {
-  // Load private key from the file
-  FILE *keyFile = fopen(filePath.c_str(), "r");
-  if (!keyFile) {
-    throw std::runtime_error("Unable to open private key file");
+  BIO* bio = BIO_new_mem_buf(privkey.data(), static_cast<int>(privkey.size()));
+  if (!bio) {
+      std::cerr << "Failed to create BIO.\n";
+      return nullptr;
   }
 
   EVP_PKEY *privateKey =
-      PEM_read_PrivateKey(keyFile, nullptr, nullptr, nullptr);
-  fclose(keyFile);
+      PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
 
   if (!privateKey) {
     throw std::runtime_error("Unable to read private key");
@@ -111,18 +112,20 @@ std::string sha256(std::string data) {
   return base64Encode(hash, SHA256_DIGEST_LENGTH);
 }
 
-APClient::APClient(std::string host) : instance(host), cli("https://" + host) {}
+APClient::APClient(User &u, std::string host) : instance(host), cli("https://" + host), user(u) {
+
+}
 httplib::Result APClient::Get(std::string pathname) {
   auto date = getDateFmt();
 
   std::string sigheader = "(request-target) host date";
   std::string sigbody = fmt::format("(request-target): get {}\nhost: {}\ndate: {}", pathname, instance, date);
 
-  std::string signature = signWithPrivateKey("user.key", sigbody);
+  std::string signature = signWithPrivateKey(user.privateKey , sigbody);
 
   std::string signatureHeader = fmt::format(
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
-      USERPAGE(ct->userid), sigheader, signature);
+      USERPAGE(user.localid), sigheader, signature);
 
   std::cout << pathname << "\n";
   return cli.Get(pathname, {
@@ -146,11 +149,11 @@ httplib::Result APClient::Post(std::string pathname, json data) {
   std::string sigbody = fmt::format("(request-target): post {}\nhost: {}\ndate: {}\ndigest: {}", pathname,
                   instance, date, digest);
 
-  std::string signedDigest = signWithPrivateKey("user.key", sigbody);
+  std::string signedDigest = signWithPrivateKey(user.privateKey, sigbody);
 
   std::string signatureHeader = fmt::format(
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
-      USERPAGE(ct->userid), sigheader, signedDigest);
+      USERPAGE(user.localid), sigheader, signedDigest);
 
   return cli.Post(pathname, {
       {"Accept", "application/activity+json"},

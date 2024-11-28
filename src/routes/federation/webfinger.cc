@@ -8,6 +8,11 @@ GET(webfinger, "/.well-known/webfinger") {
     resource.erase(0, 5);
   }
 
+  string usersbase = USERPAGE("");
+  if (resource.rfind(usersbase, 0) == 0) {
+    resource.erase(0, usersbase.length());
+  }
+
   json j = {
     {"links", {
       {

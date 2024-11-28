@@ -5,6 +5,8 @@
 #include "../../utils.h"
 #include "local.h"
 #include "../../services/note.h"
+#include "../../services/user.h"
+#include "../../http.h"
 
 POST(post_status, "/api/v1/statuses") {
   json body = json::parse(req.body);
@@ -26,6 +28,46 @@ GET(status, "/api/v1/statuses/:id") {
 
   json j = MSrenderNote(n.value());
   res.set_content(j.dump(), "application/json");
+}
+
+POST(status_like, "/api/v1/statuses/:id/favourite") {
+  string id = req.path_params.at("id");
+
+  auto user = UserService::lookup("gyat");
+  auto note = NoteService::lookup(id);
+  if (!note.has_value()) {
+    res.status = 404;
+    return;
+  }
+
+  string likeid = utils::genid();
+  Like like = {
+    .apid = LIKE(likeid),
+    .localid = likeid,
+    .local = true,
+
+    .owner = user->apid,
+    .object = note->apid
+  };
+  like.insert();
+
+  URL url(note->apid);
+  APClient cli(user.value(), url.host);
+
+  json activity = {
+    {"actor", user->apid},
+    {"id", like.apid},
+    {"object", note->apid},
+    {"content", "❤"},
+    {"_misskey_reaction", "❤"},
+    {"type", "Like"}
+  };
+
+  dbg(activity.dump());
+
+  auto resp = cli.Post("/inbox", activity);
+  dbg(resp->status);
+  dbg(resp->body);
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {

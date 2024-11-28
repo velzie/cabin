@@ -92,3 +92,22 @@ struct Note {
     F(sensitive)
   )
 };
+
+
+struct Like {
+  string apid;
+  string localid;
+  int local;
+
+  string owner;
+  string object;
+
+  ORM(like,
+      F(apid)
+      F(localid)
+      F(local)
+
+      F(owner)
+      F(object)
+  )
+};
