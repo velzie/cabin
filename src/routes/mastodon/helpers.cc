@@ -13,7 +13,7 @@ json MSrenderUser(User &user) {
   if (id.host == ct->cfg.domain) {
     acct = user.username;
   } else {
-    acct = FMT("{}@{}", id.host);
+    acct = FMT("{}@{}", user.username, id.host);
   }
 
    return {
@@ -73,6 +73,7 @@ json MSrenderNote(Note &note) {
     {"mentions", json::array()},
     {"tags", json::array()},
     {"emojis", json::array()},
+    {"reactions", json::array()},
     {"card", nullptr},
     {"poll", nullptr},
   };
