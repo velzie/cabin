@@ -19,3 +19,9 @@
 [submodule "third-party/backward-cpp"]
 	path = .third-party/backward-cpp
 	url = https://github.com/bombela/backward-cpp
+[submodule ".third-party/uWebSockets"]
+	path = .third-party/uWebSockets
+	url = https://github.com/velzie/uWebSockets-1.0
+[submodule ".third-party/cpptrace"]
+	path = .third-party/cpptrace
+	url = https://github.com/jeremy-rifkin/cpptrace

@@ -1,6 +1,6 @@
 #define USE_DB
-#include <common.h>
 #include <router.h>
+#include <common.h>
 #include "../../schema.h"
 #include "../../utils.h"
 

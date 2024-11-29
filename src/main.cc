@@ -1,3 +1,4 @@
+#include "spdlog/spdlog-inl.h"
 #include <openssl/http.h>
 #include <stdexcept>
 #define USE_DB
@@ -14,12 +15,14 @@
 #include <stdio.h>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
-#include <backward.hpp>
 #include <thread>
 #include "common.h"
 #include "schema.h"
 #include "http.h"
 #include "services/user.h"
+#include "utils.h"
+#include <cpptrace/cpptrace.hpp>
+
 
 Config default_config = {
   .domain = "your.domain",
@@ -72,11 +75,15 @@ Cabin::Cabin(std::string config_path) {
 }
 
 std::shared_ptr<Cabin> ct;
-backward::SignalHandling sh;
 
 void registeruser();
 int main() {
-  // spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
+  spdlog::set_level(spdlog::level::trace);
+
+
+  spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
+  
+
   ct = std::make_shared<Cabin>("config.json");
 
   std::ifstream contextst("context.json");
@@ -85,24 +92,50 @@ int main() {
   ct->InitDB();
   registeruser();
 
+
   std::thread tserver([](){
-      ct->server.Start();
+    Server::Init();
+    Server::Listen();
   });
 
 
 
   auto u = UserService::lookup("gyat");
-  json j = {
-    {"id", API("follows/0")},
-    {"type", "Follow"},
-    {"actor", USERPAGE(ct->userid)},
-    {"object", "https://fedi.velzie.rip/users/9v0aj1hlbmd09b7b"}
-  };
-  APClient cli(u.value(), "fedi.velzie.rip");
-  auto c = cli.Post("/inbox", j);
-  error("{} : ({})", c->status, c->body);
+  // json j = {
+  //   {"id", API("follows/0")},
+  //   {"type", "Follow"},
+  //   {"actor", USERPAGE(ct->userid)},
+  //   {"object", "https://fedi.velzie.rip/users/9v0aj1hlbmd09b7b"}
+  // };
+  // APClient cli(u.value(), "fedi.velzie.rip");
+  // auto c = cli.Post("/inbox", j);
+  // error("{} : ({})", c->status, c->body);
   
-  tserver.join();
+ // json j = {
+ //    {"id", API("bites/0")},
+ //    {"type", "Bite"},
+ //    {"actor", USERPAGE(ct->userid)},
+ //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+ //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+ //    {"published", utils::dateISO()},
+ //  };
+ //  APClient cli(u.value(), "is.notfire.cc");
+ //  auto c = cli.Post("/inbox", j);
+ //  error("{} : ({})", c->status, c->body);
 
+ // json j = {
+ //    {"id", API("bites/0")},
+ //    {"type", "Bite"},
+ //    {"actor", USERPAGE(ct->userid)},
+ //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+ //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+ //    {"published", utils::dateISO()},
+ //  };
+ //  APClient cli(u.value(), "is.notfire.cc");
+ //  auto c = cli.Post("/inbox", j);
+ //  error("{} : ({})", c->status, c->body);
+
+
+  tserver.join();
   return 0;
 }

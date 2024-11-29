@@ -6,15 +6,14 @@
 
 #include "../../utils.h"
 GET(notes, "/notes/:id") {
-  std::string id = req.path_params.at("id");
+  std::string id(req->getParameter("id"));
   std::string idurl = API("notes/"+id);
 
   auto q = STATEMENT("SELECT content FROM note WHERE localid = ? LIMIT 1");
   q.bind(1, id);
 
   if (!q.executeStep()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no such note");
   }
 
   std::string content = q.getColumn("content");
@@ -37,5 +36,5 @@ GET(notes, "/notes/:id") {
     {"tag", {}}
   };
 
-  res.set_content(j.dump(), "application/activity+json");
+  OK(j, MIMEAP);
 }

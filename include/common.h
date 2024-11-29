@@ -50,7 +50,6 @@ class Cabin {
   std::string baseurl = "https://rizz.velzie.rip/";
   std::string userid = "gyat";
   _Database *db;
-  Server server;
 };
 
 

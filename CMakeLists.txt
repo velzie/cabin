@@ -11,7 +11,10 @@ add_subdirectory(.third-party/spdlog)
 add_subdirectory(.third-party/dbg-macro)
 add_subdirectory(.third-party/backward-cpp)
 
+
+
 include_directories(include)
+include_directories(.third-party/uWebSockets/src)
 
 set(SOURCES 
   .third-party/httplib.cc
@@ -42,8 +45,9 @@ set(SOURCES
   src/migrations/2-users.cc
   src/migrations/3-likes.cc
 )
+
 add_compile_options(-fsanitize=address -rdynamic)
 add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
-target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp spdlog Backward::Interface dbg_macro)
+target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets cpptrace dwarf z fmt)

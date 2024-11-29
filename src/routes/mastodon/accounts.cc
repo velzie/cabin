@@ -1,6 +1,6 @@
 #define USE_DB
-#include <common.h>
 #include <router.h>
+#include <common.h>
 #include "../../schema.h"
 #include "local.h"
 
@@ -12,8 +12,7 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no user");
   }
   u.load(q);
 
@@ -51,38 +50,36 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
 
   };
 
-  res.set_content(r.dump(), "application/json");
+  OK(r, MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#get
 GET(account, "/api/v1/accounts/:id") {
-  string uid = req.path_params.at("id");
+  string uid (req->getParameter("id"));
   dbg(uid);
 
   User u;
   auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no account");
   }
   u.load(q);
 
   auto j = MSrenderUser(u);
 
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#statuses
 GET(account_statuses, "/api/v1/accounts/:id/statuses") {
-  string uid = req.path_params.at("id");
+  string uid (req->getParameter("id"));
 
   User u;
   auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
-    res.status = 404;
-    return;
+    ERROR(404, "");
   }
   u.load(q);
 
@@ -99,7 +96,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
 
 
 
-  res.set_content(response.dump(), "application/json");
+  OK(response, MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#featured_tags
@@ -107,7 +104,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
 GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
   json j = json::array();
 
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#relationships
@@ -115,5 +112,5 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
 GET(account_relationships, "/api/v1/accounts/relationships") {
   json j = json::array();
 
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }

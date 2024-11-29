@@ -1,9 +1,10 @@
-#include "common.h"
 #include "router.h"
+#include "common.h"
 
 GET(root, "/") {
-  res.set_content(R"(
+  res->writeHeader("Content-Type", "text/html");
+  res->end(R"(
     <h1>cabin</h1>
     <p>instance hosted using cabin</p>
-  )", "text/html");
+  )");
 }

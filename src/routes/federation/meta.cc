@@ -1,7 +1,7 @@
-#include "common.h"
 #include "router.h"
+#include "common.h"
 
-json Server::NodeMeta(std::string version) {
+json NodeMeta(std::string version) {
   return {
       {"version", version},
       {"software", {
@@ -40,6 +40,20 @@ json Server::NodeMeta(std::string version) {
           //    "donationUrl": "https://ko-fi.com/sneexy",
           //    "repositoryUrl": "https://activitypub.software/TransFem-org/Sharkey/",
           //    "feedbackUrl": "https://activitypub.software/TransFem-org/Sharkey/-/issues/new",
+        {"features", {
+          "pleroma_api",
+          "akkoma_api",
+          "mastodon_api",
+          "mastodon_api_streaming",
+          "polls",
+          "quote_posting",
+          "editing",
+          "pleroma_emoji_reactions",
+          "exposable_reactions",
+          "custom_emoji_reactions",
+          "pleroma:bites",
+        }},
+        {"localBubbleInstances", ARR},
         {"disableRegistration", true},
         {"disableLocalTimeline", true},
         {"disableGlobalTimeline", true},
@@ -59,11 +73,16 @@ json Server::NodeMeta(std::string version) {
 
 
 GET(hostmeta, "/.well-known/host-meta") {
-    res.set_content(FMT(R"(
+  res->writeStatus("200");
+  res->writeHeader("Content-Type", "application/xml");
+
+  res->write(FMT(R"(
     <XRD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
       <Link rel="lrdd" type="application/jrd+json" template="{}" />
     </XRD>
-    )", API(".well-known/webfinger?resource={uri}")), "application/xml");
+    )", API(".well-known/webfinger?resource={uri}")));
+
+  res->end();
 }
 
 GET(nodeinfo, "/.well-known/nodeinfo") {
@@ -79,21 +98,23 @@ GET(nodeinfo, "/.well-known/nodeinfo") {
       }
     }}
   };
-  res.set_content(j.dump(), "application/json; charset=utf-8");
+
+  OK(j, MIMEJSON);
 }
 
 
 GET(diaspora_nodeinfo, "/nodeinfo/:version") {
-  string version = req.path_params.at("version");
+  string version (req->getParameter("version"));
 
   if (version.find(".json") != string::npos) {
     version.erase(version.size() - 5, 5);
-    return res.set_redirect(API(FMT("nodeinfo/{}", version)));
+
+    REDIRECT(API(FMT("nodeinfo/{}", version)));
   }
 
 
-  res.set_content(
-      NodeMeta("2.0").dump(),
+  OK(
+      NodeMeta("2.0"),
       FMT("application/json; profile=\"http://nodeinfo.diaspora.software/ns/schema/{}#\"; charset=utf-8", version)
   );
 }

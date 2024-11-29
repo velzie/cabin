@@ -1,8 +1,8 @@
-#include "common.h"
 #include "router.h"
+#include "common.h"
 
 GET(webfinger, "/.well-known/webfinger") {
-  std::string resource = req.get_param_value("resource");
+  std::string resource(req->getQuery("resource"));
 
   if (resource.rfind("acct:", 0) == 0) {
     resource.erase(0, 5);
@@ -21,6 +21,11 @@ GET(webfinger, "/.well-known/webfinger") {
         {"href", USERPAGE(ct->userid)}
       },
       {
+        {"rel", "self"},
+        {"type", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""},
+        {"href", USERPAGE(ct->userid)}
+      },
+      {
         {"rel", "http://webfinger.net/rel/profile-page"},
         {"type", "text/html"},
         {"href", USERPAGE(ct->userid)}
@@ -30,9 +35,8 @@ GET(webfinger, "/.well-known/webfinger") {
         {"template", API("authorize-follow?acct={uri}")}
       }
     }},
-
-    {"subject", req.get_param_value("resource")}
+    {"subject", "acct:gyat@rizz.velzie.rip"}
   };
 
-  res.set_content(j.dump(), "application/jrd+json; charset=utf-8");
+  OK(j, MIMEJRD);
 };

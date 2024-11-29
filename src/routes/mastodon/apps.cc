@@ -1,5 +1,6 @@
-#include <common.h>
 #include <router.h>
+#include <common.h>
+#include <QueryParser.h>
 
 
 std::string join(const std::vector<std::string>& vec, const std::string& delimiter) {
@@ -13,9 +14,11 @@ std::string join(const std::vector<std::string>& vec, const std::string& delimit
 
 json stored_app;
 POST(apps, "/api/v1/apps") {
-  string client_name = req.get_param_value("client_name");
-  string website = req.get_param_value("website");
-  string scopes = req.get_param_value("scopes");
+
+  string query("?" + bodyraw);
+  string client_name(uWS::getDecodedQueryValue("client_name", query));
+  string website(uWS::getDecodedQueryValue("website", query));
+  string scopes(uWS::getDecodedQueryValue("scopes", query));
 
 
   json r = {
@@ -23,38 +26,42 @@ POST(apps, "/api/v1/apps") {
     {"name", client_name},
     {"website", website},
     {"scopes", scopes},
-    {"redirect_uri", req.get_param_value("redirect_uris")},
-    {"redirect_uris", req.get_param_value("redirect_uris")},
+    {"redirect_uri", req->getParameter("redirect_uris")},
+    {"redirect_uris", req->getParameter("redirect_uris")},
     {"client_id", "placeholder"},
     {"client_secret", "placeholder_secret"}
   };
-  stored_app =r;
+  stored_app = r;
 
-  res.set_content(r.dump(), "application/json");
+  OK(r, MIMEJSON);
 }
 
 GET(authorize, "/oauth/authorize") {
-  assert(req.get_param_value("response_type") == "code");
-  string client_id = req.get_param_value("client_id");
-  string redirect_uri = req.get_param_value("redirect_uri");
+  ASSERT_THROW(req->getQuery("response_type") == "code", "");
 
-  string scope = req.get_param_value("scope");
+
+  string client_id(req->getQuery("client_id"));
+  string redirect_uri (req->getQuery("redirect_uri"));
+
+  string scope(req->getQuery("scope"));
   if (scope.empty()) scope = "read";
 
   json sanitized = redirect_uri;
 
 
-  res.set_content(FMT(R"(
+  res->writeHeader("Content-Type", "text/html");
+  res->end(FMT(R"(
     <button id="redirect">click to oauth</button>
     <script>
       let url = {}
       redirect.onclick = () => window.location = url + "?code=placeholder_code"
     </script>
-  )", sanitized.dump()), "text/html");
+  )", sanitized.dump()));
 }
 
 POST(token, "/oauth/token") {
-  string scopes = req.get_param_value("scope");
+  string query("?" + bodyraw);
+  string scopes(uWS::getDecodedQueryValue("scopes", query));
   std::time_t current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
   json r = {
@@ -64,11 +71,11 @@ POST(token, "/oauth/token") {
     {"created_at", current_time},
   };
 
-  res.set_content(r.dump(), "application/json");
+  OK(r, MIMEJSON);
 }
 
 GET(verify_credentials, "/api/v1/apps/verify_credentials") {
-  res.set_content(stored_app.dump(), "application/json");
+  OK(stored_app, MIMEJSON);
 }
 
 GET(instance, "/api/:v/instance") {
@@ -268,5 +275,5 @@ GET(instance, "/api/:v/instance") {
     }},
   };
 
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }

@@ -1,6 +1,6 @@
 #define USE_DB
-#include <common.h>
 #include <router.h>
+#include <common.h>
 #include "../../schema.h"
 #include "../../utils.h"
 #include "local.h"
@@ -9,35 +9,31 @@
 #include "../../http.h"
 
 POST(post_status, "/api/v1/statuses") {
-  json body = json::parse(req.body);
-
   Note note = NoteService::create("gyat", body["content"]);
-  
   json j = MSrenderNote(note);
-  res.set_content(j.dump(), "application/json");
+
+  OK(j, MIMEJSON);
 }
 
 GET(status, "/api/v1/statuses/:id") {
-  string id = req.path_params.at("id");
+  string id (req->getParameter("id"));
 
   auto n = NoteService::lookup(id);
   if (!n.has_value()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no note");
   }
 
   json j = MSrenderNote(n.value());
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }
 
 POST(status_like, "/api/v1/statuses/:id/favourite") {
-  string id = req.path_params.at("id");
+  string id (req->getParameter("id"));
 
   auto user = UserService::lookup("gyat");
   auto note = NoteService::lookup(id);
   if (!note.has_value()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no note");
   }
 
   string likeid = utils::genid();
@@ -67,11 +63,10 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {
-  string id = req.path_params.at("id");
+  string id (req->getParameter("id"));
   auto n = NoteService::lookup(id);
   if (!n.has_value()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no note");
   }
 
 
@@ -84,7 +79,7 @@ GET(status_context, "/api/v1/statuses/:id/context") {
     {"descendants", descendants},
   };
 
-  res.set_content(j.dump(), "application/json");
+  OK(j, MIMEJSON);
 }
 
 
@@ -101,5 +96,5 @@ GET(timelines, "/api/v1/timelines/:id") {
   }
   std::reverse(response.begin(), response.end());
 
-  res.set_content(response.dump(), "application/json");
+  OK(response, MIMEJSON);
 }

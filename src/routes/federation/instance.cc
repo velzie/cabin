@@ -1,8 +1,8 @@
 #include <stdexcept>
 #define USE_DB
 
-#include "common.h"
 #include "router.h"
+#include "common.h"
 #include <optional>
 #include "../../utils.h"
 #include "../../schema.h"
@@ -45,17 +45,28 @@ void handle_activity(json body) {
   }
 }
 
+GET(ginbox, "/inbox") {
+  res->writeStatus("204");
+  res->endWithoutBody();
+}
 POST(inbox, "/inbox") {
-  handle_activity(json::parse(req.body));
+  handle_activity(body);
+
+
+  res->writeStatus("204");
+  res->endWithoutBody();
 }
 
 POST(userinbox, "/users/:id/inbox") {
-  std::string uid = req.path_params.at("id");
-  handle_activity(json::parse(req.body));
+  std::string uid(req->getParameter("id"));
+  handle_activity(body);
+
+  res->writeStatus("204");
+  res->end();
 }
 
 GET(user, "/users/:id") {
-  std::string uid = req.path_params.at("id");
+  std::string uid(req->getParameter("id"));
   std::string userurl = USERPAGE(uid);
 
 
@@ -63,8 +74,7 @@ GET(user, "/users/:id") {
   auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
-    res.status = 404;
-    return;
+    ERROR(404, "no user");
   }
   u.load(q);
 
@@ -96,5 +106,5 @@ GET(user, "/users/:id") {
     {"alsoKnownAs", json::array()}
   };
 
-  res.set_content(j.dump(), "application/activity+json");
+  OK(j, MIMEAP);
 }

@@ -1,5 +1,5 @@
-#include <common.h>
 #include <router.h>
+#include <common.h>
 
 
 GET(frontend_configurations, "/api/pleroma/frontend_configurations") {
@@ -10,5 +10,5 @@ GET(frontend_configurations, "/api/pleroma/frontend_configurations") {
     }},
   };
 
-  res.set_content(r.dump(), "application/json");
+  OK(r, MIMEJSON);
 }
