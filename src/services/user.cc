@@ -61,7 +61,7 @@ cleanup:
 
 namespace UserService {
   optional<User> lookup(const string id) {
-    auto q = STATEMENT("SELECT * FROM user WHERE localid = ?");
+    auto q = STATEMENT("SELECT * FROM user WHERE id = ?");
     q.bind(1, id);
 
     if (!q.executeStep()) {
@@ -74,7 +74,7 @@ namespace UserService {
   }
 
   optional<User> lookup_ap(const string id) {
-    auto q = STATEMENT("SELECT * FROM user WHERE apid = ?");
+    auto q = STATEMENT("SELECT * FROM user WHERE uri = ?");
     q.bind(1, id);
 
     if (!q.executeStep()) {
@@ -88,8 +88,8 @@ namespace UserService {
 
 
 
-  User fetchRemote(const string apid) {
-    URL url(apid);
+  User fetchRemote(const string uri) {
+    URL url(uri);
 
 
     auto ia = UserService::lookup("gyat");
@@ -102,7 +102,7 @@ namespace UserService {
 
 
     User u = {
-      .apid = apid,
+      .uri = uri,
       .local = false,
       
       .username = user["preferredUsername"],
@@ -110,21 +110,21 @@ namespace UserService {
       .summary = user["summary"]
     };
 
-    auto query = STATEMENT("SELECT localid FROM user where apid = ?");
-    query.bind(1, apid);
+    auto query = STATEMENT("SELECT id FROM user where uri = ?");
+    query.bind(1, uri);
     if (query.executeStep()) {
       // user exists, update
-      string localid = query.getColumn("localid");
+      string id = query.getColumn("id");
       
       // TODO orm stuff etc
-      auto delq = STATEMENT("DELETE FROM user WHERE apid = ?");
-      delq.bind(1, apid);
+      auto delq = STATEMENT("DELETE FROM user WHERE uri = ?");
+      delq.bind(1, uri);
       delq.exec();
 
-      u.localid = localid;
+      u.id = id;
       u.insert();
     } else {
-      u.localid = utils::genid();
+      u.id = utils::genid();
       u.insert();
     }
     return u;
@@ -147,8 +147,8 @@ void registeruser() {
 
 
   // User u = {
-  //   .apid = USERPAGE("gyat"),
-  //   .localid = "gyat",
+  //   .uri = USERPAGE("gyat"),
+  //   .id = "gyat",
   //   .local = 1,
   //   .publicKey = pubkey,
   //   .privateKey = privkey,

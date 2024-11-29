@@ -25,8 +25,8 @@ void handle_activity(json body) {
 
     UserService::fetchRemote(object["attributedTo"]);
     Note n = {
-      .apid = object["id"],
-      .localid = utils::genid(),
+      .uri = object["id"],
+      .id = utils::genid(),
       .local = false,
 
       .content = object["content"],
@@ -63,7 +63,7 @@ GET(user, "/users/:id") {
 
 
   User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
+  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
     ERROR(404, "no user");

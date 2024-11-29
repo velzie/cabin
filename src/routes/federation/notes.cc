@@ -9,7 +9,7 @@ GET(notes, "/notes/:id") {
   std::string id(req->getParameter("id"));
   std::string idurl = API("notes/"+id);
 
-  auto q = STATEMENT("SELECT content FROM note WHERE localid = ? LIMIT 1");
+  auto q = STATEMENT("SELECT content FROM note WHERE id = ? LIMIT 1");
   q.bind(1, id);
 
   if (!q.executeStep()) {

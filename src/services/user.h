@@ -4,7 +4,7 @@
 
 namespace UserService {
   User create(string userid, string content);
-  optional<User> lookup(const string localid);
-  optional<User> lookup_ap(const string apid);
-  User fetchRemote(const string apid);
+  optional<User> lookup(const string id);
+  optional<User> lookup_ap(const string uri);
+  User fetchRemote(const string uri);
 }

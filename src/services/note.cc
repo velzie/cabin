@@ -13,8 +13,8 @@ namespace NoteService {
     string id = utils::genid();
 
     Note note = {
-      .apid = NOTE(id),
-      .localid = id,
+      .uri = NOTE(id),
+      .id = id,
       .local = 1,
       .content = content,
       .owner = USERPAGE(userid),
@@ -27,9 +27,9 @@ namespace NoteService {
     return note;
   }
 
-  Note fetchRemote(const string apid) {
+  Note fetchRemote(const string uri) {
     auto u = UserService::lookup(ct->userid);
-    URL url(apid);
+    URL url(uri);
     APClient cli(u.value(), url.host);
 
     auto response = cli.Get(url.path);
@@ -40,7 +40,7 @@ namespace NoteService {
 
     UserService::fetchRemote(note["attributedTo"]);
     Note n = {
-      .apid = apid,
+      .uri = uri,
       .local = false,
 
       .content = note["content"],
@@ -49,21 +49,21 @@ namespace NoteService {
       .sensitive = note["sensitive"],
     };
 
-    auto query = STATEMENT("SELECT localid FROM note where apid = ?");
-    query.bind(1, apid);
+    auto query = STATEMENT("SELECT id FROM note where uri = ?");
+    query.bind(1, uri);
     if (query.executeStep()) {
       // note exists, update
-      string localid = query.getColumn("localid");
+      string id = query.getColumn("id");
       
       // TODO orm stuff etc
-      auto delq = STATEMENT("DELETE FROM note WHERE apid = ?");
-      delq.bind(1, apid);
+      auto delq = STATEMENT("DELETE FROM note WHERE uri = ?");
+      delq.bind(1, uri);
       delq.exec();
 
-      n.localid = localid;
+      n.id = id;
       n.insert();
     } else {
-      n.localid = utils::genid();
+      n.id = utils::genid();
       n.insert();
     }
 
@@ -71,7 +71,7 @@ namespace NoteService {
   }
 
   optional<Note> lookup(const string id) {
-    auto q = STATEMENT("SELECT * FROM note WHERE localid = ?");
+    auto q = STATEMENT("SELECT * FROM note WHERE id = ?");
     q.bind(1, id);
 
     if (!q.executeStep()) {
@@ -83,9 +83,9 @@ namespace NoteService {
     return n;
   }
 
-  optional<Note> lookup_ap(const string apid) {
-    auto q = STATEMENT("SELECT * FROM note WHERE apid = ?");
-    q.bind(1, apid);
+  optional<Note> lookup_ap(const string uri) {
+    auto q = STATEMENT("SELECT * FROM note WHERE uri = ?");
+    q.bind(1, uri);
 
     if (!q.executeStep()) {
       return nullopt;

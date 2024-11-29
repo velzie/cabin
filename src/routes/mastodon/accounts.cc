@@ -9,7 +9,7 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   string uid = "gyat";
 
   User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
+  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
     ERROR(404, "no user");
@@ -59,7 +59,7 @@ GET(account, "/api/v1/accounts/:id") {
   dbg(uid);
 
   User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
+  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
     ERROR(404, "no account");
@@ -76,7 +76,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   string uid (req->getParameter("id"));
 
   User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE localid = ? LIMIT 1");
+  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
   q.bind(1, uid);
   if (!q.executeStep()) {
     ERROR(404, "");
@@ -85,7 +85,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
 
 
   auto notes = STATEMENT("SELECT * FROM note WHERE owner = ?");
-  notes.bind(1, u.apid);
+  notes.bind(1, u.uri);
 
   json response = json::array();
   while (notes.executeStep()) {

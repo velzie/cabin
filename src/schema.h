@@ -44,8 +44,8 @@
   _counter++;\
     
 struct User {
-  string apid;
-  string localid;
+  string uri;
+  string id;
 
   int local;
   string publicKey;
@@ -56,8 +56,8 @@ struct User {
   string summary;
 
   ORM(user,
-    F(apid)
-    F(localid)
+    F(uri)
+    F(id)
 
     F(local)
     F(publicKey)
@@ -70,8 +70,8 @@ struct User {
 };
 
 struct Note {
-  string apid;
-  string localid;
+  string uri;
+  string id;
   int local;
 
   string content;
@@ -81,8 +81,8 @@ struct Note {
   int sensitive;
 
   ORM(note,
-    F(apid)
-    F(localid)
+    F(uri)
+    F(id)
     F(local)
 
     F(content)
@@ -95,16 +95,16 @@ struct Note {
 
 
 struct Like {
-  string apid;
-  string localid;
+  string uri;
+  string id;
   int local;
 
   string owner;
   string object;
 
   ORM(like,
-      F(apid)
-      F(localid)
+      F(uri)
+      F(id)
       F(local)
 
       F(owner)

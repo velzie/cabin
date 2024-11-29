@@ -9,7 +9,7 @@
 json MSrenderUser(User &user) {
 
   string acct;
-  URL id(user.apid);
+  URL id(user.uri);
   if (id.host == ct->cfg.domain) {
     acct = user.username;
   } else {
@@ -17,7 +17,7 @@ json MSrenderUser(User &user) {
   }
 
    return {
-    {"id", user.localid},
+    {"id", user.id},
     {"username", user.username},
     {"acct", acct},
     {"display_name", user.displayname},
@@ -25,7 +25,7 @@ json MSrenderUser(User &user) {
     {"bot", false},
     {"created_at","2016-03-16T14:34:26.392Z"},
     {"note", user.summary},
-    {"url", USERPAGE(user.localid)},
+    {"url", USERPAGE(user.id)},
     {"avatar", "https://files.mastodon.social/accounts/avatars/000/000/001/original/d96d39a0abb45b92.jpg"},
     {"avatar_static", "https://files.mastodon.social/accounts/avatars/000/000/001/original/d96d39a0abb45b92.jpg"},
     {"header", "https://files.mastodon.social/accounts/headers/000/000/001/original/c91b871f294ea63e.png"},
@@ -42,18 +42,18 @@ json MSrenderUser(User &user) {
 json MSrenderNote(Note &note) {
 
   User u;
-  auto s = STATEMENT("SELECT * FROM user WHERE apid = ?");
+  auto s = STATEMENT("SELECT * FROM user WHERE uri = ?");
   s.bind(1, note.owner);
   s.executeStep();
   u.load(s);
 
   auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
-  favs.bind(1, note.apid);
+  favs.bind(1, note.uri);
   favs.executeStep();
   int fav_count = favs.getColumn(0);
 
   json j = {
-    {"id", note.localid},
+    {"id", note.id},
     {"created_at", utils::millisToIso(note.published)},
     {"in_reply_to_id", nullptr},
     {"in_reply_to_account_id", nullptr},
@@ -61,8 +61,8 @@ json MSrenderNote(Note &note) {
     {"spoiler_text", ""},
     {"visibility", "public"},
     {"language", "en"},
-    {"uri", NOTE(note.localid)},
-    {"url", NOTE(note.localid)},
+    {"uri", NOTE(note.id)},
+    {"url", NOTE(note.id)},
     {"replies_count", 7},
     {"reblogs_count", 98},
     {"favourites_count", fav_count},

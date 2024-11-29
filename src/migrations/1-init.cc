@@ -4,8 +4,8 @@
 MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE note(
-      apid VARCHAR PRIMARY KEY,
-      localid TEXT,
+      uri VARCHAR PRIMARY KEY,
+      id TEXT,
 
       content TEXT NOT NULL,
       owner VARCHAR NOT NULL,

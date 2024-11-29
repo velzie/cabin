@@ -38,22 +38,22 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
 
   string likeid = utils::genid();
   Like like = {
-    .apid = LIKE(likeid),
-    .localid = likeid,
+    .uri = LIKE(likeid),
+    .id = likeid,
     .local = true,
 
-    .owner = user->apid,
-    .object = note->apid
+    .owner = user->uri,
+    .object = note->uri
   };
   like.insert();
 
-  URL url(note->apid);
+  URL url(note->uri);
   APClient cli(user.value(), url.host);
 
   json activity = {
-    {"actor", user->apid},
-    {"id", like.apid},
-    {"object", note->apid},
+    {"actor", user->uri},
+    {"id", like.uri},
+    {"object", note->uri},
     {"content", "❤"},
     {"_misskey_reaction", "❤"},
     {"type", "Like"}

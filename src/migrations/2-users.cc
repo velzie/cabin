@@ -4,8 +4,8 @@
 MIGRATION_UP(init, 2) {
   db->exec(R"(
     CREATE TABLE user(
-      apid TEXT PRIMARY KEY,
-      localid TEXT,
+      uri TEXT PRIMARY KEY,
+      id TEXT,
 
       local INTEGER NOT NULL,
       publicKey TEXT,

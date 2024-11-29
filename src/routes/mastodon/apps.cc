@@ -123,7 +123,7 @@ GET(instance, "/api/:v/instance") {
       {"urls", {
         {"streaming", "wss://mastodon.social"},
       }},
-      {"vapid", {
+      {"vuri", {
         {"public_key", "BCkMmVdKDnKYwzVCDC99Iuc9GvId-x7-kKtuHnLgfF98ENiZp_aj-UNthbCdI70DqN1zUVis-x0Wrot2sBagkMc="},
       }},
       {"accounts", {
@@ -182,7 +182,7 @@ GET(instance, "/api/:v/instance") {
       }},
     }},
     {"pleroma", {
-      {"vapid_public_key", "BBUPV8y0hPC4rixOhrnFIElqD4MZ57fng9sD36v3Keau3ta2ZkaWRHTBIDGhp4V04TEwJaXbbrCkjH_bpZxio0k"},
+      {"vuri_public_key", "BBUPV8y0hPC4rixOhrnFIElqD4MZ57fng9sD36v3Keau3ta2ZkaWRHTBIDGhp4V04TEwJaXbbrCkjH_bpZxio0k"},
       {"metadata",{
         {"post_formats", {
           "text/plain",

@@ -125,7 +125,7 @@ httplib::Result APClient::Get(std::string pathname) {
 
   std::string signatureHeader = fmt::format(
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
-      USERPAGE(user.localid), sigheader, signature);
+      USERPAGE(user.id), sigheader, signature);
 
   std::cout << pathname << "\n";
   return cli.Get(pathname, {
@@ -154,7 +154,7 @@ httplib::Result APClient::Post(std::string pathname, json data) {
 
   std::string signatureHeader = fmt::format(
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
-      USERPAGE(user.localid), sigheader, signedDigest);
+      USERPAGE(user.id), sigheader, signedDigest);
 
   return cli.Post(pathname, {
       {"Accept", "application/activity+json"},

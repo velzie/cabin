@@ -4,8 +4,8 @@
 MIGRATION_UP(likes, 3) {
   db->exec(R"(
     CREATE TABLE like(
-      apid TEXT PRIMARY KEY,
-      localid TEXT NOT NULL,
+      uri TEXT PRIMARY KEY,
+      id TEXT NOT NULL,
       local INTEGER NOT NULL,
 
       owner TEXT NOT NULL,
