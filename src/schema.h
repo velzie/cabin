@@ -46,8 +46,9 @@
 struct User {
   string uri;
   string id;
-
   int local;
+  string host;
+
   string publicKey;
   string privateKey;
 
@@ -55,41 +56,122 @@ struct User {
   string displayname;
   string summary;
 
+  std::time_t lastUpdatedAt;
+  int remoteFollowersCount;
+  int remoteFollowingCount;
+  int remoteNotesCount;
+
+  string avatar;
+  string banner;
+
+  int isBot;
+  int isCat;
+  int speakAsCat;
+
+  string inbox;
+  string sharedInbox;
+  string featured;
+
   ORM(user,
     F(uri)
     F(id)
-
     F(local)
+    F(host)
+
     F(publicKey)
     F(privateKey)
 
     F(username)
     F(displayname)
     F(summary)
+
+    F(lastUpdatedAt)
+    F(remoteFollowersCount);
+    F(remoteFollowingCount);
+    F(remoteNotesCount);
+
+    F(avatar)
+    F(banner)
+
+    F(isBot)
+    F(isCat)
+    F(speakAsCat)
+
+    F(inbox)
+    F(sharedInbox)
+    F(featured)
   )
 };
 
+struct Instance {
+  string host;
+
+  std::time_t lastUpdatedAt;
+  int remoteUsersCount;
+  int remoteNotesCount;
+
+  string description;
+  string name;
+
+  ORM(instance,
+    F(host)
+
+    F(lastUpdatedAt)
+    F(remoteUsersCount)
+    F(remoteNotesCount)
+
+    F(description)
+    F(name)
+  )
+};
+
+#define NOTEVISIBILITY_Public 0
+#define NOTEVISIBILITY_Home 1
+#define NOTEVISIBILITY_Followers 2
+#define NOTEVISIBILITY_Direct 3
 struct Note {
   string uri;
   string id;
   int local;
+  string host;
+
+  int visibility;
+  string replyToUri;
+  string renoteUri;
 
   string content;
+  string cw;
+  int sensitive;
+
   string owner;
   std::time_t published;
 
-  int sensitive;
+  std::time_t lastUpdatedAt;
+  int remoteRenoteCount;
+  int remoteReplyCount;
+  int remoteLikeCount;
 
   ORM(note,
     F(uri)
     F(id)
     F(local)
+    F(host)
+
+    F(visibility)
+    F(replyToUri)
+    F(renoteUri)
 
     F(content)
+    F(cw)
+    F(sensitive)
+
     F(owner)
     F(published)
 
-    F(sensitive)
+    F(lastUpdatedAt)
+    F(remoteRenoteCount)
+    F(remoteReplyCount)
+    F(remoteLikeCount)
   )
 };
 
@@ -98,6 +180,7 @@ struct Like {
   string uri;
   string id;
   int local;
+  string host;
 
   string owner;
   string object;
@@ -106,6 +189,7 @@ struct Like {
       F(uri)
       F(id)
       F(local)
+      F(host)
 
       F(owner)
       F(object)

@@ -48,7 +48,7 @@ class Cabin {
   Config cfg;
   json context;
   std::string baseurl = "https://rizz.velzie.rip/";
-  std::string userid = "gyat";
+  std::string userid = "test1";
   _Database *db;
 };
 

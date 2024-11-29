@@ -104,10 +104,19 @@ namespace UserService {
     User u = {
       .uri = uri,
       .local = false,
+      .host = url.host,
       
       .username = user["preferredUsername"],
       .displayname = user["name"],
-      .summary = user["summary"]
+      .summary = user["summary"],
+
+      .lastUpdatedAt = utils::millis(),
+      .isCat = user.contains("isCat") ? (bool)user["isCat"] : false,
+      .speakAsCat = user.contains("speakAsCat") ? (bool)user["speakAsCat"] : false,
+
+      .inbox = user["inbox"],
+      .sharedInbox = user["sharedInbox"],
+      .featured = user["featured"]
     };
 
     auto query = STATEMENT("SELECT id FROM user where uri = ?");
@@ -146,17 +155,23 @@ void registeruser() {
   // update_remote_user("https://booping.synth.download/users/a005c9wl4pwj0arp");
 
 
-  // User u = {
-  //   .uri = USERPAGE("gyat"),
-  //   .id = "gyat",
-  //   .local = 1,
-  //   .publicKey = pubkey,
-  //   .privateKey = privkey,
-  //   .username = "gyattrous",
-  //   .displayname = "The Rizzler...",
-  //   .summary = "gyat user",
-  // };
-  // u.insert();
+  User u = {
+    .uri = USERPAGE(ct->userid),
+    .id = ct->userid,
+    .local = 1,
+    .host = ct->cfg.domain,
+
+    .publicKey = pubkey,
+    .privateKey = privkey,
+    .username = "test user 1",
+    .displayname = "cabin's strongest soldier",
+    .summary = "mrrrrrrrrrpppp",
+
+    .isBot = false,
+    .isCat = true,
+    .speakAsCat = false,
+  };
+  u.insert();
   
 }
 

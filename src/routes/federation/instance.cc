@@ -23,17 +23,23 @@ void handle_activity(json body) {
       return;
     }
 
+    URL noteuri(object["id"]);
     UserService::fetchRemote(object["attributedTo"]);
     Note n = {
       .uri = object["id"],
       .id = utils::genid(),
       .local = false,
+      .host = noteuri.host,
 
       .content = object["content"],
+      // .cw = object["content"],
+      .sensitive = object["sensitive"],
       .owner = object["attributedTo"],
       .published = utils::isoToMillis(object["published"]),
 
-      .sensitive = object["sensitive"]
+      .lastUpdatedAt = utils::millis(),
+
+      // .remoteLikeCount
     };
 
     if (!n.insert()) {
