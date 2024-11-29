@@ -47,9 +47,14 @@ json MSrenderNote(Note &note) {
   s.executeStep();
   u.load(s);
 
+  auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
+  favs.bind(1, note.apid);
+  favs.executeStep();
+  int fav_count = favs.getColumn(0);
+
   json j = {
     {"id", note.localid},
-    {"created_at", "2016-03-16T14:44:31.580Z"},
+    {"created_at", utils::millisToIso(note.published)},
     {"in_reply_to_id", nullptr},
     {"in_reply_to_account_id", nullptr},
     {"sensitive", false},
@@ -60,7 +65,7 @@ json MSrenderNote(Note &note) {
     {"url", NOTE(note.localid)},
     {"replies_count", 7},
     {"reblogs_count", 98},
-    {"favourites_count", 112},
+    {"favourites_count", fav_count},
     {"favourited", false},
     {"reblogged", false},
     {"muted", false},

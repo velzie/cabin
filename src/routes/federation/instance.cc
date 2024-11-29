@@ -45,16 +45,8 @@ void handle_activity(json body) {
   }
 }
 
-GET(ginbox, "/inbox") {
-  res->writeStatus("204");
-  res->endWithoutBody();
-}
 POST(inbox, "/inbox") {
   handle_activity(body);
-
-
-  res->writeStatus("204");
-  res->endWithoutBody();
 }
 
 POST(userinbox, "/users/:id/inbox") {

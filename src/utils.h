@@ -58,7 +58,7 @@ namespace utils {
   }
 
   inline string millisToIso(long long millis) {
-      std::time_t time = millis;
+      std::time_t time = millis / 1000;
       std::tm utc_tm = *std::gmtime(&time);
       std::ostringstream oss;
       oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%SZ");

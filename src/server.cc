@@ -42,11 +42,10 @@ namespace Server {
       res->writeStatus("404");
       res->end("unimplemented");
     });
-    
+
     for (const auto route : routes_get) {
       app->get(route.first, [route](uResponse res, uRequest req){
         CPPTRACE_TRY {
-          ASSERT_THROW(0,"");
           route.second(res, req);
 
 
@@ -86,7 +85,7 @@ namespace Server {
               uWS::MultipartParser mp(req->getHeader("content-type"));
 
               json j;
-              if (req->getHeader("content-type") == "application/json") {
+              if (req->getHeader("content-type").find("json") != std::string::npos) {
                 j = json::parse(body->str());
               } else if (mp.isValid()) {
                 mp.setBody(body->str());
