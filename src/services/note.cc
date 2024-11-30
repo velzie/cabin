@@ -141,3 +141,98 @@ namespace NoteService {
     return n;
   }
 }
+
+
+json Note::renderMS() {
+  User uOwner;
+  auto s = STATEMENT("SELECT * FROM user WHERE uri = ?");
+  s.bind(1, owner);
+  s.executeStep();
+  uOwner.load(s);
+
+
+  Note nReplyTo;
+  if (replyToUri.has_value()) {
+    auto rs = STATEMENT("SELECT * FROM note WHERE uri = ?");
+    rs.bind(1, replyToUri.value());
+    rs.executeStep();
+    nReplyTo.load(rs);
+  }
+
+  auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
+  favs.bind(1, uri);
+  favs.executeStep();
+  int fav_count = favs.getColumn(0);
+
+  json j = {
+    {"id", id},
+    {"created_at", utils::millisToIso(published)},
+    {"in_reply_to_id", nReplyTo.id},
+    {"in_reply_to_account_id", nullptr},
+    {"quote_id", nullptr},
+    {"quote", nullptr},
+    {"sensitive", sensitive},
+    {"spoiler_text", ""},
+    {"visibility", "public"},
+    {"language", "en"},
+    {"uri", NOTE(id)},
+    {"url", NOTE(id)},
+    {"replies_count", 7},
+    {"reblogs_count", 98},
+    {"favourites_count", fav_count},
+    {"favourited", false},
+    {"reblogged", false},
+    {"muted", false},
+    {"pinned", false},
+    {"bookmarked", false},
+    {"content", content},
+    {"reblog", nullptr},
+    {"application", nullptr},
+    {"account", uOwner.renderMS()},
+    {"media_attachments", json::array()},
+    {"mentions", json::array()},
+    {"tags", json::array()},
+    {"emojis", json::array()},
+    {"emoji_reactions", json::array()},
+    {"reactions", json::array()},
+    {"card", nullptr},
+    {"poll", nullptr},
+
+    {"pleroma", {
+      {"local", (bool)local},
+      {"context", ""},
+      {"content", {
+        {"text/plain", ""}
+      }},
+      {"expires_at", nullptr},
+      {"direct_conversation_id", nullptr},
+      {"emoji_reactions", ARR},
+      {"spoiler_text", {
+        {"text/plain", ""}
+      }},
+      {"pinned_at", nullptr},
+      {"conversation_id", 1},
+      {"in_reply_to_account_acct", nullptr},
+      {"parent_visible", true},
+      {"thread_muted", false},
+    }},
+    {"akkoma", {
+      {"source", {
+        {"content", "A"},
+        {"mediaType", "text/plain"}
+      }}
+    }},
+    {"edited_at", nullptr},
+    {"text", nullptr}
+  };
+
+  if (replyToUri.has_value())
+    j["in_reply_to_account_id"] = nReplyTo.id;
+
+  if (renoteUri.has_value()) {
+    auto n = NoteService::lookup_ap(renoteUri.value());
+    j["reblog"] = n.value().renderMS();
+  }
+
+  return j;
+}

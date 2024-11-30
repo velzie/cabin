@@ -35,7 +35,6 @@ set(SOURCES
 
   src/routes/web/main.cc
 
-  src/routes/mastodon/helpers.cc
   src/routes/mastodon/apps.cc
   src/routes/mastodon/accounts.cc
   src/routes/mastodon/statuses.cc

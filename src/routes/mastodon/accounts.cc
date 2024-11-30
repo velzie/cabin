@@ -66,9 +66,7 @@ GET(account, "/api/v1/accounts/:id") {
   }
   u.load(q);
 
-  auto j = MSrenderUser(u);
-
-  OK(j, MIMEJSON);
+  OK(u.renderMS(), MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#get
@@ -89,9 +87,7 @@ GET(account_lookup, "/api/v1/accounts/lookup") {
   }
   u.load(q);
 
-  auto j = MSrenderUser(u);
-
-  OK(j, MIMEJSON);
+  OK(u.renderMS(), MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#statuses
@@ -114,7 +110,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   while (notes.executeStep()) {
     Note n;
     n.load(notes);
-    response.push_back(MSrenderNote(n));
+    response.push_back(n.renderMS());
   }
 
 

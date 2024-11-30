@@ -74,3 +74,11 @@ class URL {
 #define USERPAGE(id) API("users/") + id
 #define NOTE(id) API("notes/" + id)
 #define LIKE(id) API("likes/" + id)
+
+#define ASSERT(expr) \
+    if (!(expr)) { \
+        std::ostringstream oss; \
+        oss << "Assertion failed: " << #expr << ", "\
+            << " (" << __FILE__ << ":" << __LINE__ << ")"; \
+        throw std::runtime_error(oss.str()); \
+    }

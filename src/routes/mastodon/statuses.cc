@@ -10,9 +10,8 @@
 
 POST(post_status, "/api/v1/statuses") {
   Note note = NoteService::create(ct->userid, body["status"]);
-  json j = MSrenderNote(note);
 
-  OK(j, MIMEJSON);
+  OK(note.renderMS(), MIMEJSON);
 }
 
 GET(status, "/api/v1/statuses/:id") {
@@ -23,7 +22,7 @@ GET(status, "/api/v1/statuses/:id") {
     ERROR(404, "no note");
   }
 
-  json j = MSrenderNote(n.value());
+  json j = n.value().renderMS();
   OK(j, MIMEJSON);
 }
 
@@ -72,9 +71,8 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
   }
 
   Note n = NoteService::createRenote(ct->userid, note->uri);
-  json response = MSrenderNote(n);
 
-  OK(response, MIMEJSON);
+  OK(n.renderMS(), MIMEJSON);
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {
@@ -107,7 +105,7 @@ GET(timelines, "/api/v1/timelines/:id") {
     Note n;
     n.load(q);
 
-    response.push_back(MSrenderNote(n));
+    response.push_back(n.renderMS());
   }
   std::reverse(response.begin(), response.end());
 

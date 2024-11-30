@@ -37,7 +37,7 @@ POST(apps, "/api/v1/apps") {
 }
 
 GET(authorize, "/oauth/authorize") {
-  ASSERT_THROW(req->getQuery("response_type") == "code", "");
+  ASSERT(req->getQuery("response_type") == "code");
 
 
   string client_id(req->getQuery("client_id"));

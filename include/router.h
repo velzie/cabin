@@ -13,14 +13,6 @@ void *register_route(std::string route, __Handler h);
 void *register_route_post(std::string route, std::function<void(uResponse, uRequest, json, string)> h);
 
 
-#define ASSERT_THROW(expr, message) \
-    if (!(expr)) { \
-        std::ostringstream oss; \
-        oss << "Assertion failed: " << #expr << ", " << message \
-            << " (" << __FILE__ << ":" << __LINE__ << ")"; \
-        throw std::runtime_error(oss.str()); \
-    }
-
 #define GET(name, route)\
   void name##_get_handle(uResponse, uRequest);\
   static void * name##_reg = register_route(route, name##_get_handle);\

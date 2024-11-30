@@ -77,10 +77,8 @@ Cabin::Cabin(std::string config_path) {
 std::shared_ptr<Cabin> ct;
 
 void registeruser();
-int main() {
+int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::trace);
-
-
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
   
 
@@ -98,9 +96,25 @@ int main() {
     Server::Listen();
   });
 
+  if (argc > 0) {
+    URL url(argv[1]);
+    dbg(argv[1]);
+    auto u = UserService::lookup(ct->userid);
+    APClient cli(*u, url.host);
+    auto c = cli.Get(url.path);
+
+    if (c->status == 200) {
+      dbg(c->body);
+      std::cout << json::parse(c->body).dump(2);
+    } else {
+      error("{} : ({})", c->status, c->body);
+    }
+
+    exit(0);
+  }
 
 
-  auto u = UserService::lookup(ct->userid);
+
   // json j = {
   //   {"id", API("follows/0")},
   //   {"type", "Follow"},
