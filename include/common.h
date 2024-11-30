@@ -68,6 +68,7 @@ class URL {
 #define USERPAGE(id) API("users/") + id
 #define NOTE(id) API("notes/" + id)
 #define LIKE(id) API("likes/" + id)
+#define FOLLOW(id) API("follows/" + id)
 
 #define ASSERT(expr) \
     if (!(expr)) { \
