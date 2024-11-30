@@ -1,6 +1,7 @@
 #define USE_DB
 #include <common.h>
 #include "note.h"
+#include "delivery.h"
 
 #include <optional>
 #include <stdexcept>
@@ -13,7 +14,7 @@
 
 namespace NoteService {
 
-  Note _create(string userid) {
+  Note _create(User &owner) {
     string id = utils::genid();
     Note note = {
       .uri = NOTE(id),
@@ -21,25 +22,40 @@ namespace NoteService {
       .local = 1,
       .host = ct->cfg.domain,
 
-      .owner = USERPAGE(userid),
+      .owner = USERPAGE(owner.id),
       .published = utils::millis(),
     };
     return note;
   }
 
-  Note create(string userid, string content) {
-    Note note = _create(userid);
+  Note create(User &owner, string content) {
+    Note note = _create(owner);
     note.content = content;
     note.cw = "";
     note.sensitive = false;
 
     note.insert();
 
+
+    json activity = {
+      {"type", "Create"},
+      {"actor", note.owner},
+      {"id", NOTE(note.id)+"/activity"},
+      {"object", note.renderAP()},
+    };
+
+    DeliveryService::Audience au = {
+      .actor = owner,
+      .aspublic = true,
+      .followers = true,
+    };
+    DeliveryService::QueueDelivery(activity, au);
+
     return note;
   }
 
-  Note createRenote(string userid, string renoteUri) {
-    Note note = _create(userid);
+  Note createRenote(User &owner, string renoteUri) {
+    Note note = _create(owner);
     note.renoteUri = renoteUri;
     note.insert();
 

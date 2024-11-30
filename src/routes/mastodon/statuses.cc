@@ -11,7 +11,7 @@
 
 POST(post_status, "/api/v1/statuses") {
   MSAUTH
-  Note note = NoteService::create(ct->userid, body["status"]);
+  Note note = NoteService::create(authuser, body["status"]);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }
@@ -77,7 +77,7 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
     ERROR(404, "no note");
   }
 
-  Note n = NoteService::createRenote(ct->userid, note->uri);
+  Note n = NoteService::createRenote(authuser, note->uri);
 
   OK(n.renderMS(authuser), MIMEJSON);
 }

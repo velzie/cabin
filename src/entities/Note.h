@@ -65,7 +65,7 @@ struct Note {
       {"url", NOTE(id)},
       {"attributedTo", owner},
       {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
-      {"cc", {owner+ " /followers"}},
+      {"cc", {owner+ "/followers"}},
       {"sensitive", false},
       {"content", content},
       {"attachment", ARR},

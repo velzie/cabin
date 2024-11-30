@@ -4,8 +4,8 @@
 #include "../entities/Note.h"
 
 namespace NoteService {
-  Note create(string userid, string content);
-  Note createRenote(string userid, string renoteUri);
+  Note create(User &owner, string content);
+  Note createRenote(User &owner, string renoteUri);
   Note ingest(const string uri, const json note);
   optional<Note> lookup(const string id);
   optional<Note> lookup_ap(const string id);

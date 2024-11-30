@@ -70,6 +70,8 @@ namespace FollowService {
     };
     DeliveryService::QueueDelivery(accept, au);
 
+
+    f.insert();
     return f;
   }
 }
