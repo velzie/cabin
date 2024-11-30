@@ -1,6 +1,8 @@
 #include "follow.h"
 #include "../utils.h"
 #include "delivery.h"
+#include "user.h"
+#include <stdexcept>
 
 
 namespace FollowService {
@@ -29,13 +31,42 @@ namespace FollowService {
     return f;
   }
 
-  // Follow ingest(const string uri, const json follow) {
-  //   string id = utils::genid();
-  //   Follow f = {
-  //     .uri = uri,
-  //     .id = id,
-  //     .local = false,
-  //     .follower
-  //   }
-  // }
+  Follow ingest(const string uri, const json follow) {
+    string followee = follow["object"];
+    string follower = follow["actor"];
+
+    auto uFollowee = UserService::lookup_ap(followee);
+    if (!uFollowee.has_value()) {
+      throw std::runtime_error("follow request that doesn't exist..");
+    }
+
+    string id = utils::genid();
+    URL url(uri);
+    Follow f = {
+      .uri = uri,
+      .id = id,
+      .local = false,
+      .host = url.host, 
+
+      .follower = follower,
+      .followee = followee,
+      .pending = false, // TODO: this should only update after delivery succeeds
+
+      .createdAt = utils::millis(),
+    };
+
+    json accept = {
+      {"actor", followee},
+      {"id", API("no/ones/gonna/check/this/ever")},
+      {"object", f.renderAP()},
+      {"type", "Accept"}
+    };
+
+    DeliveryService::Audience au = {
+      .mentions = {follower},
+    };
+    DeliveryService::QueueDelivery(accept, au);
+
+    return f;
+  }
 }

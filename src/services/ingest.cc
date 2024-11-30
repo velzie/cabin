@@ -1,9 +1,10 @@
 #define USE_DB
 #include <common.h>
 #include "ingest.h"
-
+#include "follow.h"
 #include "user.h"
 #include "note.h"
+
 #include "../utils.h"
 #include "../entities/Like.h"
 #include <cpptrace/from_current.hpp>
@@ -45,6 +46,9 @@ namespace IngestService {
       };
 
       l.insert();
+    } else if (type == "Follow"){
+      string uri = body["id"];
+      FollowService::ingest(uri, body);
     } else {
       error("unimplemented activity {}", type);
     }
