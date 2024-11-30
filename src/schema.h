@@ -51,7 +51,7 @@
       if (name.has_value())\
         _query->bind(_counter, name.value());\
       else\
-        _query->bind(_counter, NULL);\
+        _query->bind(_counter);\
   _counter++;\
     
 struct User {
