@@ -6,7 +6,7 @@
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
 
-  string uid = "gyat";
+  string uid = ct->userid;
 
   User u;
   auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
@@ -19,7 +19,7 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   json r = {
     {"username", u.username},
     {"acct", u.username},
-    {"fqn", FMT("{}@{}", u.username, ct->cfg.domain)},
+    {"fqn", FMT("{}@{}", u.username, u.host)},
     {"display_name", u.displayname},
     {"locked", false},
     {"created_at", "2024-06-27T03:50:13.833Z"},
@@ -71,6 +71,29 @@ GET(account, "/api/v1/accounts/:id") {
   OK(j, MIMEJSON);
 }
 
+// https://docs.joinmastodon.org/methods/accounts/#get
+GET(account_lookup, "/api/v1/accounts/lookup") {
+  std::stringstream acct (string(req->getQuery("acct")));
+
+  string user, host;
+  std::getline(acct, user, '@');
+  std::getline(acct, host);
+
+  User u;
+  auto q = STATEMENT("SELECT * FROM user WHERE username = ? AND host = ? LIMIT 1");
+  q.bind(1, user);
+  q.bind(2, host);
+
+  if (!q.executeStep()) {
+    ERROR(404, "no account");
+  }
+  u.load(q);
+
+  auto j = MSrenderUser(u);
+
+  OK(j, MIMEJSON);
+}
+
 // https://docs.joinmastodon.org/methods/accounts/#statuses
 GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   string uid (req->getParameter("id"));
@@ -110,6 +133,13 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
 // https://docs.joinmastodon.org/methods/accounts/#relationships
 // stub obviously
 GET(account_relationships, "/api/v1/accounts/relationships") {
+  json j = json::array();
+
+  OK(j, MIMEJSON);
+}
+
+// https://docs.joinmastodon.org/methods/follow_requests/#get
+GET(account_follow_requests, "/api/v1/follow_requests") {
   json j = json::array();
 
   OK(j, MIMEJSON);
