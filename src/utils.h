@@ -1,6 +1,7 @@
 #pragma once
 #include <common.h>
 #include <random>
+#include <cpptrace/from_current.hpp>
 
 namespace utils {
   inline string genid() {
@@ -63,5 +64,15 @@ namespace utils {
       std::ostringstream oss;
       oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%SZ");
       return oss.str();
+  }
+
+  inline void getStackTrace() {
+    auto t = cpptrace::from_current_exception();
+
+    t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
+      return f.filename.find(".third-party") != std::string::npos || f.filename.find("/usr") != std::string::npos;
+    }), t.frames.end());
+
+    t.print_with_snippets();
   }
 }

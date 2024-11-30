@@ -139,8 +139,6 @@ httplib::Result APClient::Get(std::string pathname) {
 
 httplib::Result APClient::Post(std::string pathname, json data) {
   trace("posted to {}::{}", instance, pathname);
-  // add json-ld context 
-  data["@context"] = ct->context;
   std::string payload = data.dump();
 
   std::string digest = "SHA-256="+sha256(payload);

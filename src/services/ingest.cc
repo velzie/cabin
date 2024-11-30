@@ -30,18 +30,18 @@ namespace IngestService {
       string object = body["object"];
       Note note = NoteService::fetchRemote(object);
     } else if (type == "Like") {
-      UserService::fetchRemote(object["actor"]);
-      NoteService::fetchRemote(object["object"]);
+      UserService::fetchRemote(body["actor"]);
+      NoteService::fetchRemote(body["object"]);
 
-      URL likeuri(object["id"]);
+      URL likeuri(body["id"]);
       Like l = {
-        .uri = object["id"],
+        .uri = body["id"],
         .id = utils::genid(),
         .local = 0,
         .host = likeuri.host,
 
-        .owner = object["actor"],
-        .object = object["object"]
+        .owner = body["actor"],
+        .object = body["object"]
       };
 
       l.insert();
@@ -55,14 +55,8 @@ namespace IngestService {
       CPPTRACE_TRY {
         Ingest(activity);    
       } CPPTRACE_CATCH(const std::exception &e) {
-          error("ingest {} failed: {}", (string)activity["type"], e.what());
-          auto t = cpptrace::from_current_exception();
-
-          t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
-            return f.filename.find(".third-party") != std::string::npos || f.filename.find("/usr") != std::string::npos;
-          }), t.frames.end());
-
-          t.print_with_snippets();
+        error("ingest {} failed: {}", (string)activity["type"], e.what());
+        utils::getStackTrace();
       }
     });
     t.detach();

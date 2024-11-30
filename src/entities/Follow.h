@@ -28,7 +28,7 @@ struct Follow {
 
   json renderAP() {
     return {
-      {"id", API("follows/")+id},
+      {"id", FOLLOW(id)},
       {"type", "Follow"},
       {"actor", follower},
       {"object", followee}

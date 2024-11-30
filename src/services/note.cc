@@ -168,7 +168,6 @@ json Note::renderMS(User &requester) {
   qFavourited.bind(1, uri);
   qFavourited.bind(2, requester.uri);
   qFavourited.executeStep();
-  dbg(qFavourited.getColumn(0));
   bool favourited = (int)qFavourited.getColumn(0) > 0;
 
   json j = {
