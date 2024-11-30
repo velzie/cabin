@@ -46,7 +46,10 @@
 #define OPT(name)\
   names.push_back(#name);\
   if (__flag == 1)\
-    name = (typeof(name))_statement->getColumn(#name);\
+    if (_statement->getColumn(#name).isNull())\
+      name = nullopt;\
+    else\
+      name = (typeof(name))_statement->getColumn(#name);\
   if (__flag == 2)\
       if (name.has_value())\
         _query->bind(_counter, name.value());\

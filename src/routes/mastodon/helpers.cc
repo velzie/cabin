@@ -3,6 +3,7 @@
 #include <common.h>
 #include "../../schema.h"
 #include "../../utils.h"
+#include "../../services/note.h"
 
 
 
@@ -47,6 +48,16 @@ json MSrenderNote(Note &note) {
   s.executeStep();
   u.load(s);
 
+
+  Note replytouser;
+  if (note.replyToUri.has_value()) {
+    auto rs = STATEMENT("SELECT * FROM note WHERE uri = ?");
+    dbg(note.replyToUri.value());
+    rs.bind(1, note.replyToUri.value());
+    rs.executeStep();
+    replytouser.load(rs);
+  }
+
   auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
   favs.bind(1, note.uri);
   favs.executeStep();
@@ -55,9 +66,9 @@ json MSrenderNote(Note &note) {
   json j = {
     {"id", note.id},
     {"created_at", utils::millisToIso(note.published)},
-    {"in_reply_to_id", nullptr},
+    {"in_reply_to_id", note.replyToUri},
     {"in_reply_to_account_id", nullptr},
-    {"sensitive", false},
+    {"sensitive", note.sensitive},
     {"spoiler_text", ""},
     {"visibility", "public"},
     {"language", "en"},
@@ -82,6 +93,14 @@ json MSrenderNote(Note &note) {
     {"card", nullptr},
     {"poll", nullptr},
   };
+
+  if (note.replyToUri.has_value())
+    j["in_reply_to_account_id"] = replytouser.id;
+
+  if (note.renoteUri.has_value()) {
+    auto n = NoteService::lookup_ap(note.renoteUri.value());
+    j["reblog"] = MSrenderNote(n.value());
+  }
 
   return j;
 }

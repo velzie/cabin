@@ -12,23 +12,35 @@
 #include "../http.h"
 
 namespace NoteService {
-  Note create(string userid, string content) {
-    string id = utils::genid();
 
+  Note _create(string userid) {
+    string id = utils::genid();
     Note note = {
       .uri = NOTE(id),
       .id = id,
       .local = 1,
       .host = ct->cfg.domain,
 
-      .content = content,
-      .cw = "",
-      .sensitive = false,
-
       .owner = USERPAGE(userid),
       .published = utils::millis(),
     };
+    return note;
+  }
 
+  Note create(string userid, string content) {
+    Note note = _create(userid);
+    note.content = content;
+    note.cw = "";
+    note.sensitive = false;
+
+    note.insert();
+
+    return note;
+  }
+
+  Note createRenote(string userid, string renoteUri) {
+    Note note = _create(userid);
+    note.renoteUri = renoteUri;
     note.insert();
 
     return note;

@@ -64,6 +64,19 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   dbg(resp->status);
 }
 
+POST(status_renote, "/api/v1/statuses/:id/reblog") {
+  string id(req->getParameter("id"));
+  auto note = NoteService::lookup(id);
+  if (!note.has_value()) {
+    ERROR(404, "no note");
+  }
+
+  Note n = NoteService::createRenote(ct->userid, note->uri);
+  json response = MSrenderNote(n);
+
+  OK(response, MIMEJSON);
+}
+
 GET(status_context, "/api/v1/statuses/:id/context") {
   string id (req->getParameter("id"));
   auto n = NoteService::lookup(id);
