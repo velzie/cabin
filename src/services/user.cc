@@ -167,8 +167,8 @@ void registeruser() {
   //
   //   .publicKey = pubkey,
   //   .privateKey = privkey,
-  //   .username = "test1",
-  //   .displayname = "cabin's strongest soldier",
+  //   .username = "test3",
+  //   .displayname = "cabin's #3 strongest soldier",
   //   .summary = "mrrrrrrrrrpppp",
   //
   //   .isBot = false,

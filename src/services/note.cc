@@ -59,6 +59,21 @@ namespace NoteService {
     note.renoteUri = renoteUri;
     note.insert();
 
+    json activity = {
+      {"type", "Announce"},
+      {"actor", note.owner},
+      {"id", NOTE(note.id)+"/activity"},
+      {"object", note.uri},
+    };
+
+    DeliveryService::Audience au = {
+      .actor = owner,
+      .mentions = {note.owner},
+      .aspublic = true,
+      .followers = true,
+    };
+    DeliveryService::QueueDelivery(activity, au);
+
     return note;
   }
 

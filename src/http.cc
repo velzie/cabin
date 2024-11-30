@@ -113,6 +113,7 @@ std::string sha256(std::string data) {
 }
 
 APClient::APClient(User &u, std::string host) : instance(host), cli("https://" + host), user(u) {
+  ASSERT(host != ct->cfg.domain);
   cli.set_follow_location(true);
 }
 httplib::Result APClient::Get(std::string pathname) {
