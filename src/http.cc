@@ -113,7 +113,7 @@ std::string sha256(std::string data) {
 }
 
 APClient::APClient(User &u, std::string host) : instance(host), cli("https://" + host), user(u) {
-
+  cli.set_follow_location(true);
 }
 httplib::Result APClient::Get(std::string pathname) {
   auto date = getDateFmt();
