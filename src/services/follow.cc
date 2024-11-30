@@ -40,6 +40,8 @@ namespace FollowService {
       throw std::runtime_error("follow request that doesn't exist..");
     }
 
+    auto uFollower = UserService::fetchRemote(follower);
+
     string id = utils::genid();
     URL url(uri);
     Follow f = {
@@ -63,6 +65,7 @@ namespace FollowService {
     };
 
     DeliveryService::Audience au = {
+      .actor = uFollowee,
       .mentions = {follower},
     };
     DeliveryService::QueueDelivery(accept, au);

@@ -18,6 +18,16 @@ namespace DeliveryService {
   void QueueDelivery(json activity, Audience audience) {
     std::vector<string> inboxes;
 
+    if (audience.actor.has_value() && audience.followers) {
+      auto q = STATEMENT("SELECT * FROM follow WHERE followee = ? AND pending = 0");
+      q.bind(1, audience.actor->uri);
+
+      while (q.executeStep()) {
+        string follower = q.getColumn("follower");
+        auto uFollower = UserService::lookup_ap(follower);
+        inboxes.push_back(uFollower->inbox);
+      }
+    }
 
     // add extras (mentions)
     for (const string instance : audience.mentions) {
