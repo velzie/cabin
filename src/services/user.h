@@ -1,5 +1,6 @@
 #pragma once
 #include "../schema.h"
+#include "../entities/User.h"
 #include <common.h>
 
 namespace UserService {

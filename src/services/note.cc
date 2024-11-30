@@ -1,11 +1,11 @@
+#define USE_DB
+#include <common.h>
 #include "note.h"
 
 #include <optional>
 #include <stdexcept>
-#define USE_DB
 #include "SQLiteCpp/Statement.h"
 #include <httplib.h>
-#include <common.h>
 #include "../schema.h"
 #include "../utils.h"
 #include "user.h"
@@ -143,7 +143,7 @@ namespace NoteService {
 }
 
 
-json Note::renderMS() {
+json Note::renderMS(User &requester) {
   User uOwner;
   auto s = STATEMENT("SELECT * FROM user WHERE uri = ?");
   s.bind(1, owner);
@@ -164,6 +164,13 @@ json Note::renderMS() {
   favs.executeStep();
   int fav_count = favs.getColumn(0);
 
+  auto qFavourited = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ? AND owner = ?");
+  qFavourited.bind(1, uri);
+  qFavourited.bind(2, requester.uri);
+  qFavourited.executeStep();
+  dbg(qFavourited.getColumn(0));
+  bool favourited = (int)qFavourited.getColumn(0) > 0;
+
   json j = {
     {"id", id},
     {"created_at", utils::millisToIso(published)},
@@ -180,7 +187,7 @@ json Note::renderMS() {
     {"replies_count", 7},
     {"reblogs_count", 98},
     {"favourites_count", fav_count},
-    {"favourited", false},
+    {"favourited", favourited},
     {"reblogged", false},
     {"muted", false},
     {"pinned", false},
@@ -231,7 +238,7 @@ json Note::renderMS() {
 
   if (renoteUri.has_value()) {
     auto n = NoteService::lookup_ap(renoteUri.value());
-    j["reblog"] = n.value().renderMS();
+    j["reblog"] = n.value().renderMS(requester);
   }
 
   return j;

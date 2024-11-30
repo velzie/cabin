@@ -14,14 +14,8 @@
 
 #define STATEMENT(string) SQLite::Statement(*ct->db, string);
 
-#ifdef USE_DB
 #include "SQLiteCpp/Database.h"
-  #define _Database SQLite::Database
-#endif
-
-#ifndef USE_DB
-  struct _Database;
-#endif
+#define _Database SQLite::Database
 
 using json = nlohmann::json;
 using string = std::string;

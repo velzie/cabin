@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     Server::Listen();
   });
 
-  if (argc > 0) {
+  if (argc > 1) {
     URL url(argv[1]);
     dbg(argv[1]);
     auto u = UserService::lookup(ct->userid);

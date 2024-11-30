@@ -41,7 +41,8 @@
     name = (typeof(name))_statement->getColumn(#name);\
   if (__flag == 2)\
       _query->bind(_counter, name);\
-  _counter++;\
+  \
+  _counter++;
 
 #define OPT(name)\
   names.push_back(#name);\
@@ -56,9 +57,4 @@
       else\
         _query->bind(_counter);\
   \
-  _counter++;\
-
-#include "entities/Note.h"
-#include "entities/Instance.h"
-#include "entities/User.h"
-#include "entities/Like.h"
+  _counter++;

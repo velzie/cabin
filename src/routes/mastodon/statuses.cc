@@ -7,14 +7,17 @@
 #include "../../services/note.h"
 #include "../../services/user.h"
 #include "../../http.h"
+#include "../../entities/Like.h"
 
 POST(post_status, "/api/v1/statuses") {
+  MSAUTH
   Note note = NoteService::create(ct->userid, body["status"]);
 
-  OK(note.renderMS(), MIMEJSON);
+  OK(note.renderMS(authuser), MIMEJSON);
 }
 
 GET(status, "/api/v1/statuses/:id") {
+  MSAUTH
   string id (req->getParameter("id"));
 
   auto n = NoteService::lookup(id);
@@ -22,11 +25,12 @@ GET(status, "/api/v1/statuses/:id") {
     ERROR(404, "no note");
   }
 
-  json j = n.value().renderMS();
+  json j = n.value().renderMS(authuser);
   OK(j, MIMEJSON);
 }
 
 POST(status_like, "/api/v1/statuses/:id/favourite") {
+  MSAUTH
   string id (req->getParameter("id"));
 
   auto user = UserService::lookup(ct->userid);
@@ -59,11 +63,14 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   };
 
   auto resp = cli.Post("/inbox", activity);
-  dbg(resp->body);
-  dbg(resp->status);
+
+  note = NoteService::lookup(id);
+  OK(note->renderMS(authuser), MIMEJSON);
 }
 
 POST(status_renote, "/api/v1/statuses/:id/reblog") {
+  MSAUTH
+
   string id(req->getParameter("id"));
   auto note = NoteService::lookup(id);
   if (!note.has_value()) {
@@ -72,7 +79,7 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
 
   Note n = NoteService::createRenote(ct->userid, note->uri);
 
-  OK(n.renderMS(), MIMEJSON);
+  OK(n.renderMS(authuser), MIMEJSON);
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {
@@ -97,6 +104,8 @@ GET(status_context, "/api/v1/statuses/:id/context") {
 
 
 GET(timelines, "/api/v1/timelines/:id") {
+  MSAUTH
+
   auto q = STATEMENT("SELECT * FROM note");
 
 
@@ -105,7 +114,7 @@ GET(timelines, "/api/v1/timelines/:id") {
     Note n;
     n.load(q);
 
-    response.push_back(n.renderMS());
+    response.push_back(n.renderMS(authuser));
   }
   std::reverse(response.begin(), response.end());
 

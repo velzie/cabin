@@ -2,6 +2,7 @@
 #include <router.h>
 #include <common.h>
 #include "../../schema.h"
+#include "../../entities/Note.h"
 #include "local.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
@@ -92,6 +93,7 @@ GET(account_lookup, "/api/v1/accounts/lookup") {
 
 // https://docs.joinmastodon.org/methods/accounts/#statuses
 GET(account_statuses, "/api/v1/accounts/:id/statuses") {
+  MSAUTH
   string uid (req->getParameter("id"));
 
   User u;
@@ -110,7 +112,7 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   while (notes.executeStep()) {
     Note n;
     n.load(notes);
-    response.push_back(n.renderMS());
+    response.push_back(n.renderMS(authuser));
   }
 
 

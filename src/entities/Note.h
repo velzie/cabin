@@ -2,6 +2,8 @@
 #include "../schema.h"
 #include "../utils.h"
 
+#include "User.h"
+
 #define NOTEVISIBILITY_Public 0
 #define NOTEVISIBILITY_Home 1
 #define NOTEVISIBILITY_Followers 2
@@ -73,5 +75,5 @@ struct Note {
     return j;
   }
 
-  json renderMS();
+  json renderMS(User &requester);
 };

@@ -1,6 +1,6 @@
+#define USE_DB
 #include "SQLiteCpp/Statement.h"
 #include <stdexcept>
-#define USE_DB
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>

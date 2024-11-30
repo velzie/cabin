@@ -3,6 +3,7 @@
 #include <common.h>
 #include <httplib.h>
 #include "schema.h"
+#include "entities/User.h"
 
 class APClient {
   std::string instance;

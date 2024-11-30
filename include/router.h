@@ -1,8 +1,10 @@
 #pragma once
+#define USE_DB
 
 #include <App.h>
-#include "../src/server.h"
 #include "common.h"
+#include "../src/server.h"
+#include "../src/services/user.h"
 
 
 using uResponse = uWS::HttpResponse<false> *;
@@ -51,3 +53,8 @@ void *register_route_post(std::string route, std::function<void(uResponse, uRequ
   res->write(text);\
   res->end();\
   return
+
+
+#define MSAUTH\
+  auto _authuser = UserService::lookup(ct->userid);\
+  User authuser = _authuser.value();
