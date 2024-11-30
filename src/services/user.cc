@@ -90,8 +90,8 @@ namespace UserService {
 
 
   User fetchRemote(const string uri) {
+    trace("fetching user {}", uri);
     URL url(uri);
-
 
     auto ia = UserService::lookup(ct->userid);
     APClient cli(ia.value(), url.host);

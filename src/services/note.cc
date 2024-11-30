@@ -79,12 +79,14 @@ namespace NoteService {
   }
 
   Note fetchRemote(const string uri) {
+    trace("fetching note {}", uri);
     auto u = UserService::lookup(ct->userid);
     URL url(uri);
     APClient cli(u.value(), url.host);
 
     auto response = cli.Get(url.path);
     if (response->status != 200) {
+      dbg(response->body);
       throw std::runtime_error("");
     }
 
