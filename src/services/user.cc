@@ -119,7 +119,7 @@ namespace UserService {
       .speakAsCat = user.contains("speakAsCat") ? (bool)user["speakAsCat"] : false,
 
       .inbox = user["inbox"],
-      .sharedInbox = user["sharedInbox"],
+      .sharedInbox = user.contains("sharedInbox") ? user["sharedInbox"] : user["inbox"],
       .featured = user["featured"]
     };
 

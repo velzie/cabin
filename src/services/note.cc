@@ -48,21 +48,28 @@ namespace NoteService {
 
   Note ingest(const string uri, const json note) {
     URL url(uri);
+
     Note n = {
       .uri = uri,
       .local = false,
       .host = url.host,
 
-      .replyToUri = note["inReplyTo"].is_null() ? nullopt : std::make_optional(note["inReplyTo"]),
-
+      .replyToUri = nullopt,
       .content = note["content"],
-      .sensitive = note["sensitive"],
+      .sensitive = false,
       .owner = note["attributedTo"],
       .published = utils::isoToMillis(note["published"]),
 
 
       .lastUpdatedAt = utils::millis()
     };
+
+    if (note.contains("sensitive") && note["sensitive"].is_boolean()) {
+      n.sensitive = note["sensitive"];
+    }
+    if (note.contains("inReplyTo") && !note["inReplyTo"].is_null()) {
+      n.replyToUri = std::make_optional(note["inReplyTo"]);
+    }
 
     UserService::fetchRemote(note["attributedTo"]);
 

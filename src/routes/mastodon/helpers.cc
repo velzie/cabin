@@ -52,7 +52,6 @@ json MSrenderNote(Note &note) {
   Note replytouser;
   if (note.replyToUri.has_value()) {
     auto rs = STATEMENT("SELECT * FROM note WHERE uri = ?");
-    dbg(note.replyToUri.value());
     rs.bind(1, note.replyToUri.value());
     rs.executeStep();
     replytouser.load(rs);

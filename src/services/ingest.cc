@@ -53,7 +53,7 @@ namespace IngestService {
       CPPTRACE_TRY {
         Ingest(activity);    
       } CPPTRACE_CATCH(const std::exception &e) {
-          error("ingest {} failed: {}", e.what());
+          error("ingest {} failed: {}", (string)activity["type"], e.what());
           auto t = cpptrace::from_current_exception();
 
           t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
