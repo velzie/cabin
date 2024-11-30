@@ -49,12 +49,12 @@ json MSrenderNote(Note &note) {
   u.load(s);
 
 
-  Note replytouser;
+  Note replytonote;
   if (note.replyToUri.has_value()) {
     auto rs = STATEMENT("SELECT * FROM note WHERE uri = ?");
     rs.bind(1, note.replyToUri.value());
     rs.executeStep();
-    replytouser.load(rs);
+    replytonote.load(rs);
   }
 
   auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
@@ -65,8 +65,10 @@ json MSrenderNote(Note &note) {
   json j = {
     {"id", note.id},
     {"created_at", utils::millisToIso(note.published)},
-    {"in_reply_to_id", note.replyToUri},
+    {"in_reply_to_id", replytonote.id},
     {"in_reply_to_account_id", nullptr},
+    {"quote_id", nullptr},
+    {"quote", nullptr},
     {"sensitive", note.sensitive},
     {"spoiler_text", ""},
     {"visibility", "public"},
@@ -79,6 +81,7 @@ json MSrenderNote(Note &note) {
     {"favourited", false},
     {"reblogged", false},
     {"muted", false},
+    {"pinned", false},
     {"bookmarked", false},
     {"content", note.content},
     {"reblog", nullptr},
@@ -88,13 +91,41 @@ json MSrenderNote(Note &note) {
     {"mentions", json::array()},
     {"tags", json::array()},
     {"emojis", json::array()},
+    {"emoji_reactions", json::array()},
     {"reactions", json::array()},
     {"card", nullptr},
     {"poll", nullptr},
+
+    {"pleroma", {
+      {"local", (bool)note.local},
+      {"context", ""},
+      {"content", {
+        {"text/plain", ""}
+      }},
+      {"expires_at", nullptr},
+      {"direct_conversation_id", nullptr},
+      {"emoji_reactions", ARR},
+      {"spoiler_text", {
+        {"text/plain", ""}
+      }},
+      {"pinned_at", nullptr},
+      {"conversation_id", 1},
+      {"in_reply_to_account_acct", nullptr},
+      {"parent_visible", true},
+      {"thread_muted", false},
+    }},
+    {"akkoma", {
+      {"source", {
+        {"content", "A"},
+        {"mediaType", "text/plain"}
+      }}
+    }},
+    {"edited_at", nullptr},
+    {"text", nullptr}
   };
 
   if (note.replyToUri.has_value())
-    j["in_reply_to_account_id"] = replytouser.id;
+    j["in_reply_to_account_id"] = replytonote.id;
 
   if (note.renoteUri.has_value()) {
     auto n = NoteService::lookup_ap(note.renoteUri.value());
