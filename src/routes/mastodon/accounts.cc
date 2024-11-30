@@ -6,7 +6,7 @@
 #include <common.h>
 #include "../../schema.h"
 #include "../../entities/Note.h"
-#include "local.h"
+#include "../../services/follow.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
 
@@ -123,6 +123,41 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   OK(response, MIMEJSON);
 }
 
+json getRelationship(User &you, User &them) {
+  return { 
+    {"id", them.id},
+    {"following", false},
+    {"showing_reblogs", true},
+    {"notifying", false},
+    {"followed_by", true},
+    {"blocking", false},
+    {"blocked_by", false},
+    {"muting", false},
+    {"muting_notifications", false},
+    {"requested", false},
+    {"domain_blocking", false},
+    {"endorsed", false},
+    {"note", ""},
+  };
+}
+
+// https://docs.joinmastodon.org/methods/accounts/#follow
+POST(account_follow, "/api/v1/accounts/:id/follow") {
+  MSAUTH
+  
+  auto user = UserService::lookup((string) req->getParameter("id"));
+  if (!user.has_value()) {
+    ERROR(404, "no such user");
+  }
+
+  FollowService::create(authuser, user->uri);
+
+  // rerender, not ideal but whatever
+  user = UserService::lookup((string) req->getParameter("id"));
+  
+  OK(user->renderMS(), MIMEJSON);
+}
+
 // https://docs.joinmastodon.org/methods/accounts/#featured_tags
 // ????
 GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
@@ -133,6 +168,8 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
 
 // https://docs.joinmastodon.org/methods/accounts/#relationships
 GET(account_relationships, "/api/v1/accounts/relationships") {
+  MSAUTH
+
   json response = json::array();
 
   string raw("?" + string(req->getQuery()));
@@ -152,21 +189,7 @@ GET(account_relationships, "/api/v1/accounts/relationships") {
       ERROR(404, "no such user");
     }
 
-    response.push_back({
-      {"id", user->id},
-      {"following", false},
-      {"showing_reblogs", true},
-      {"notifying", false},
-      {"followed_by", true},
-      {"blocking", false},
-      {"blocked_by", false},
-      {"muting", false},
-      {"muting_notifications", false},
-      {"requested", false},
-      {"domain_blocking", false},
-      {"endorsed", false},
-      {"note", ""},
-    });
+    response.push_back(getRelationship(authuser, user.value()));
   }
 
 
