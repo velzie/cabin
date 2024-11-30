@@ -277,3 +277,12 @@ GET(instance, "/api/:v/instance") {
 
   OK(j, MIMEJSON);
 }
+
+
+GET(notifications, "/api/v1/notifications") {
+  OK(json::array(), MIMEJSON);
+}
+
+GET(announcements, "/api/v1/announcements") {
+  OK(json::array(), MIMEJSON);
+}
