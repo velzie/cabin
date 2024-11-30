@@ -55,7 +55,7 @@ struct Note {
 
 
   json renderAP() {
-    ASSERT(local == 0);
+    ASSERT(local);
     json j = {
       {"@context", ct->context},
       {"id", NOTE(id)},

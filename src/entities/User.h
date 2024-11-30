@@ -61,7 +61,7 @@ int isBot;
   )
 
   json renderAP() {
-    ASSERT(local == 0);
+    ASSERT(local);
 
     string userurl = USERPAGE(id);
     json j = {
