@@ -85,6 +85,21 @@ MIGRATION_UP(init, 1) {
     )
   )");
 
+  db->exec(R"(
+    CREATE TABLE follow(
+      uri TEXT PRIMARY KEY,
+      id TEXT NOT NULL,
+      local INTEGER NOT NULL,
+      host TEXT NOT NULL,
+
+      follower TEXT NOT NULL,
+      followee TEXT NOT NULL,
+
+      pending BOOLEAN,
+      createdAt INTEGER
+    )
+  )");
+
   setVersion(db, 1);
 }
 
@@ -94,6 +109,7 @@ MIGRATION_DOWN(init, 1) {
     DROP TABLE instance
     DROP TABLE user
     DROP TABLE like
+    DROP TABLE follow
   )");
 
   setVersion(db, 0);
