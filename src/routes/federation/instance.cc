@@ -10,6 +10,7 @@
 #include "../../services/user.h"
 
 POST(inbox, "/inbox") {
+  if (body["type"] == "Delete") return;
   trace("queuing ingest of {}", (string)body["type"]);
   IngestService::QueueIngest(body);
 }

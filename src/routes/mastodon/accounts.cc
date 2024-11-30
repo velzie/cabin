@@ -1,3 +1,6 @@
+#include "QueryParser.h"
+#include <string_view>
+#include <vector>
 #define USE_DB
 #include <router.h>
 #include <common.h>
@@ -129,11 +132,45 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#relationships
-// stub obviously
 GET(account_relationships, "/api/v1/accounts/relationships") {
-  json j = json::array();
+  json response = json::array();
 
-  OK(j, MIMEJSON);
+  string raw("?" + string(req->getQuery()));
+  string id;
+  std::vector<string> ids;
+  while ((id = uWS::getDecodedQueryValue("id[]", raw)) != "") {
+    auto p = raw.find("id[]=");
+    if (p != std::string::npos) {
+      raw.erase(p, 5+id.length()+1);
+    }
+    ids.push_back(id);
+  }
+
+  for (const string userid : ids) {
+    auto user = UserService::lookup(userid);
+    if (!user.has_value()) {
+      ERROR(404, "no such user");
+    }
+
+    response.push_back({
+      {"id", user->id},
+      {"following", false},
+      {"showing_reblogs", true},
+      {"notifying", false},
+      {"followed_by", true},
+      {"blocking", false},
+      {"blocked_by", false},
+      {"muting", false},
+      {"muting_notifications", false},
+      {"requested", false},
+      {"domain_blocking", false},
+      {"endorsed", false},
+      {"note", ""},
+    });
+  }
+
+
+  OK(response, MIMEJSON);
 }
 
 // https://docs.joinmastodon.org/methods/follow_requests/#get
