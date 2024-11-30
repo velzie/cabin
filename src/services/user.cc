@@ -1,4 +1,5 @@
 #include "SQLiteCpp/Statement.h"
+#include <stdexcept>
 #define USE_DB
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
@@ -92,11 +93,14 @@ namespace UserService {
     URL url(uri);
 
 
-    auto ia = UserService::lookup("gyat");
+    auto ia = UserService::lookup(ct->userid);
     APClient cli(ia.value(), url.host);
 
     auto response = cli.Get(url.path);
-    assert(response->status == 200);
+    if (response->status != 200){ 
+      dbg(response->body);
+      throw std::runtime_error("");
+    }
 
     json user = json::parse(response->body);
 
@@ -155,23 +159,23 @@ void registeruser() {
   // update_remote_user("https://booping.synth.download/users/a005c9wl4pwj0arp");
 
 
-  User u = {
-    .uri = USERPAGE(ct->userid),
-    .id = ct->userid,
-    .local = 1,
-    .host = ct->cfg.domain,
-
-    .publicKey = pubkey,
-    .privateKey = privkey,
-    .username = "test user 1",
-    .displayname = "cabin's strongest soldier",
-    .summary = "mrrrrrrrrrpppp",
-
-    .isBot = false,
-    .isCat = true,
-    .speakAsCat = false,
-  };
-  u.insert();
+  // User u = {
+  //   .uri = USERPAGE(ct->userid),
+  //   .id = ct->userid,
+  //   .local = 1,
+  //   .host = ct->cfg.domain,
+  //
+  //   .publicKey = pubkey,
+  //   .privateKey = privkey,
+  //   .username = "test1",
+  //   .displayname = "cabin's strongest soldier",
+  //   .summary = "mrrrrrrrrrpppp",
+  //
+  //   .isBot = false,
+  //   .isCat = true,
+  //   .speakAsCat = false,
+  // };
+  // u.insert();
   
 }
 

@@ -42,6 +42,36 @@ namespace Server {
       res->writeStatus("404");
       res->end("unimplemented");
     });
+    struct PerSocketData {
+        /* Fill with user data */
+    };
+    app->ws<PerSocketData>("/*", {
+        /* Settings */
+        .compression = uWS::SHARED_COMPRESSOR,
+        .maxPayloadLength = 16 * 1024,
+        .idleTimeout = 10,
+        .maxBackpressure = 1 * 1024 * 1024,
+        /* Handlers */
+        .upgrade = nullptr,
+        .open = [](auto */*ws*/) {
+
+        },
+        .message = [](auto *ws, std::string_view message, uWS::OpCode opCode) {
+            ws->send(message, opCode);
+        },
+        .drain = [](auto */*ws*/) {
+            /* Check getBufferedAmount here */
+        },
+        .ping = [](auto */*ws*/, std::string_view) {
+
+        },
+        .pong = [](auto */*ws*/, std::string_view) {
+
+        },
+        .close = [](auto */*ws*/, int /*code*/, std::string_view /*message*/) {
+
+        }
+    });
 
     for (const auto route : routes_get) {
       app->get(route.first, [route](uResponse res, uRequest req){
@@ -55,6 +85,7 @@ namespace Server {
           }
         } CPPTRACE_CATCH (const std::exception& e){
           res->writeHeader("Content-Type", "text/plain");
+          res->writeHeader("Access-Control-Allow-Origin", "*");
           auto t = cpptrace::from_current_exception();
 
           string ex = FMT("Exception while responding to {}\n{}\n", route.first, e.what());
@@ -101,6 +132,7 @@ namespace Server {
               }
             } CPPTRACE_CATCH(const std::exception& e) {
               res->writeHeader("Content-Type", "text/plain");
+              res->writeHeader("Access-Control-Allow-Origin", "*");
               auto t = cpptrace::from_current_exception();
 
               string ex = FMT("Exception while responding to {}\n{}\n", route.first, e.what());

@@ -16,10 +16,14 @@ namespace NoteService {
       .uri = NOTE(id),
       .id = id,
       .local = 1,
+      .host = ct->cfg.domain,
+
       .content = content,
+      .cw = "",
+      .sensitive = false,
+
       .owner = USERPAGE(userid),
       .published = utils::millis(),
-      .sensitive = 0,
     };
 
     note.insert();
@@ -33,7 +37,6 @@ namespace NoteService {
     APClient cli(u.value(), url.host);
 
     auto response = cli.Get(url.path);
-    dbg(response->body);
     assert(response->status == 200);
     json note = json::parse(response->body);
 
@@ -42,11 +45,17 @@ namespace NoteService {
     Note n = {
       .uri = uri,
       .local = false,
+      .host = url.host,
+
+      .replyToUri = note["inReplyTo"].is_null() ? nullopt : std::make_optional(note["inReplyTo"]),
 
       .content = note["content"],
+      .sensitive = note["sensitive"],
       .owner = note["attributedTo"],
       .published = utils::isoToMillis(note["published"]),
-      .sensitive = note["sensitive"],
+
+
+      .lastUpdatedAt = utils::millis()
     };
 
     auto query = STATEMENT("SELECT id FROM note where uri = ?");

@@ -9,7 +9,7 @@
 #include "../../http.h"
 
 POST(post_status, "/api/v1/statuses") {
-  Note note = NoteService::create("gyat", body["content"]);
+  Note note = NoteService::create(ct->userid, body["status"]);
   json j = MSrenderNote(note);
 
   OK(j, MIMEJSON);
@@ -30,7 +30,7 @@ GET(status, "/api/v1/statuses/:id") {
 POST(status_like, "/api/v1/statuses/:id/favourite") {
   string id (req->getParameter("id"));
 
-  auto user = UserService::lookup("gyat");
+  auto user = UserService::lookup(ct->userid);
   auto note = NoteService::lookup(id);
   if (!note.has_value()) {
     ERROR(404, "no note");
@@ -60,6 +60,8 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   };
 
   auto resp = cli.Post("/inbox", activity);
+  dbg(resp->body);
+  dbg(resp->status);
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {

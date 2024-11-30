@@ -100,14 +100,14 @@ int main() {
 
 
 
-  auto u = UserService::lookup("gyat");
+  auto u = UserService::lookup(ct->userid);
   // json j = {
   //   {"id", API("follows/0")},
   //   {"type", "Follow"},
   //   {"actor", USERPAGE(ct->userid)},
-  //   {"object", "https://fedi.velzie.rip/users/9v0aj1hlbmd09b7b"}
+  //   {"object", "https://booping.synth.download/users/a005c9wl4pwj0arp"}
   // };
-  // APClient cli(u.value(), "fedi.velzie.rip");
+  // APClient cli(u.value(), "booping.synth.download");
   // auto c = cli.Post("/inbox", j);
   // error("{} : ({})", c->status, c->body);
   

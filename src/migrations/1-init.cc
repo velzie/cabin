@@ -15,7 +15,7 @@ MIGRATION_UP(init, 1) {
       
       content TEXT,
       cw TEXT,
-      sensitive BOOLEAN NOT NULL
+      sensitive BOOLEAN NOT NULL,
 
       owner TEXT NOT NULL,
       published INTEGER NOT NULL,
@@ -24,7 +24,7 @@ MIGRATION_UP(init, 1) {
       lastUpdatedAt INTEGER,
       remoteRenoteCount INTEGER,
       remoteReplyCount INTEGER,
-      remoteLikeCount INTEGER,
+      remoteLikeCount INTEGER
     )
   )");
 

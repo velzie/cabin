@@ -42,6 +42,17 @@
   if (__flag == 2)\
       _query->bind(_counter, name);\
   _counter++;\
+
+#define OPT(name)\
+  names.push_back(#name);\
+  if (__flag == 1)\
+    name = (typeof(name))_statement->getColumn(#name);\
+  if (__flag == 2)\
+      if (name.has_value())\
+        _query->bind(_counter, name.value());\
+      else\
+        _query->bind(_counter, NULL);\
+  _counter++;\
     
 struct User {
   string uri;
@@ -136,11 +147,11 @@ struct Note {
   string host;
 
   int visibility;
-  string replyToUri;
-  string renoteUri;
+  optional<string> replyToUri;
+  optional<string> renoteUri;
 
   string content;
-  string cw;
+  optional<string> cw;
   int sensitive;
 
   string owner;
@@ -158,11 +169,11 @@ struct Note {
     F(host)
 
     F(visibility)
-    F(replyToUri)
-    F(renoteUri)
+    OPT(replyToUri)
+    OPT(renoteUri)
 
     F(content)
-    F(cw)
+    OPT(cw)
     F(sensitive)
 
     F(owner)

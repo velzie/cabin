@@ -43,6 +43,7 @@ void *register_route_post(std::string route, std::function<void(uResponse, uRequ
   return
 
 #define OK(json, mime)\
+  trace("200 ok {}", req->getUrl());\
   res->writeStatus("200");\
   res->writeHeader("Content-Type", mime);\
   res->writeHeader("Access-Control-Allow-Origin", "*");\
@@ -51,7 +52,9 @@ void *register_route_post(std::string route, std::function<void(uResponse, uRequ
   return
 
 #define ERROR(status, text)\
+  error("returned {} from {}: {}", status, req->getUrl(), text);\
   res->writeStatus(#status);\
+  res->writeHeader("Access-Control-Allow-Origin", "*");\
   res->writeHeader("Content-Type", "text/plain");\
   res->write(text);\
   res->end();\
