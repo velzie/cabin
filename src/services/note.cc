@@ -1,4 +1,7 @@
+#include "note.h"
+
 #include <optional>
+#include <stdexcept>
 #define USE_DB
 #include "SQLiteCpp/Statement.h"
 #include <httplib.h>
@@ -31,17 +34,8 @@ namespace NoteService {
     return note;
   }
 
-  Note fetchRemote(const string uri) {
-    auto u = UserService::lookup(ct->userid);
+  Note ingest(const string uri, const json note) {
     URL url(uri);
-    APClient cli(u.value(), url.host);
-
-    auto response = cli.Get(url.path);
-    assert(response->status == 200);
-    json note = json::parse(response->body);
-
-
-    UserService::fetchRemote(note["attributedTo"]);
     Note n = {
       .uri = uri,
       .local = false,
@@ -57,6 +51,11 @@ namespace NoteService {
 
       .lastUpdatedAt = utils::millis()
     };
+
+    UserService::fetchRemote(note["attributedTo"]);
+
+    if (n.replyToUri.has_value())
+      fetchRemote(n.replyToUri.value());
 
     auto query = STATEMENT("SELECT id FROM note where uri = ?");
     query.bind(1, uri);
@@ -76,6 +75,22 @@ namespace NoteService {
       n.insert();
     }
 
+    return n;
+  }
+
+  Note fetchRemote(const string uri) {
+    auto u = UserService::lookup(ct->userid);
+    URL url(uri);
+    APClient cli(u.value(), url.host);
+
+    auto response = cli.Get(url.path);
+    if (response->status != 200) {
+      throw std::runtime_error("");
+    }
+
+    json note = json::parse(response->body);
+
+    Note n = ingest(uri, note);
     return n;
   }
 

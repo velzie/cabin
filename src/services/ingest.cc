@@ -21,33 +21,11 @@ namespace IngestService {
       auto object = body["object"];
       if (object["type"] != "Note") return;
 
-      if (NoteService::lookup(object["id"]).has_value()) {
-        return;
-      }
 
       URL noteuri(object["id"]);
-      UserService::fetchRemote(object["attributedTo"]);
-      Note n = {
-        .uri = object["id"],
-        .id = utils::genid(),
-        .local = false,
-        .host = noteuri.host,
-
-        .replyToUri = object["inReplyTo"].is_null() ? nullopt : std::make_optional(object["inReplyTo"]),
-        .content = object["content"],
-        // .cw = object["content"],
-        .sensitive = object["sensitive"],
-        .owner = object["attributedTo"],
-        .published = utils::isoToMillis(object["published"]),
-
-        .lastUpdatedAt = utils::millis(),
-
-        // .remoteLikeCount
-      };
-
-      if (!n.insert()) {
-        throw std::runtime_error("");
-      }
+      // todo verify id is right
+      
+      NoteService::ingest(object["id"], object);
     } else if (type == "Announce") {
       string object = body["object"];
       Note note = NoteService::fetchRemote(object);
