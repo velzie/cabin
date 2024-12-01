@@ -41,6 +41,7 @@ namespace NoteService {
       {"type", "Create"},
       {"actor", note.owner},
       {"id", NOTE(note.id)+"/activity"},
+      {"published", utils::millisToIso(note.published)},
       {"object", note.renderAP()},
     };
 
@@ -54,21 +55,24 @@ namespace NoteService {
     return note;
   }
 
-  Note createRenote(User &owner, string renoteUri) {
+  Note createRenote(User &owner, Note &renotee) {
     Note note = _create(owner);
-    note.renoteUri = renoteUri;
+    note.renoteUri = renotee.uri;
     note.insert();
 
     json activity = {
       {"type", "Announce"},
-      {"actor", note.owner},
+      {"actor", owner.uri},
       {"id", NOTE(note.id)+"/activity"},
-      {"object", note.uri},
+      {"published", utils::millisToIso(note.published)},
+      {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
+      {"cc", {"https://www.w3.org/ns/activitystreams#Public", "https://wetdry.world/users/ce", "https://booping.synth.download/users/a005c9wl4pwj0arp"}},
+      {"object", renotee.uri},
     };
 
     DeliveryService::Audience au = {
       .actor = owner,
-      .mentions = {note.owner},
+      .mentions = {renotee.owner},
       .aspublic = true,
       .followers = true,
     };
@@ -193,13 +197,23 @@ json Note::renderMS(User &requester) {
   auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
   favs.bind(1, uri);
   favs.executeStep();
-  int fav_count = favs.getColumn(0);
+  int favouriteCount = favs.getColumn(0);
 
   auto qFavourited = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ? AND owner = ?");
   qFavourited.bind(1, uri);
   qFavourited.bind(2, requester.uri);
   qFavourited.executeStep();
   bool favourited = (int)qFavourited.getColumn(0) > 0;
+
+  auto qRenoted = STATEMENT("SELECT COUNT(*) from note WHERE renoteUri = ?");
+  qRenoted.bind(1, uri);
+  qRenoted.executeStep();
+  int renoteCount = qRenoted.getColumn(0);
+
+  auto qReplied = STATEMENT("SELECT COUNT(*) from note WHERE replyToUri = ?");
+  qReplied.bind(1, uri);
+  qReplied.executeStep();
+  int replyCount = qReplied.getColumn(0);
 
   json j = {
     {"id", id},
@@ -214,9 +228,9 @@ json Note::renderMS(User &requester) {
     {"language", "en"},
     {"uri", NOTE(id)},
     {"url", NOTE(id)},
-    {"replies_count", 7},
-    {"reblogs_count", 98},
-    {"favourites_count", fav_count},
+    {"replies_count", replyCount},
+    {"reblogs_count", renoteCount},
+    {"favourites_count", favouriteCount},
     {"favourited", favourited},
     {"reblogged", false},
     {"muted", false},
