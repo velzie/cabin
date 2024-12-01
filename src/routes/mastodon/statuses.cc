@@ -77,7 +77,7 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
     ERROR(404, "no note");
   }
 
-  Note n = NoteService::createRenote(authuser, note->uri);
+  Note n = NoteService::createRenote(authuser, note.value());
 
   OK(n.renderMS(authuser), MIMEJSON);
 }
@@ -102,6 +102,56 @@ GET(status_context, "/api/v1/statuses/:id/context") {
   OK(j, MIMEJSON);
 }
 
+GET(status_favourited_by, "/api/v1/statuses/:id/favourited_by") {
+  string id (req->getParameter("id"));
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    ERROR(404, "no note");
+  }
+
+  json accounts = json::array();
+
+  auto qFavourited = STATEMENT("SELECT owner FROM like WHERE object = ?");
+  qFavourited.bind(1, n->uri);
+
+  while (qFavourited.executeStep()) {
+    User u = UserService::lookup_ap(qFavourited.getColumn(0)).value();
+    accounts.push_back(u.renderMS());
+  }
+
+  OK(accounts, MIMEJSON);
+}
+
+GET(status_reblogged_by, "/api/v1/statuses/:id/reblogged_by") {
+  string id (req->getParameter("id"));
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    ERROR(404, "no note");
+  }
+
+  json accounts = json::array();
+
+  auto qRenoted = STATEMENT("SELECT owner FROM note WHERE renoteUri = ?");
+  qRenoted.bind(1, n->uri);
+
+  while (qRenoted.executeStep()) {
+    User u = UserService::lookup_ap(qRenoted.getColumn(0)).value();
+    accounts.push_back(u.renderMS());
+  }
+
+  OK(accounts, MIMEJSON);
+}
+
+GET(status_reactions, "/api/v1/statuses/:id/reactions") {
+  string id (req->getParameter("id"));
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    ERROR(404, "no note");
+  }
+
+  json reactions = json::array();
+  OK(reactions, MIMEJSON);
+}
 
 GET(timelines, "/api/v1/timelines/:id") {
   MSAUTH
@@ -110,12 +160,12 @@ GET(timelines, "/api/v1/timelines/:id") {
 
 
   json response = json::array();
-  while (q.executeStep()) {
-    Note n;
-    n.load(q);
-
-    response.push_back(n.renderMS(authuser));
-  }
+  // while (q.executeStep()) {
+  //   Note n;
+  //   n.load(q);
+  //
+  //   response.push_back(n.renderMS(authuser));
+  // }
   std::reverse(response.begin(), response.end());
 
   OK(response, MIMEJSON);
