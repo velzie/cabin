@@ -123,6 +123,12 @@ namespace UserService {
       .featured = user["featured"]
     };
 
+    if (user.contains("icon") && user["icon"].is_object())
+      u.avatar = user["icon"]["url"];
+
+    if (user.contains("image") && user["image"].is_string())
+      u.banner = user["image"]["url"];
+
     auto query = STATEMENT("SELECT id FROM user where uri = ?");
     query.bind(1, uri);
     if (query.executeStep()) {
@@ -152,6 +158,8 @@ void registeruser() {
   generateRSAKeyPair(privkey, pubkey);
 
 
+  URL url("https://asd.com/@v");
+  dbg(url.path);
   // APClient cli("booping.synth.download");
   // auto r = cli.Get("/users/a005c9wl4pwj0arp");
   // dbg(r->body);

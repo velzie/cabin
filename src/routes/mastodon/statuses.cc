@@ -160,12 +160,12 @@ GET(timelines, "/api/v1/timelines/:id") {
 
 
   json response = json::array();
-  // while (q.executeStep()) {
-  //   Note n;
-  //   n.load(q);
-  //
-  //   response.push_back(n.renderMS(authuser));
-  // }
+  while (q.executeStep()) {
+    Note n;
+    n.load(q);
+
+    response.push_back(n.renderMS(authuser));
+  }
   std::reverse(response.begin(), response.end());
 
   OK(response, MIMEJSON);
