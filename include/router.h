@@ -11,8 +11,9 @@ using uResponse = uWS::HttpResponse<false> *;
 using uRequest = uWS::HttpRequest *;
 
 using __Handler = std::function<void(uResponse, uRequest)>;
+using __BodyHandler = std::function<void(uResponse, uRequest, json, string)>;
 void *register_route(std::string route, __Handler h);
-void *register_route_post(std::string route, std::function<void(uResponse, uRequest, json, string)> h);
+void *register_route_post(std::string route, __BodyHandler h);
 
 
 #define GET(name, route)\
@@ -24,6 +25,11 @@ void *register_route_post(std::string route, std::function<void(uResponse, uRequ
   void name##_post_handle(uResponse, uRequest, json body, string bodyraw);\
   static void * name##_reg = register_route_post(route, name##_post_handle);\
   void name##_post_handle(uResponse res, uRequest req, json body, string bodyraw)
+
+#define PUT(name, route)\
+  void name##_put_handle(uResponse, uRequest, json body, string bodyraw);\
+  static void * name##_reg = register_route_post(route, name##_put_handle);\
+  void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw)
 
 
 #define MIMEJRD "application/jrd+json; charset=utf-8"

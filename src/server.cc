@@ -10,15 +10,33 @@
 #include <cpptrace/from_current.hpp>
 
 std::unordered_map<std::string, __Handler> routes_get;
-std::unordered_map<std::string, std::function<void(uResponse, uRequest, json, string)>> routes_post;
+std::unordered_map<std::string, __BodyHandler> routes_post;
+std::unordered_map<std::string, __BodyHandler> routes_put;
 void *register_route(std::string route, __Handler h) {
   routes_get[route] = h;
   return nullptr;
 }
-
-void *register_route_post(std::string route, std::function<void(uResponse, uRequest, json, string)> h) {
+void *register_route_post(std::string route, __BodyHandler h) {
   routes_post[route] = h;
   return nullptr;
+}
+void *register_route_put(std::string route, __BodyHandler h) {
+  routes_put[route] = h;
+  return nullptr;
+}
+
+
+string getStackTrace() {
+  auto t = cpptrace::from_current_exception();
+  t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
+    return f.filename.find(".third-party") != std::string::npos || f.filename.find("/usr") != std::string::npos;
+  }), t.frames.end());
+
+  std::stringstream s;
+  t.print_with_snippets(s, false);
+  t.print_with_snippets(std::cerr, true);
+
+  return s.str();
 }
 
 namespace Server {
@@ -84,23 +102,14 @@ namespace Server {
             res->endWithoutBody();
           }
         } CPPTRACE_CATCH (const std::exception& e){
+          res->writeStatus("500");
           res->writeHeader("Content-Type", "text/plain");
           res->writeHeader("Access-Control-Allow-Origin", "*");
-          auto t = cpptrace::from_current_exception();
 
           string ex = FMT("Exception while responding to {}\n{}\n", route.first, e.what());
-
-          t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
-            return f.filename.find(".third-party") != std::string::npos || f.filename.find("/usr") != std::string::npos;
-          }), t.frames.end());
-
-          std::stringstream s;
-          t.print_with_snippets(s);
-          ex += s.str();
-
-
           std::cout << ex;
-          res->end(ex);
+          res->write(ex);
+          res->end(getStackTrace());
         }
       });
     }
@@ -131,23 +140,57 @@ namespace Server {
                 res->endWithoutBody();
               }
             } CPPTRACE_CATCH(const std::exception& e) {
+              res->writeStatus("500");
               res->writeHeader("Content-Type", "text/plain");
               res->writeHeader("Access-Control-Allow-Origin", "*");
-              auto t = cpptrace::from_current_exception();
 
               string ex = FMT("Exception while responding to {}\n{}\n", route.first, e.what());
-
-              t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f) {
-                return f.filename.find(".third-party") != std::string::npos || f.filename.find("/usr") != std::string::npos;
-              }), t.frames.end());
-
-              std::stringstream s;
-              t.print_with_snippets(s);
-              ex += s.str();
-
-
               std::cout << ex;
-              res->end(ex);
+              res->write(ex);
+              res->end(getStackTrace());
+            }
+          }
+        });
+        res->onAborted([isAborted](){
+            *isAborted = true;
+        });
+      });
+    }
+
+    for (const auto route : routes_put) {
+      app->post(route.first, [route](uResponse res, uRequest req){
+		    auto isAborted = std::make_shared<bool>(false);
+		    auto body = std::make_shared<std::stringstream>();
+		    res->onData([req, res, isAborted, body, route](std::string_view chunk, bool isFin) mutable {
+		      *body << chunk;
+          if (isFin && !*isAborted) {
+            CPPTRACE_TRY {
+              uWS::MultipartParser mp(req->getHeader("content-type"));
+
+              json j;
+              if (req->getHeader("content-type").find("json") != std::string::npos) {
+                j = json::parse(body->str());
+              } else if (mp.isValid()) {
+                mp.setBody(body->str());
+              } else if (req->getHeader("content-type") == "application/x-www-form-urlencoded") {
+                // todo
+              }
+
+              route.second(res, req, j, body->str());
+
+              if (!res->hasResponded()) {
+                res->writeStatus("204");
+                res->endWithoutBody();
+              }
+            } CPPTRACE_CATCH(const std::exception& e) {
+              res->writeStatus("500");
+              res->writeHeader("Content-Type", "text/plain");
+              res->writeHeader("Access-Control-Allow-Origin", "*");
+
+              string ex = FMT("Exception while responding to {}\n{}\n", route.first, e.what());
+              std::cout << ex;
+              res->write(ex);
+              res->end(getStackTrace());
             }
           }
         });
