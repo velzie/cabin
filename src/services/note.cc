@@ -90,6 +90,8 @@ namespace NoteService {
       .host = url.host,
 
       .replyToUri = nullopt,
+      .conversation = utils::genid(),
+
       .content = note["content"],
       .sensitive = false,
       .owner = note["attributedTo"],
@@ -104,12 +106,23 @@ namespace NoteService {
     }
     if (note.contains("inReplyTo") && !note["inReplyTo"].is_null()) {
       n.replyToUri = std::make_optional(note["inReplyTo"]);
-    }
 
+      // TODO: if one ingest fails they will all fail, maybe not good
+      NoteService::fetchRemote(note["inReplyTo"]);
+    }
     UserService::fetchRemote(note["attributedTo"]);
 
     if (n.replyToUri.has_value())
       fetchRemote(n.replyToUri.value());
+
+    // recursively fetch until the initial post in the thread
+    Note topmost = n;
+    while (topmost.replyToUri.has_value()) {
+      topmost = NoteService::lookup_ap(topmost.replyToUri.value()).value();
+    }
+
+    // now we can safely take the conversation id
+    n.conversation = topmost.conversation;
 
     auto query = STATEMENT("SELECT id FROM note where uri = ?");
     query.bind(1, uri);
@@ -262,7 +275,7 @@ json Note::renderMS(User &requester) {
         {"text/plain", ""}
       }},
       {"pinned_at", nullptr},
-      {"conversation_id", 1},
+      {"conversation_id", conversation},
       {"in_reply_to_account_acct", nullptr},
       {"parent_visible", true},
       {"thread_muted", false},

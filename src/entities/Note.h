@@ -17,6 +17,7 @@ struct Note {
   int visibility;
   optional<string> replyToUri;
   optional<string> renoteUri;
+  string conversation;
 
   string content;
   optional<string> cw;
@@ -39,6 +40,7 @@ struct Note {
     F(visibility)
     OPT(replyToUri)
     OPT(renoteUri)
+    F(conversation)
 
     F(content)
     OPT(cw)

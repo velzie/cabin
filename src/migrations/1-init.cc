@@ -12,6 +12,7 @@ MIGRATION_UP(init, 1) {
       visibility INTEGER,
       replyToUri TEXT,
       renoteUri TEXT,
+      conversation TEXT NOT NULL,
       
       content TEXT,
       cw TEXT,
