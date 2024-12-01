@@ -146,6 +146,11 @@ namespace NoteService {
   }
 
   Note fetchRemote(const string uri) {
+    if (lookup_ap(uri).has_value()) {
+      // TODO: don't skip if it's been a while
+      trace("skipping refetch of {}", uri);
+    }
+
     trace("fetching note {}", uri);
     auto u = UserService::lookup(ct->userid);
     URL url(uri);
@@ -291,7 +296,7 @@ json Note::renderMS(User &requester) {
   };
 
   if (replyToUri.has_value())
-    j["in_reply_to_account_id"] = nReplyTo.id;
+    j["in_reply_to_account_id"] = nReplyTo.owner;
 
   if (renoteUri.has_value()) {
     auto n = NoteService::lookup_ap(renoteUri.value());

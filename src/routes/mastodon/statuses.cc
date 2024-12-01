@@ -83,15 +83,44 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
 }
 
 GET(status_context, "/api/v1/statuses/:id/context") {
+  MSAUTH
+
   string id (req->getParameter("id"));
-  auto n = NoteService::lookup(id);
-  if (!n.has_value()) {
+  auto originalnote = NoteService::lookup(id);
+  if (!originalnote.has_value()) {
     ERROR(404, "no note");
+  }
+
+  auto q = STATEMENT("SELECT * FROM note WHERE conversation = ?");
+  q.bind(1, originalnote->conversation);
+
+  std::vector<Note> bag;
+  while (q.executeStep()) {
+    Note note;
+    note.load(q);
+    if (note.id != id)
+      bag.push_back(note);
   }
 
 
   json ancestors = json::array();
   json descendants = json::array();
+
+  Note topmost = originalnote.value();
+  while (topmost.replyToUri.has_value()) {
+    auto s = std::find_if(bag.begin(), bag.end(), [topmost](Note n){ return n.uri == topmost.replyToUri.value(); });
+    topmost = *s;
+    bag.erase(s);
+
+    ancestors.push_back(topmost.renderMS(authuser));
+  }
+
+  for (Note n : bag) {
+    descendants.push_back(n.renderMS(authuser));
+  }
+
+
+
 
 
   json j = {
