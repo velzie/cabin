@@ -3,71 +3,106 @@
 
 json NodeMeta(std::string version) {
   return {
-      {"version", version},
-      {"software", {
-        {"name", SOFTWARE},
-        {"version", VERSION_LONG},
-        {"homepage", HOMEPAGE}
+    {"version", "2.0"},
+    {"software", {
+      {"name", SOFTWARE},
+      {"version", VERSION_LONG},
+      {"codename", "gyat"},
+      {"edition", "enterprise"},
+      {"homepage", HOMEPAGE},
+    }},
+    {"protocols", {
+      "activitypub",
+    }},
+    {"services", {
+      {"inbound", {}},
+      {"outbound", {
+        "atom1.0",
+        "rss2.0",
       }},
-      {"protocols", {"activitypub"}},
-      {"services", {
-        {"inbound", {}},
-        {"outbound", {}}
+    }},
+    {"usage", {
+      {"users", {
+        {"total", 1},
+        {"activeHalfyear", 1},
+        {"activeMonth", 1},
       }},
-      {"openRegistrations", false},
-      {"usage", {
-        {"users", {
-          {"total", 1}, // ;)
-          {"activeHalfyear", nullptr},
-          {"activeMonth", nullptr},
-        }},
-        {"localPosts", 0},
-        {"localComments", 0}
+      {"localPosts", 6514},
+      {"localComments", 0},
+    }},
+    {"metadata", {
+      {"nodeName", "cabin"},
+      {"nodeDescription", "A cabin instance"},
+      {"maintainer", {
+        {"name", "todo"},
+        {"email", "todo"},
       }},
-      {"metadata", {
-        {"nodeName", "land of rizz"},
-        {"nodeDescription", "placeholder"},
-        {"nodeAdmins", {}},
-        {"maintainer", {
-          {"name", "..."},
-          {"email", "..."},
-        }},
-        {"langs", {}},
-        {"tosUrl", {}},
-        {"privacyPolicyUrl", {}},
-          // "inquiryUrl": "https://synth.download",
-          //    "impressumUrl": "",
-          //    "donationUrl": "https://ko-fi.com/sneexy",
-          //    "repositoryUrl": "https://activitypub.software/TransFem-org/Sharkey/",
-          //    "feedbackUrl": "https://activitypub.software/TransFem-org/Sharkey/-/issues/new",
-        {"features", {
-          "pleroma_api",
-          "akkoma_api",
-          "mastodon_api",
-          "mastodon_api_streaming",
-          "polls",
-          "quote_posting",
-          "editing",
-          "pleroma_emoji_reactions",
-          "exposable_reactions",
-          "custom_emoji_reactions",
-          "pleroma:bites",
-        }},
-        {"localBubbleInstances", ARR},
-        {"disableRegistration", true},
-        {"disableLocalTimeline", true},
-        {"disableGlobalTimeline", true},
-        {"emailRequiredForSignup", false},
-        {"maxNoteTextLength", 100000},
-        {"maxRemoteNoteTextLength", 100000},
-        {"maxCwLength", 5000},
-        {"maxRemoteCwLength", 5000},
-        {"maxAltTextLength", 100000},
-        {"maxRemoteAltTextLength", 100000},
-        {"enableEmail", false},
-        {"themeColor", "#f9e2af"}
-      }}
-    };
+      {"langs", ARR},
+      {"tosUrl", "todo"},
+      {"repositoryUrl", "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"},
+      {"feedbackUrl", "https://issues.iceshrimp.dev"},
+      {"themeColor", "#000000"},
+      {"disableRegistration", true},
+      {"disableLocalTimeline", false},
+      {"disableRecommendedTimeline", false},
+      {"disableGlobalTimeline", false},
+      {"emailRequiredForSignup", false},
+      {"postEditing", false},
+      {"postImports", false},
+      {"enableHcaptcha", false},
+      {"enableRecaptcha", false},
+      {"maxNoteTextLength", 0},
+      {"maxCaptionTextLength", 0},
+      {"enableGithubIntegration", false},
+      {"enableDiscordIntegration", false},
+      {"enableEmail", false},
+      {"post_formats", {
+        "text/plain",
+        "text/x.misskeymarkdown",
+      }},
+      {"features", {
+        "pleroma_api",
+        "akkoma_api",
+        "mastodon_api",
+        "mastodon_api_streaming",
+        "polls",
+        "quote_posting",
+        "editing",
+        "pleroma_emoji_reactions",
+        "exposable_reactions",
+        "custom_emoji_reactions",
+        "pleroma:bites",
+      }},
+      {"localBubbleInstances", ARR},
+      {"staffAccounts", ARR},
+      {"publicTimelineVisibility", {
+        {"bubble", false},
+        {"federated", false},
+        {"local", false},
+      }},
+      {"uploadLimits", {
+        {"general", 104857600},
+        {"avatar", 104857600},
+        {"background", 104857600},
+        {"banner", 104857600},
+      }},
+      {"suggestions", {
+        {"enabled", false},
+      }},
+      {"federation", {
+        {"enabled", true},
+      }},
+    }},
+    {"openRegistrations", false},
+    {"operations", {
+      {"com.shinolabs.api.bite", {
+        "1.0.0",
+      }},
+      {"jetzt.mia.ns.activitypub.accept.bite", {
+        "1.0.0",
+      }},
+    }},
+  };
 }
 
 
