@@ -166,6 +166,26 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
   OK(j, MIMEJSON);
 }
 
+// https://docs.joinmastodon.org/methods/accounts/#following
+GET(account_following, "/api/v1/accounts/:id/following") {
+  auto user = UserService::lookup((string) req->getParameter("id"));
+  if (!user.has_value()) {
+    ERROR(404, "no such user");
+  }
+
+  json response = json::array();
+
+  auto following = STATEMENT("SELECT * FROM follow WHERE followee = ? AND pending = 0");
+  following.bind(1, user->uri);
+
+  while (following.executeStep()) {
+    User u = UserService::lookup_ap(following.getColumn("follower")).value();
+    response.push_back(u.renderMS());
+  }
+
+  OK(response, MIMEJSON);
+}
+
 // https://docs.joinmastodon.org/methods/accounts/#relationships
 GET(account_relationships, "/api/v1/accounts/relationships") {
   MSAUTH
