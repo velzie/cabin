@@ -186,6 +186,11 @@ GET(account_following, "/api/v1/accounts/:id/following") {
   OK(response, MIMEJSON);
 }
 
+// this is a pleroma bug everyone say thank you pleroma
+GET(account_relationships_pleroma, "/api/v1/accounts/relationships/") {
+  REDIRECT("/api/v1/accounts/relationships?" + (string)req->getQuery());
+}
+
 // https://docs.joinmastodon.org/methods/accounts/#relationships
 GET(account_relationships, "/api/v1/accounts/relationships") {
   MSAUTH
@@ -195,12 +200,18 @@ GET(account_relationships, "/api/v1/accounts/relationships") {
   string raw("?" + string(req->getQuery()));
   string id;
   std::vector<string> ids;
-  while ((id = uWS::getDecodedQueryValue("id[]", raw)) != "") {
-    auto p = raw.find("id[]=");
-    if (p != std::string::npos) {
-      raw.erase(p, 5+id.length()+1);
+
+  if (!req->getQuery("id").empty()) {
+    // love you pleroma <3
+    ids.push_back((string)req->getQuery("id"));
+  } else {
+    while ((id = uWS::getDecodedQueryValue("id[]", raw)) != "") {
+      auto p = raw.find("id[]=");
+      if (p != std::string::npos) {
+        raw.erase(p, 5+id.length()+1);
+      }
+      ids.push_back(id);
     }
-    ids.push_back(id);
   }
 
   for (const string userid : ids) {

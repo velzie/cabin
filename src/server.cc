@@ -126,7 +126,8 @@ namespace Server {
 
               json j;
               if (req->getHeader("content-type").find("json") != std::string::npos) {
-                j = json::parse(body->str());
+                if (body->str().empty()) j = nullptr;
+                else j = json::parse(body->str());
               } else if (mp.isValid()) {
                 mp.setBody(body->str());
               } else if (req->getHeader("content-type") == "application/x-www-form-urlencoded") {

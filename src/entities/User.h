@@ -126,6 +126,24 @@ int isBot;
     {"last_status_at", "2019-12-05T03:03:02.595Z"},
     {"emojis", json::array()},
     {"fields", json::array()},
+    {"pleroma",{
+      {"background_image", nullptr},
+      {"skip_thread_containment", false},
+      {"is_moderator", false},
+      {"is_admin", true},
+      {"ap_id", uri},
+      {"tags", ARR},
+      {"also_known_as", {}},
+      {"hide_follows", true},
+      {"hide_follows_count", false},
+      {"hide_followers", true},
+      {"hide_followers_count", false},
+      {"is_confirmed", true},
+      {"is_suggested", false},
+      {"hide_favorites", true},
+      {"favicon", FMT("https://{}/favicon.png", host)},
+      {"relationship", json::object()},
+    }}
   };
 }
 };
