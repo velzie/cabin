@@ -90,6 +90,11 @@ namespace UserService {
 
 
   User fetchRemote(const string uri) {
+    if (lookup_ap(uri).has_value()) {
+      // TODO: don't skip if it's been a while
+      trace("skipping refetch of {}", uri);
+    }
+
     trace("fetching user {}", uri);
     URL url(uri);
 

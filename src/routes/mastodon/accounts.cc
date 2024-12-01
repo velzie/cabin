@@ -60,7 +60,6 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
 // https://docs.joinmastodon.org/methods/accounts/#get
 GET(account, "/api/v1/accounts/:id") {
   string uid (req->getParameter("id"));
-  dbg(uid);
 
   User u;
   auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
