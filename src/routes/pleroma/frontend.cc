@@ -12,3 +12,19 @@ GET(frontend_configurations, "/api/pleroma/frontend_configurations") {
 
   OK(r, MIMEJSON);
 }
+
+PUT(put_frontend_settings_default, "/api/v1/akkoma/frontend_settings/:id/default") {
+
+}
+
+GET(frontend_settings_default, "/api/v1/akkoma/frontend_settings/:id/default") {
+
+}
+
+PUT(put_frontend_settings, "/api/v1/akkoma/frontend_settings/:id") {
+
+}
+
+GET(frontend_settings, "/api/v1/akkoma/frontend_settings/:id") {
+
+}

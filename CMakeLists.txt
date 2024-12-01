@@ -42,6 +42,7 @@ set(SOURCES
   src/routes/mastodon/statuses.cc
 
   src/routes/pleroma/frontend.cc
+  src/routes/pleroma/emojis.cc
 
   src/migrations/1-init.cc
 )
