@@ -5,7 +5,7 @@ MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE note(
       uri VARCHAR PRIMARY KEY,
-      id TEXT NOT NULL,
+      id TEXT NOT NULL UNIQUE,
       local BOOLEAN NOT NULL,
       host TEXT NOT NULL,
 
@@ -31,6 +31,7 @@ MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE instance(
       host TEXT PRIMARY KEY,
+      id TEXT NOT NULL UNIQUE,
 
       lastUpdatedAt INTEGER,
       remoteUsersCount INTEGER,
@@ -44,7 +45,7 @@ MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE user(
       uri TEXT PRIMARY KEY,
-      id TEXT,
+      id TEXT NOT NULL UNIQUE,
       local INTEGER NOT NULL,
       host TEXT NOT NULL,
 
@@ -76,7 +77,7 @@ MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE like(
       uri TEXT PRIMARY KEY,
-      id TEXT NOT NULL,
+      id TEXT NOT NULL UNIQUE,
       local INTEGER NOT NULL,
       host TEXT NOT NULL,
 
@@ -88,7 +89,7 @@ MIGRATION_UP(init, 1) {
   db->exec(R"(
     CREATE TABLE follow(
       uri TEXT PRIMARY KEY,
-      id TEXT NOT NULL,
+      id TEXT NOT NULL UNIQUE,
       local INTEGER NOT NULL,
       host TEXT NOT NULL,
 
