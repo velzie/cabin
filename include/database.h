@@ -64,16 +64,20 @@ namespace Database {
       __q.bind(_counter, key);\
       return _query->exec();\
     }\
-    inline int insertOrUpdate(string keyv) {\
-      auto query = STATEMENT(FMT("SELECT 1 FROM {} WHERE {} = ? LIMIT 1", #table, #key));\
-      query.bind(1, key);\
-      if (query.executeStep()) {\
-        return update();\
-      }else {\
-        key = keyv;\
-        return insert();\
-      }\
-    }\
+    string __table = #table;\
+
+
+#define INSERT_OR_UPDATE(object, pkey, key, value)\
+  auto _query = STATEMENT(FMT("SELECT * FROM {} where {} = ? LIMIT 1", object.__table, #pkey));\
+  _query.bind(1, object.pkey);\
+  int _r;\
+  if (_query.executeStep()) {\
+    object.key = (string)_query.getColumn(#key);\
+    _r = object.update();\
+  }else {\
+    object.key = value;\
+    _r = object.insert();\
+  }\
 
 
 #define F(name)\

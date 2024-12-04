@@ -122,18 +122,18 @@ namespace NoteService {
 
     // now we can safely take the conversation id
     n.conversation = topmost.conversation;
-    n.insertOrUpdate(utils::genid());
+    INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
     return n;
   }
 
   Note fetchRemote(const string uri) {
     auto cached = lookup_ap(uri);
-    // if (cached.has_value()) {
-    //   // TODO: don't skip if it's been a while
-    //   trace("skipping refetch of {}", uri);
-    //   return cached.value();
-    // }
+    if (cached.has_value()) {
+      // TODO: don't skip if it's been a while
+      trace("skipping refetch of {}", uri);
+      return cached.value();
+    }
 
     trace("fetching note {}", uri);
     auto u = UserService::lookup(cfg.instanceactor);

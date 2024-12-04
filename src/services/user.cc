@@ -136,7 +136,7 @@ namespace UserService {
     if (user.contains("image") && user["image"].is_string())
       u.banner = user["image"]["url"];
 
-    u.insertOrUpdate(utils::genid());
+    INSERT_OR_UPDATE(u, uri, id, utils::genid());
     return u;
   }
 }
