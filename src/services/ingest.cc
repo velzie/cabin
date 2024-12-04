@@ -1,12 +1,13 @@
 #define USE_DB
 #include <common.h>
-#include "ingest.h"
-#include "follow.h"
-#include "user.h"
-#include "note.h"
+#include "utils.h"
 
-#include "../utils.h"
-#include "../entities/Like.h"
+#include "services/follow.h"
+#include "services/user.h"
+#include "services/note.h"
+#include "services/ingest.h"
+#include "entities/Like.h"
+
 #include <cpptrace/from_current.hpp>
 
 namespace IngestService {

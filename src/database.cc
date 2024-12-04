@@ -1,7 +1,5 @@
-#define USE_DB
-#include <migration.h>
 #include "database.h"
-#include <common.h>
+#include "SQLiteCpp/Database.h"
 
 std::map<int, MigrationHandler> migrations_up;
 std::map<int, MigrationHandler> migrations_down;
@@ -17,30 +15,32 @@ void *register_migration_down(int ver, MigrationHandler h) {
 }
 
 
-void Cabin::InitDB() {
-  db = new SQLite::Database(SOFTWARE".db3", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+namespace Database {
+  SQLite::Database *conn;
+  void Init() {
+    conn = new SQLite::Database(SOFTWARE".db3", SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE | SQLite::OPEN_FULLMUTEX);
 
-  db->exec(R"(
-    CREATE TABLE IF NOT EXISTS schema_version (
-        version INTEGER PRIMARY KEY
-    );
-  )");
+    conn->exec(R"(
+      CREATE TABLE IF NOT EXISTS schema_version (
+          version INTEGER PRIMARY KEY
+      );
+    )");
 
-  auto query = STATEMENT("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1");
-  int version;
-  if (query.executeStep()) {
-    version = query.getColumn("version").getInt();
-  } else {
-    version = 0;
-  }
-  info("DB version {}", version);
+    auto query = STATEMENT("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1");
+    int version;
+    if (query.executeStep()) {
+      version = query.getColumn("version").getInt();
+    } else {
+      version = 0;
+    }
+    info("DB version {}", version);
 
-  auto migration = migrations_up.rbegin();
-  if (migration->first > version) {
-    for (int i = version+1; i <= migration->first; i++ ) {
-      info("Attempting migration to schema {}", i);
-      migrations_up[i](db);
+    auto migration = migrations_up.rbegin();
+    if (migration->first > version) {
+      for (int i = version+1; i <= migration->first; i++ ) {
+        info("Attempting migration to schema {}", i);
+        migrations_up[i](conn);
+      }
     }
   }
-
 }

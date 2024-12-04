@@ -1,9 +1,9 @@
 #pragma once
-#include "SQLiteCpp/Statement.h"
-#include <SQLiteCpp/Database.h>
+#include "database.h"
 using MigrationHandler = void (*)(SQLite::Database*);
-#include "../src/database.h"
 
+extern std::map<int, MigrationHandler> migrations_up;
+extern std::map<int, MigrationHandler> migrations_down;
 
 #define MIGRATION_UP(name, ver)\
   static void migrate_up_##name(SQLite::Database *db);\

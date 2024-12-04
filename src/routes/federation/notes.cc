@@ -4,8 +4,8 @@
 #include "router.h"
 #include "common.h"
 
-#include "../../utils.h"
-#include "../../services/note.h"
+#include "utils.h"
+#include "services/note.h"
 GET(notes, "/notes/:id") {
   std::string id(req->getParameter("id"));
   std::string idurl = API("notes/"+id);

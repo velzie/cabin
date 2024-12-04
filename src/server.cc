@@ -42,7 +42,7 @@ string getStackTrace() {
 namespace Server {
   uWS::App *app;
 
-  void Init() {
+  void Listen() {
     app = new uWS::App();
 
     app->options("/*", [](uResponse res, uRequest req){
@@ -200,9 +200,7 @@ namespace Server {
         });
       });
     }
-  }
 
-  void Listen() {
     app->listen(2001,[](auto *listen_socket) {
 	  }).run();
   }

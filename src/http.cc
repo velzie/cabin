@@ -1,6 +1,6 @@
 #define USE_DB
 #include "common.h"
-#include "schema.h"
+#include "database.h"
 #include "http.h"
 #include <fmt/core.h>
 #include <httplib.h>
@@ -113,7 +113,7 @@ std::string sha256(std::string data) {
 }
 
 APClient::APClient(User &u, std::string host) : instance(host), cli("https://" + host), user(u) {
-  ASSERT(host != ct->cfg.domain);
+  ASSERT(host != cfg.domain);
   cli.set_follow_location(true);
 }
 httplib::Result APClient::Get(std::string pathname) {
@@ -134,7 +134,7 @@ httplib::Result APClient::Get(std::string pathname) {
       {"Algorithm", "rsa-sha256"},
       {"Signature", signatureHeader},
       {"Date", date},
-      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", ct->baseurl)},
+      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", cfg.domain)},
   });
 }
 
@@ -161,6 +161,6 @@ httplib::Result APClient::Post(std::string pathname, json data) {
       {"Signature", signatureHeader},
       {"Digest", digest},
       {"Date", date},
-      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", ct->baseurl)},
+      {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", cfg.domain)},
   }, payload, "application/activity+json");
 }

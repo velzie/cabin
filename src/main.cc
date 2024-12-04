@@ -17,18 +17,22 @@
 #include <fmt/format.h>
 #include <thread>
 #include "common.h"
-#include "schema.h"
+#include "database.h"
 #include "http.h"
 #include "services/user.h"
 #include "utils.h"
 #include <cpptrace/cpptrace.hpp>
+#include "server.h"
 
 
 Config default_config = {
   .domain = "your.domain",
-  .host = "0.0.0.0",
-  .port = 2001,
+  .sockethost = "0.0.0.0",
+  .socketport = 2001,
+  .instanceactor = "test3",
 };
+Config cfg;
+json context;
 
 URL::URL(string s) {
   char *_scheme;
@@ -50,10 +54,12 @@ URL::URL(string s) {
   frag = _frag;
 }
 
-Cabin::~Cabin() {
-  delete db;
-}
-Cabin::Cabin(std::string config_path) {
+
+int main(int argc, char **argv) {
+  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
+
+  string config_path = "config.json";
   std::ifstream s(config_path);
 
   if (!s) {
@@ -71,48 +77,45 @@ Cabin::Cabin(std::string config_path) {
   json j = json::parse(std::string((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>()));
   cfg = j.template get<Config>();
 
-  info("loaded ({})", cfg.domain);
-}
-
-std::shared_ptr<Cabin> ct;
-
-void registeruser();
-int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::trace);
-  spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
-  
-
-  ct = std::make_shared<Cabin>("config.json");
-
   std::ifstream contextst("context.json");
-  ct->context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
+  context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
 
-  ct->InitDB();
-  registeruser();
+  info("loaded ({})", cfg.domain); 
 
+  Database::Init();
 
   std::thread tserver([](){
-    Server::Init();
     Server::Listen();
   });
 
-  if (argc > 1) {
-    URL url(argv[1]);
-    dbg(argv[1]);
-    auto u = UserService::lookup(ct->userid);
-    APClient cli(*u, url.host);
-    auto c = cli.Get(url.path);
-
-    if (c->status == 200) {
-      dbg(c->body);
-      std::cout << json::parse(c->body).dump(2);
-    } else {
-      error("{} : ({})", c->status, c->body);
-    }
-
-    exit(0);
-  }
-
+  // if (argc > 1) {
+  //   URL url(argv[1]);
+  //   dbg(argv[1]);
+  //   auto u = UserService::lookup(ct->userid);
+  //   APClient cli(*u, url.host);
+  //   auto c = cli.Get(url.path);
+  //
+  //   if (c->status == 200) {
+  //     dbg(c->body);
+  //     std::cout << json::parse(c->body).dump(2);
+  //   } else {
+  //     error("{} : ({})", c->status, c->body);
+  //   }
+  //
+  //   exit(0);
+  // }
+  //
+  // auto u = UserService::lookup(ct->userid);
+  // json j = {
+  //   {"@context", "https://www.w3.org/ns/activitystreams"},
+  //   {"id", API("relayfollows/0")},
+  //   {"type", "Follow"},
+  //   {"actor", USERPAGE(ct->userid)},
+  //   {"object", "https://www.w3.org/ns/activitystreams#Public"}
+  // };
+  // APClient cli(u.value(), "relay.toot.io");
+  // auto c = cli.Post("/inbox", j);
+  // error("{} : ({})", c->status, c->body);
 
 
   // json j = {

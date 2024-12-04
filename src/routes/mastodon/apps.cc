@@ -80,7 +80,7 @@ GET(verify_credentials, "/api/v1/apps/verify_credentials") {
 
 GET(instance, "/api/:v/instance") {
   json j = {
-    {"domain", ct->cfg.domain},
+    {"domain", cfg.domain},
     {"title", "Cabin"},
     {"version", "4.0.0rc1"},
     {"source_url", "https://github.com/mastodon/mastodon"},

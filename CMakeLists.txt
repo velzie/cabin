@@ -9,9 +9,6 @@ add_subdirectory(.third-party/json)
 add_subdirectory(.third-party/sqlitecpp)
 add_subdirectory(.third-party/spdlog)
 add_subdirectory(.third-party/dbg-macro)
-add_subdirectory(.third-party/backward-cpp)
-
-
 
 include_directories(include)
 include_directories(.third-party/uWebSockets/src)

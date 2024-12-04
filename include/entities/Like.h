@@ -1,5 +1,5 @@
 #pragma once
-#include "../schema.h"
+#include "database.h"
 
 struct Like {
   string uri;

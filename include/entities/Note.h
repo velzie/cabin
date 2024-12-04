@@ -1,8 +1,7 @@
 #pragma once
-#include "../schema.h"
-#include "../utils.h"
-
-#include "User.h"
+#include "database.h"
+#include "utils.h"
+#include "entities/User.h"
 
 #define NOTEVISIBILITY_Public 0
 #define NOTEVISIBILITY_Home 1
@@ -59,7 +58,7 @@ struct Note {
   json renderAP() {
     ASSERT(local);
     json j = {
-      {"@context", ct->context},
+      {"@context", context},
       {"id", NOTE(id)},
       {"type", "Note"},
       {"inReplyTo", replyToUri},

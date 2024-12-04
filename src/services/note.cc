@@ -1,16 +1,16 @@
 #define USE_DB
 #include <common.h>
-#include "note.h"
-#include "delivery.h"
-
-#include <optional>
-#include <stdexcept>
-#include "SQLiteCpp/Statement.h"
 #include <httplib.h>
-#include "../schema.h"
-#include "../utils.h"
-#include "user.h"
-#include "../http.h"
+#include <stdexcept>
+
+#include "database.h"
+#include "utils.h"
+#include "http.h"
+
+#include "services/delivery.h"
+#include "services/note.h"
+#include "services/user.h"
+
 
 namespace NoteService {
 
@@ -20,7 +20,7 @@ namespace NoteService {
       .uri = NOTE(id),
       .id = id,
       .local = 1,
-      .host = ct->cfg.domain,
+      .host = cfg.domain,
 
       .owner = USERPAGE(owner.id),
       .published = utils::millis(),
@@ -50,7 +50,7 @@ namespace NoteService {
       .aspublic = true,
       .followers = true,
     };
-    DeliveryService::QueueDelivery(activity, au);
+    // DeliveryService::QueueDelivery(activity, au);
 
     return note;
   }
@@ -106,13 +106,12 @@ namespace NoteService {
     }
     if (note.contains("inReplyTo") && !note["inReplyTo"].is_null()) {
       n.replyToUri = std::make_optional(note["inReplyTo"]);
-
-      // TODO: if one ingest fails they will all fail, maybe not good
-      NoteService::fetchRemote(note["inReplyTo"]);
     }
+
     UserService::fetchRemote(note["attributedTo"]);
 
     if (n.replyToUri.has_value())
+      // TODO: if one ingest fails they will all fail, maybe not good
       fetchRemote(n.replyToUri.value());
 
     // recursively fetch until the initial post in the thread
@@ -146,13 +145,15 @@ namespace NoteService {
   }
 
   Note fetchRemote(const string uri) {
-    if (lookup_ap(uri).has_value()) {
+    auto cached = lookup_ap(uri);
+    if (cached.has_value()) {
       // TODO: don't skip if it's been a while
       trace("skipping refetch of {}", uri);
+      return cached.value();
     }
 
     trace("fetching note {}", uri);
-    auto u = UserService::lookup(ct->userid);
+    auto u = UserService::lookup(cfg.instanceactor);
     URL url(uri);
     APClient cli(u.value(), url.host);
 

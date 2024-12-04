@@ -1,13 +1,12 @@
 #define USE_DB
 #include <router.h>
 #include <common.h>
-#include "../../schema.h"
-#include "../../utils.h"
-#include "local.h"
-#include "../../services/note.h"
-#include "../../services/user.h"
-#include "../../http.h"
-#include "../../entities/Like.h"
+#include "database.h"
+#include "utils.h"
+#include "services/note.h"
+#include "services/user.h"
+#include "http.h"
+#include "entities/Like.h"
 
 POST(post_status, "/api/v1/statuses") {
   MSAUTH
@@ -33,7 +32,6 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   MSAUTH
   string id (req->getParameter("id"));
 
-  auto user = UserService::lookup(ct->userid);
   auto note = NoteService::lookup(id);
   if (!note.has_value()) {
     ERROR(404, "no note");
@@ -45,16 +43,16 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
     .id = likeid,
     .local = true,
 
-    .owner = user->uri,
+    .owner = authuser.uri,
     .object = note->uri
   };
   like.insert();
 
   URL url(note->uri);
-  APClient cli(user.value(), url.host);
+  APClient cli(authuser, url.host);
 
   json activity = {
-    {"actor", user->uri},
+    {"actor", authuser.uri},
     {"id", like.uri},
     {"object", note->uri},
     {"content", "❤"},

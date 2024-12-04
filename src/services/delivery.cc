@@ -1,14 +1,15 @@
-#include "delivery.h"
-#include "../utils.h"
-#include "../http.h"
-#include "user.h"
+#include "utils.h"
+#include "http.h"
+
+#include "services/delivery.h"
+#include "services/user.h"
 
 namespace DeliveryService {
 
   void Deliver(string instance, json activity) {
     URL url(instance);
 
-    User ia = UserService::lookup(ct->userid).value();
+    User ia = UserService::lookup(cfg.instanceactor).value();
     APClient cli(ia, url.host);
 
     auto resp = cli.Post("/inbox", activity);
@@ -41,7 +42,7 @@ namespace DeliveryService {
     }
 
     // add json-ld context 
-    activity["@context"] = ct->context;
+    activity["@context"] = context;
 
     // if (audience.showcc) {
     //   std::vector<string> to;

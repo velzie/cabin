@@ -9,9 +9,9 @@
 
 #include <common.h>
 
-#include "../schema.h"
-#include "../utils.h"
-#include "../http.h"
+#include "database.h"
+#include "utils.h"
+#include "http.h"
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
   bool success = false;
@@ -90,15 +90,17 @@ namespace UserService {
 
 
   User fetchRemote(const string uri) {
-    if (lookup_ap(uri).has_value()) {
+    auto cached = lookup_ap(uri);
+    if (cached.has_value()) {
       // TODO: don't skip if it's been a while
       trace("skipping refetch of {}", uri);
+      return cached.value();
     }
 
     trace("fetching user {}", uri);
     URL url(uri);
 
-    auto ia = UserService::lookup(ct->userid);
+    auto ia = UserService::lookup(cfg.instanceactor);
     APClient cli(ia.value(), url.host);
 
     auto response = cli.Get(url.path);

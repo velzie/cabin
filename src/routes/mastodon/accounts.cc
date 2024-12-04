@@ -4,35 +4,27 @@
 #define USE_DB
 #include <router.h>
 #include <common.h>
-#include "../../schema.h"
-#include "../../entities/Note.h"
-#include "../../services/follow.h"
+#include "database.h"
+#include "entities/Note.h"
+#include "services/follow.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
+  MSAUTH
 
-  string uid = ct->userid;
-
-  User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
-  q.bind(1, uid);
-  if (!q.executeStep()) {
-    ERROR(404, "no user");
-  }
-  u.load(q);
 
   json r = {
-    {"username", u.username},
-    {"acct", u.username},
-    {"fqn", FMT("{}@{}", u.username, u.host)},
-    {"display_name", u.displayname},
+    {"username", authuser.username},
+    {"acct", authuser.username},
+    {"fqn", authuser.acct(false)},
+    {"display_name", authuser.displayname},
     {"locked", false},
     {"created_at", "2024-06-27T03:50:13.833Z"},
     {"followers_count", 0},
     {"following_count", 0},
     {"statuses_count", 0},
-    {"note", u.summary},
-    {"url", USERPAGE(uid)},
-    {"uri", USERPAGE(uid)},
+    {"note", authuser.summary},
+    {"url", USERPAGE(authuser.id)},
+    {"uri", USERPAGE(authuser.id)},
     {"avatar", "https://fedi.velzie.rip/files/28a63a3f-c3e7-4dba-b556-02dad8470212.png"},
     {"avatar_static", "https://fedi.velzie.rip/files/28a63a3f-c3e7-4dba-b556-02dad8470212.png"},
     {"header", "https://fedi.velzie.rip/files/409ad084-6089-410a-83d6-805cc4f8df52.jpg"},
@@ -43,14 +35,14 @@ GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
     {"fields", json::array()},
     {"source", {
       {"language", ""},
-      {"note", u.summary},
+      {"note", authuser.summary},
       {"privacy", "public"},
       {"sensitive", false},
       {"fields", json::array()},
       {"follow_requests_count", 0}
     }},
     {"emojis", json::array()},
-    {"id", uid},
+    {"id", authuser.id},
 
   };
 

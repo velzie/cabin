@@ -2,7 +2,7 @@
 #define USE_DB
 #include <common.h>
 #include <httplib.h>
-#include "schema.h"
+#include "database.h"
 #include "entities/User.h"
 
 class APClient {

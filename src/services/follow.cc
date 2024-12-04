@@ -1,7 +1,7 @@
-#include "follow.h"
-#include "../utils.h"
-#include "delivery.h"
-#include "user.h"
+#include "utils.h"
+#include "services/user.h"
+#include "services/follow.h"
+#include "services/delivery.h"
 #include <stdexcept>
 
 

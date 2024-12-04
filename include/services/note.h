@@ -1,7 +1,7 @@
 #pragma once
 #include <common.h>
-#include "../schema.h"
-#include "../entities/Note.h"
+#include "database.h"
+#include "entities/Note.h"
 
 namespace NoteService {
   Note create(User &owner, string content);

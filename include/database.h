@@ -1,7 +1,17 @@
 #pragma once
-#define USE_DB
+
 #include <common.h>
+#include "SQLiteCpp/Database.h"
 #include <SQLiteCpp/Statement.h>
+#include <migration.h>
+
+namespace Database {
+  extern SQLite::Database *conn;
+  void Init();
+}
+
+#define STATEMENT(string) SQLite::Statement(*Database::conn, string);
+
 
 #define ORM(table, fields)\
     inline void load(SQLite::Statement &statement) {\

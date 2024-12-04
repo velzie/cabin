@@ -1,5 +1,5 @@
 #pragma once
-#include "../schema.h"
+#include "database.h"
 
 struct User {
   string uri;
@@ -65,7 +65,7 @@ int isBot;
 
     string userurl = USERPAGE(id);
     json j = {
-      {"@context", ct->context},
+      {"@context", context},
       {"type", "Person"},
       {"id", userurl},
       {"inbox", userurl + "/inbox"},
@@ -98,7 +98,7 @@ int isBot;
   }
 
   string acct(bool omitLocalHost) {
-    if (omitLocalHost && host == ct->cfg.domain) {
+    if (omitLocalHost && host == cfg.domain) {
       return username;
     }
 

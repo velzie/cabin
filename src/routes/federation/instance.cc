@@ -4,10 +4,10 @@
 #include "router.h"
 #include "common.h"
 #include <optional>
-#include "../../utils.h"
-#include "../../schema.h"
-#include "../../services/ingest.h"
-#include "../../services/user.h"
+#include "utils.h"
+#include "database.h"
+#include "services/ingest.h"
+#include "services/user.h"
 
 POST(inbox, "/inbox") {
   if (body["type"] == "Delete") return;

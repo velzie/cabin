@@ -1,8 +1,8 @@
 #define USE_DB
 #include "router.h"
 #include "common.h"
-#include "../../schema.h"
-#include "../../services/user.h"
+#include "database.h"
+#include "services/user.h"
 
 GET(webfinger, "/.well-known/webfinger") {
   std::string resource(req->getQuery("resource"));
