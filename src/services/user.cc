@@ -136,23 +136,7 @@ namespace UserService {
     if (user.contains("image") && user["image"].is_string())
       u.banner = user["image"]["url"];
 
-    auto query = STATEMENT("SELECT id FROM user where uri = ?");
-    query.bind(1, uri);
-    if (query.executeStep()) {
-      // user exists, update
-      string id = query.getColumn("id");
-      
-      // TODO orm stuff etc
-      auto delq = STATEMENT("DELETE FROM user WHERE uri = ?");
-      delq.bind(1, uri);
-      delq.exec();
-
-      u.id = id;
-      u.insert();
-    } else {
-      u.id = utils::genid();
-      u.insert();
-    }
+    u.insertOrUpdate(utils::genid());
     return u;
   }
 }

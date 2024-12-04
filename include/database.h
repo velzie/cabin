@@ -13,7 +13,7 @@ namespace Database {
 #define STATEMENT(string) SQLite::Statement(*Database::conn, string);
 
 
-#define ORM(table, fields)\
+#define ORM(table, key, fields)\
     inline void load(SQLite::Statement &statement) {\
       auto _statement = &statement;\
       SQLite::Statement *_query;\
@@ -43,7 +43,38 @@ namespace Database {
       __flag = 2;\
       fields\
       return _query->exec();\
-    }
+    }\
+    inline int update() {\
+      int __flag = 0;\
+      std::vector<string> names;\
+      SQLite::Statement *_statement;\
+      SQLite::Statement *_query;\
+      int _counter = 0;\
+      fields\
+      string set;\
+      for (auto name : names) {\
+        set += name + " = ?,";\
+      }\
+      set.pop_back();\
+      auto __q = STATEMENT(FMT("UPDATE {} SET {} WHERE {} = ?", #table, set, #key));\
+      _query = &__q;\
+      _counter = 1;\
+      __flag = 2;\
+      fields\
+      __q.bind(_counter, key);\
+      return _query->exec();\
+    }\
+    inline int insertOrUpdate(string keyv) {\
+      auto query = STATEMENT(FMT("SELECT 1 FROM {} WHERE {} = ? LIMIT 1", #table, #key));\
+      query.bind(1, key);\
+      if (query.executeStep()) {\
+        return update();\
+      }else {\
+        key = keyv;\
+        return insert();\
+      }\
+    }\
+
 
 #define F(name)\
   names.push_back(#name);\

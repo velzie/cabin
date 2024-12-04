@@ -122,35 +122,18 @@ namespace NoteService {
 
     // now we can safely take the conversation id
     n.conversation = topmost.conversation;
-
-    auto query = STATEMENT("SELECT id FROM note where uri = ?");
-    query.bind(1, uri);
-    if (query.executeStep()) {
-      // note exists, update
-      string id = query.getColumn("id");
-      
-      // TODO orm stuff etc
-      auto delq = STATEMENT("DELETE FROM note WHERE uri = ?");
-      delq.bind(1, uri);
-      delq.exec();
-
-      n.id = id;
-      n.insert();
-    } else {
-      n.id = utils::genid();
-      n.insert();
-    }
+    n.insertOrUpdate(utils::genid());
 
     return n;
   }
 
   Note fetchRemote(const string uri) {
     auto cached = lookup_ap(uri);
-    if (cached.has_value()) {
-      // TODO: don't skip if it's been a while
-      trace("skipping refetch of {}", uri);
-      return cached.value();
-    }
+    // if (cached.has_value()) {
+    //   // TODO: don't skip if it's been a while
+    //   trace("skipping refetch of {}", uri);
+    //   return cached.value();
+    // }
 
     trace("fetching note {}", uri);
     auto u = UserService::lookup(cfg.instanceactor);

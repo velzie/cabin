@@ -4,21 +4,29 @@
 #include <cpptrace/from_current.hpp>
 
 namespace utils {
+  // id format is timestamp(base64) + 8 random bytes(base64)
+  // will this work? no clue
   inline string genid() {
-    int length = 16;
+    int random_length = 8;  
     const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    std::string result;
-    result.reserve(length);
+    std::string random_suffix;
+    random_suffix.reserve(random_length);
 
-    std::mt19937 rng(static_cast<unsigned int>(std::time(nullptr))); 
+    auto now = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+
+    std::stringstream timestamp_stream;
+    timestamp_stream << std::hex << duration;
+
+    thread_local std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<> dist(0, chars.size() - 1);
 
-    for (size_t i = 0; i < length; ++i) {
-        result += chars[dist(rng)];
+    for (size_t i = 0; i < random_length; ++i) {
+        random_suffix += chars[dist(rng)];
     }
 
-    return result;
-  }
+    return timestamp_stream.str() + random_suffix;
+}
   inline string dateISO() {
       auto now = std::chrono::system_clock::now();
       std::time_t now_c = std::chrono::system_clock::to_time_t(now);

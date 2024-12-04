@@ -1,5 +1,5 @@
 #pragma once
-#include "../schema.h"
+#include "database.h"
 
 struct Instance {
   string host;
@@ -11,7 +11,7 @@ struct Instance {
   string description;
   string name;
 
-  ORM(instance,
+  ORM(instance, host,
     F(host)
 
     F(lastUpdatedAt)

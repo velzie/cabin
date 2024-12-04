@@ -13,7 +13,7 @@ struct Follow {
   int pending;
   std::time_t createdAt;
 
-  ORM(follow,
+  ORM(follow, uri,
       F(uri)
       F(id)
       F(local)

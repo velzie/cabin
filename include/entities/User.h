@@ -30,7 +30,7 @@ int isBot;
   string sharedInbox;
   string featured;
 
-  ORM(user,
+  ORM(user, uri,
     F(uri)
     F(id)
     F(local)

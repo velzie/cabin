@@ -1,28 +1,13 @@
-#include "spdlog/spdlog-inl.h"
 #include <openssl/http.h>
-#include <stdexcept>
-#define USE_DB
 
 #include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <iterator>
-#include <memory>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <stdio.h>
-#include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <thread>
 #include "common.h"
 #include "database.h"
-#include "http.h"
-#include "services/user.h"
-#include "utils.h"
-#include <cpptrace/cpptrace.hpp>
 #include "server.h"
+#include "services/note.h"
 
 
 Config default_config = {
@@ -82,11 +67,14 @@ int main(int argc, char **argv) {
 
   info("loaded ({})", cfg.domain); 
 
-  Database::Init();
 
-  std::thread tserver([](){
-    Server::Listen();
+  std::thread s1([](){
+    NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });
+
+  Database::Init();
+  Server::Listen();
+  s1.join();
 
   // if (argc > 1) {
   //   URL url(argv[1]);
@@ -153,6 +141,5 @@ int main(int argc, char **argv) {
  //  error("{} : ({})", c->status, c->body);
 
 
-  tserver.join();
   return 0;
 }

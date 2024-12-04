@@ -30,7 +30,7 @@ struct Note {
   int remoteReplyCount;
   int remoteLikeCount;
 
-  ORM(note,
+  ORM(note, uri,
     F(uri)
     F(id)
     F(local)

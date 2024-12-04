@@ -10,7 +10,7 @@ struct Like {
   string owner;
   string object;
 
-  ORM(like,
+  ORM(like, uri,
       F(uri)
       F(id)
       F(local)

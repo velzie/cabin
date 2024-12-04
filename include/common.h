@@ -2,8 +2,8 @@
 #include "spdlog/spdlog.h"
 #define DBG_MACRO_NO_WARNING
 #include <dbg.h>
-
 #include <nlohmann/json.hpp>
+#include <optional>
 
 #define VERSION_LONG "0.1-commit"
 #define SOFTWARE "cabin"
