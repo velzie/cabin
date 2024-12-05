@@ -1,3 +1,4 @@
+#include "SQLiteCpp/Statement.h"
 #define USE_DB
 #include <router.h>
 #include <common.h>
@@ -183,17 +184,80 @@ GET(status_reactions, "/api/v1/statuses/:id/reactions") {
 GET(timelines, "/api/v1/timelines/:id") {
   MSAUTH
 
-  auto q = STATEMENT("SELECT * FROM note");
+  string tlname (req->getParameter("id"));
+
+  std::stringstream ss(string(req->getQuery("limit")));
+  int limit = 0;
+  ss >> limit;
+  if (!limit) limit = 20;
+  if (limit > 20) limit = 20;
+
+
+  // top ryri (180e61a5efb46fa1lkQrLikM)
+  // knizer boston
+  // arab
+  // trump
+
+  string max_id (req->getQuery("max_id"));
+  string min_id (req->getQuery("min_id"));
+  string since_id (req->getQuery("since_id"));
+
+  // default, no pagination
+  SQLite::Statement q = STATEMENT("SELECT * FROM note ORDER BY publishedClamped DESC LIMIT ?");
+  q.bind(1, limit);
+
+  if (!max_id.empty()) {
+    // start at max_id and paginated down
+    Note upperNote = NoteService::lookup(max_id).value();
+    q = STATEMENT("SELECT * FROM note WHERE publishedClamped < ? ORDER BY publishedClamped DESC LIMIT ?");
+    q.bind(1, upperNote.publishedClamped);
+    q.bind(2, limit);
+  } else if (!min_id.empty()) {
+    // start at low id, paginate up
+    Note lowerNote = NoteService::lookup(min_id).value();
+    q = STATEMENT("SELECT * FROM note WHERE publishedClamped > ? ORDER BY publishedClamped DESC LIMIT ?");
+    q.bind(1, lowerNote.publishedClamped);
+    q.bind(2, limit);
+  } else if (!since_id.empty()) {
+    // start at most recent date, paginate down but don't go further than since_id
+    Note lowerNote = NoteService::lookup(since_id).value();
+    q = STATEMENT(R"SQL(
+        SELECT *
+        FROM (
+          SELECT * FROM note
+          WHERE publishedClamped > ?
+          ORDER BY publishedClamped DESC
+          LIMIT ?
+        ) AS subquery
+        ORDER BY publishedClamped
+    )SQL");
+    q.bind(1, lowerNote.publishedClamped);
+    q.bind(2, limit);
+  }
 
 
   json response = json::array();
+
+  string ret_max_id;
+  string ret_min_id;
+
+
   while (q.executeStep()) {
     Note n;
     n.load(q);
 
+    if (ret_min_id.empty()) ret_min_id = n.id;
+    ret_max_id = n.id;
+
     response.push_back(n.renderMS(authuser));
   }
-  std::reverse(response.begin(), response.end());
+
+  res->writeHeader("Link",
+      FMT("<{}>; rel=\"next\",<{}>; rel=\"prev\"", 
+        MAPI(FMT("timelines/{}?max_id={}", tlname, ret_max_id)),
+        MAPI(FMT("timelines/{}?min_id={}", tlname, ret_min_id))
+      )
+  );
 
   OK(response, MIMEJSON);
 }

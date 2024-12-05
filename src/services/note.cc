@@ -25,6 +25,8 @@ namespace NoteService {
 
       .owner = USERPAGE(owner.id),
       .published = published,
+      .publishedClamped = published,
+      .recievedAt = published
     };
     return note;
   }
