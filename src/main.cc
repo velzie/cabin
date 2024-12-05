@@ -39,7 +39,7 @@ URL::URL(string s) {
   frag = _frag;
 }
 
-
+int m();
 int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::trace);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
 
   std::thread s1([](){
-    NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
+    // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });
 
   Database::Init();

@@ -116,21 +116,24 @@ namespace Server {
 
     for (const auto route : routes_post) {
       app->post(route.first, [route](uResponse res, uRequest req){
+        string contentType(req->getHeader("content-type"));
 		    auto isAborted = std::make_shared<bool>(false);
 		    auto body = std::make_shared<std::stringstream>();
-		    res->onData([req, res, isAborted, body, route](std::string_view chunk, bool isFin) mutable {
+		    res->onData([req, res, isAborted, body, route, contentType](std::string_view chunk, bool isFin) mutable {
 		      *body << chunk;
           if (isFin && !*isAborted) {
             CPPTRACE_TRY {
-              uWS::MultipartParser mp(req->getHeader("content-type"));
+              uWS::MultipartParser mp(contentType);
+// https://app.wafrn.net/fediverse/post/f9ada55d-01cb-
+// 40c7-bc5c-217d4d20dd10
 
               json j;
-              if (req->getHeader("content-type").find("json") != std::string::npos) {
+              if (contentType.find("json") != std::string::npos) {
                 if (body->str().empty()) j = nullptr;
                 else j = json::parse(body->str());
               } else if (mp.isValid()) {
                 mp.setBody(body->str());
-              } else if (req->getHeader("content-type") == "application/x-www-form-urlencoded") {
+              } else if (contentType == "application/x-www-form-urlencoded") {
                 // todo
               }
 

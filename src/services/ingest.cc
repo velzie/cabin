@@ -31,6 +31,21 @@ namespace IngestService {
     } else if (type == "Announce") {
       string object = body["object"];
       Note note = NoteService::fetchRemote(object);
+
+      User renoter = UserService::fetchRemote(body["actor"]);
+
+      Note renote = {
+        .uri = body["id"],
+        .id = utils::genid(),
+        .local = false,
+        .host = renoter.host,
+
+        .renoteUri = note.uri,
+        
+        .owner = renoter.uri,
+        .published = utils::isoToMillis(body["published"]),
+      };
+      renote.insert();
     } else if (type == "Like") {
       UserService::fetchRemote(body["actor"]);
       NoteService::fetchRemote(body["object"]);
