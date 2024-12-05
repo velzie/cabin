@@ -34,6 +34,7 @@ namespace IngestService {
 
       User renoter = UserService::fetchRemote(body["actor"]);
 
+      time_t published = utils::isoToMillis(body["published"]);
       Note renote = {
         .uri = body["id"],
         .id = utils::genid(),
@@ -43,7 +44,9 @@ namespace IngestService {
         .renoteUri = note.uri,
         
         .owner = renoter.uri,
-        .published = utils::isoToMillis(body["published"]),
+        .published = published,
+        .publishedClamped = utils::clampmillis(published),
+        .recievedAt = utils::millis(),
       };
       renote.insert();
     } else if (type == "Like") {

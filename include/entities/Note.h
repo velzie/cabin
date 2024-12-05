@@ -23,9 +23,12 @@ struct Note {
   int sensitive;
 
   string owner;
-  std::time_t published;
 
-  std::time_t lastUpdatedAt;
+  time_t published;
+  time_t publishedClamped;
+  time_t recievedAt;
+
+  time_t lastUpdatedAt;
   int remoteRenoteCount;
   int remoteReplyCount;
   int remoteLikeCount;
@@ -47,6 +50,8 @@ struct Note {
 
     F(owner)
     F(published)
+    F(publishedClamped)
+    F(recievedAt)
 
     F(lastUpdatedAt)
     F(remoteRenoteCount)

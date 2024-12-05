@@ -19,8 +19,10 @@ MIGRATION_UP(init, 1) {
       sensitive BOOLEAN NOT NULL,
 
       owner TEXT NOT NULL,
-      published INTEGER NOT NULL,
 
+      published INTEGER NOT NULL,
+      publishedClamped INTEGER,
+      recievedAt INTEGER,
 
       lastUpdatedAt INTEGER,
       remoteRenoteCount INTEGER,

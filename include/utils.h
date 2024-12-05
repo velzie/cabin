@@ -36,13 +36,13 @@ namespace utils {
       return oss.str();
   }
 
-  inline long long millis() {
+  inline time_t millis() {
     auto now = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     return duration.count();
   }
 
-  inline long long isoToMillis(const std::string& isoTime) {
+  inline time_t isoToMillis(const std::string& isoTime) {
     std::tm tm = {};
     std::istringstream ss(isoTime);
 
@@ -66,12 +66,18 @@ namespace utils {
     return duration.count() + milliseconds;
   }
 
-  inline string millisToIso(long long millis) {
+  inline string millisToIso(time_t millis) {
       std::time_t time = millis / 1000;
       std::tm utc_tm = *std::gmtime(&time);
       std::ostringstream oss;
       oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%SZ");
       return oss.str();
+  }
+
+  inline time_t clampmillis(time_t t) { 
+    auto now = millis();
+    if (t > now) return now;
+    return t;
   }
 
   inline void getStackTrace() {

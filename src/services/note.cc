@@ -16,6 +16,7 @@ namespace NoteService {
 
   Note _create(User &owner) {
     string id = utils::genid();
+    time_t published = utils::millis();
     Note note = {
       .uri = NOTE(id),
       .id = id,
@@ -23,7 +24,7 @@ namespace NoteService {
       .host = cfg.domain,
 
       .owner = USERPAGE(owner.id),
-      .published = utils::millis(),
+      .published = published,
     };
     return note;
   }
@@ -84,6 +85,7 @@ namespace NoteService {
   Note ingest(const string uri, const json note) {
     URL url(uri);
 
+    std::time_t published = utils::isoToMillis(note["published"]);
     Note n = {
       .uri = uri,
       .local = false,
@@ -95,7 +97,9 @@ namespace NoteService {
       .content = note["content"],
       .sensitive = false,
       .owner = note["attributedTo"],
-      .published = utils::isoToMillis(note["published"]),
+      .published = published,
+      .publishedClamped = utils::clampmillis(published),
+      .recievedAt = utils::millis(),
 
 
       .lastUpdatedAt = utils::millis()
@@ -181,19 +185,11 @@ namespace NoteService {
 
 
 json Note::renderMS(User &requester) {
-  User uOwner;
-  auto s = STATEMENT("SELECT * FROM user WHERE uri = ?");
-  s.bind(1, owner);
-  s.executeStep();
-  uOwner.load(s);
-
+  User uOwner = UserService::lookup_ap(owner).value();
 
   Note nReplyTo;
   if (replyToUri.has_value()) {
-    auto rs = STATEMENT("SELECT * FROM note WHERE uri = ?");
-    rs.bind(1, replyToUri.value());
-    rs.executeStep();
-    nReplyTo.load(rs);
+    nReplyTo = NoteService::lookup_ap(replyToUri.value()).value();
   }
 
   auto favs = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ?");
