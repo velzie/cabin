@@ -7,6 +7,22 @@
 #define NOTEVISIBILITY_Home 1
 #define NOTEVISIBILITY_Followers 2
 #define NOTEVISIBILITY_Direct 3
+
+
+struct NoteMention {
+  string uri;
+  string fqn;
+  string id;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteMention, uri, fqn, id);
+
+struct NoteHashtag {
+  string name;
+  string href;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteHashtag, name, href);
+
+
 struct Note {
   string uri;
   string id;
@@ -23,6 +39,9 @@ struct Note {
   int sensitive;
 
   string owner;
+
+  std::vector<NoteMention> mentions;
+  std::vector<NoteHashtag> hashtags;
 
   time_t published;
   time_t publishedClamped;
@@ -49,6 +68,10 @@ struct Note {
     F(sensitive)
 
     F(owner)
+
+    JSON(mentions)
+    JSON(hashtags)
+
     F(published)
     F(publishedClamped)
     F(recievedAt)

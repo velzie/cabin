@@ -104,6 +104,7 @@ namespace UserService {
     APClient cli(ia.value(), url.host);
 
     auto response = cli.Get(url.path);
+    ASSERT(response);
     if (response->status != 200){ 
       dbg(response->body);
       throw std::runtime_error("");

@@ -20,6 +20,9 @@ MIGRATION_UP(init, 1) {
 
       owner TEXT NOT NULL,
 
+      mentions JSON NOT NULL,
+      hashtags JSON NOT NULL,
+
       published INTEGER NOT NULL,
       publishedClamped INTEGER,
       recievedAt INTEGER,

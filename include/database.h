@@ -79,7 +79,6 @@ namespace Database {
     _r = object.insert();\
   }\
 
-
 #define F(name)\
   names.push_back(#name);\
   if (__flag == 1)\
@@ -91,15 +90,31 @@ namespace Database {
 
 #define OPT(name)\
   names.push_back(#name);\
-  if (__flag == 1)\
-    if (_statement->getColumn(#name).isNull())\
+  if (__flag == 1) {\
+    if (_statement->getColumn(#name).isNull()) {\
       name = nullopt;\
-    else\
+    } else {\
       name = (typeof(name))_statement->getColumn(#name);\
-  if (__flag == 2)\
-      if (name.has_value())\
+    }\
+  }\
+  if (__flag == 2) {\
+      if (name.has_value()){\
         _query->bind(_counter, name.value());\
-      else\
+      } else {\
         _query->bind(_counter);\
-  \
+      }\
+  }\
   _counter++;
+
+#define JSON(name)\
+  names.push_back(#name);\
+  if (__flag == 1) {\
+    json j = _statement->getColumn(#name);\
+    name = j.template get<decltype(name)>();\
+  }\
+  if (__flag == 2) {\
+      _query->bind(_counter, json(name).dump());\
+  }\
+  _counter++;
+
+

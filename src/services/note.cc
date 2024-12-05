@@ -107,6 +107,33 @@ namespace NoteService {
       .lastUpdatedAt = utils::millis()
     };
 
+    if (note.contains("tag") && note["tag"].is_array()) {
+      for (const auto tag : note["tag"]) {
+        if (tag["type"] == "Mention") {
+          NoteMention m;
+          auto mentionee = UserService::lookup_ap(tag["href"]);
+          if (!mentionee.has_value()) {
+            error("failed to lookup mentionee by {}", (string)tag["href"]);
+            continue; // not worth parsing
+          }
+          m.id = mentionee->id;
+          m.fqn = mentionee->acct(false);
+          m.uri = mentionee->uri;
+
+          n.mentions.push_back(m);
+        } else if (tag["type"] == "Hashtag") {
+          NoteHashtag h;
+          h.href = tag["href"];
+          h.name = tag["name"];
+          h.name.erase(0, 1); // remove hashtag
+          
+          n.hashtags.push_back(h);
+        } else {
+          error("unkown Tag type {}", (string)tag["type"]);
+        }
+      }
+    }
+
     if (note.contains("sensitive") && note["sensitive"].is_boolean()) {
       n.sensitive = note["sensitive"];
     }
