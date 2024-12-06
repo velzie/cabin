@@ -113,6 +113,7 @@ GET(status_context, "/api/v1/statuses/:id/context") {
   Note topmost = originalnote.value();
   while (topmost.replyToUri.has_value()) {
     auto s = std::find_if(bag.begin(), bag.end(), [topmost](Note n){ return n.uri == topmost.replyToUri.value(); });
+    ASSERT(s != bag.end());
     topmost = *s;
     bag.erase(s);
 
