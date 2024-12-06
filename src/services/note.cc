@@ -32,11 +32,17 @@ namespace NoteService {
     return note;
   }
 
-  Note create(User &owner, string content) {
+  Note create(User &owner, string content, optional<Note> replyTo) {
     Note note = _create(owner);
     note.content = content;
     note.cw = "";
     note.sensitive = false;
+
+    std::vector<string> mentions;
+    if (replyTo.has_value()) {
+      note.replyToUri = replyTo->uri;
+      mentions.push_back(replyTo->owner);
+    }
 
     note.insert();
 
@@ -51,10 +57,11 @@ namespace NoteService {
 
     DeliveryService::Audience au = {
       .actor = owner,
+      .mentions = mentions,
       .aspublic = true,
       .followers = true,
     };
-    // DeliveryService::QueueDelivery(activity, au);
+    DeliveryService::QueueDelivery(activity, au);
 
     return note;
   }

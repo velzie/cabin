@@ -11,7 +11,12 @@
 
 POST(post_status, "/api/v1/statuses") {
   MSAUTH
-  Note note = NoteService::create(authuser, body["status"]);
+
+  optional<Note> replyTo;
+  if (body["in_reply_to_id"].is_string()) {
+    replyTo = NoteService::lookup(body["in_reply_to_id"]);
+  }
+  Note note = NoteService::create(authuser, body["status"], replyTo);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }
