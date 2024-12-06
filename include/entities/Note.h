@@ -23,6 +23,14 @@ struct NoteHashtag {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteHashtag, name, href);
 
+struct NoteAttachment {
+  string url;
+  string description;
+  string blurhash;
+  bool sensitive;
+};
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteAttachment, url, description, blurhash, sensitive);
+
 
 struct Note {
   string uri;
@@ -43,6 +51,7 @@ struct Note {
 
   std::vector<NoteMention> mentions;
   std::vector<NoteHashtag> hashtags;
+  std::vector<NoteAttachment> mediaattachments;
 
   time_t published;
   time_t publishedClamped;
@@ -72,6 +81,7 @@ struct Note {
 
     JSON(mentions)
     JSON(hashtags)
+    JSON(mediaattachments)
 
     F(published)
     F(publishedClamped)

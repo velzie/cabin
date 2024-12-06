@@ -22,6 +22,7 @@ MIGRATION_UP(init, 1) {
 
       mentions JSON NOT NULL,
       hashtags JSON NOT NULL,
+      mediaattachments JSON NOT NULL,
 
       published INTEGER NOT NULL,
       publishedClamped INTEGER,

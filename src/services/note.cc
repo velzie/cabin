@@ -1,3 +1,4 @@
+#include "entities/Note.h"
 #define USE_DB
 #include <common.h>
 #include <httplib.h>
@@ -131,6 +132,29 @@ namespace NoteService {
           n.hashtags.push_back(h);
         } else {
           error("unkown Tag type {}", (string)tag["type"]);
+        }
+      }
+    }
+
+    if (note.contains("attachment") && note["attachment"].is_array()) {
+      for (const auto attachment : (std::vector<json>)note["attachment"]) {
+        if (attachment["type"] == "Document") {
+          NoteAttachment a;
+          a.url = attachment["url"];
+
+          if (attachment.contains("name") && attachment["name"].is_string()) {
+            a.description = attachment["name"];
+          }
+
+          if (attachment.contains("blurhash") && attachment["blurhash"].is_string()) {
+            a.blurhash = attachment["blurhash"];
+          }
+
+          a.sensitive = false;
+          if (attachment.contains("sensitive") && attachment["sensitive"].is_boolean()) {
+            a.sensitive = attachment["sensitive"];
+          }
+          n.mediaattachments.push_back(a);
         }
       }
     }
