@@ -40,12 +40,16 @@ MIGRATION_UP(init, 1) {
       host TEXT PRIMARY KEY,
       id TEXT NOT NULL UNIQUE,
 
-      lastUpdatedAt INTEGER,
-      remoteUsersCount INTEGER,
-      remoteNotesCount INTEGER,
+      lastUpdatedAt INTEGER NOT NULL,
+      remoteUsersCount INTEGER NOT NULL,
+      remoteNotesCount INTEGER NOT NULL,
 
-      description TEXT,
-      name TEXT
+      themecolor TEXT NOT NULL,
+      faviconurl TEXT NOT NULL,
+      iconurl TEXT NOT NULL,
+
+      description TEXT NOT NULL,
+      name TEXT NOT NULL
     )
   )");
 

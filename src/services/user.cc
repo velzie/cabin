@@ -12,6 +12,7 @@
 #include "database.h"
 #include "utils.h"
 #include "http.h"
+#include "services/instance.h"
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
   bool success = false;
@@ -99,6 +100,8 @@ namespace UserService {
 
     trace("fetching user {}", uri);
     URL url(uri);
+
+    auto instance = InstanceService::fetchRemote(url.host);
 
     auto ia = UserService::lookup(cfg.instanceactor);
     APClient cli(ia.value(), url.host);

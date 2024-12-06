@@ -8,11 +8,19 @@ struct Instance {
   int remoteUsersCount;
   int remoteNotesCount;
 
+  string themecolor;
+  string faviconurl;
+  string iconurl;
+
   string description;
   string name;
 
   ORM(instance, host,
     F(host)
+
+    F(themecolor)
+    F(faviconurl)
+    F(iconurl)
 
     F(lastUpdatedAt)
     F(remoteUsersCount)

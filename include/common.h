@@ -13,6 +13,7 @@ using nlohmann::json;
 using std::string;
 using std::optional;
 using std::nullopt;
+using std::vector;
 using namespace spdlog;
 #define FMT fmt::format
 
