@@ -3,6 +3,7 @@
 
 struct Instance {
   string host;
+  string id;
 
   std::time_t lastUpdatedAt;
   int remoteUsersCount;
@@ -17,6 +18,7 @@ struct Instance {
 
   ORM(instance, host,
     F(host)
+    F(id)
 
     F(themecolor)
     F(faviconurl)

@@ -47,11 +47,13 @@ namespace InstanceService {
 
     Instance i;
     i.host = host;
-    i.name = nodeinfo["metadata"]["nodeName"];
-    i.description = nodeinfo["metadata"]["nodeDescription"];
+    if (nodeinfo["metadata"].contains("nodeName"))
+      i.name = nodeinfo["metadata"]["nodeName"];
+    if (nodeinfo["metadata"].contains("nodeDescription"))
+      i.description = nodeinfo["metadata"]["nodeDescription"];
     i.lastUpdatedAt = utils::millis();
 
-    INSERT_OR_UPDATE(i, host, host, host);
+    INSERT_OR_UPDATE(i, host, id, utils::genid());
 
     return i;
   }

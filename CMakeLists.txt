@@ -26,6 +26,7 @@ set(SOURCES
   src/services/ingest.cc
   src/services/delivery.cc
   src/services/follow.cc
+  src/services/instance.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
