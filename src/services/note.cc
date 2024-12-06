@@ -108,7 +108,7 @@ namespace NoteService {
     };
 
     if (note.contains("tag") && note["tag"].is_array()) {
-      for (const auto tag : note["tag"]) {
+      for (const auto tag : (std::vector<json>)note["tag"]) {
         if (tag["type"] == "Mention") {
           NoteMention m;
           auto mentionee = UserService::lookup_ap(tag["href"]);
@@ -116,6 +116,7 @@ namespace NoteService {
             error("failed to lookup mentionee by {}", (string)tag["href"]);
             continue; // not worth parsing
           }
+          m.givenuri = tag["href"];
           m.id = mentionee->id;
           m.fqn = mentionee->acct(false);
           m.uri = mentionee->uri;
@@ -268,8 +269,6 @@ json Note::renderMS(User &requester) {
     {"application", nullptr},
     {"account", uOwner.renderMS()},
     {"media_attachments", json::array()},
-    {"mentions", json::array()},
-    {"tags", json::array()},
     {"emojis", json::array()},
     {"emoji_reactions", json::array()},
     {"reactions", json::array()},
@@ -303,6 +302,32 @@ json Note::renderMS(User &requester) {
     {"edited_at", nullptr},
     {"text", nullptr}
   };
+
+  std::vector<json> respmentions;
+  for (const auto mention : mentions) {
+    std::stringstream acct(mention.fqn);
+    string user, host;
+    std::getline(acct, user, '@');
+    std::getline(acct, host);
+
+    respmentions.push_back({
+        {"id", mention.id},
+        {"url", mention.givenuri},
+        {"username", user},
+        {"acct", mention.fqn}
+    });
+  }
+  j["mentions"] = respmentions;
+
+
+  std::vector<json> resptags;
+  for (const auto hashtag : hashtags) {
+    resptags.push_back({
+      {"url", hashtag.href},
+      {"name", hashtag.name}
+    });
+  }
+  j["tags"] = resptags;
 
   if (replyToUri.has_value())
     j["in_reply_to_account_id"] = nReplyTo.owner;

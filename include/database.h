@@ -109,7 +109,7 @@ namespace Database {
 #define JSON(name)\
   names.push_back(#name);\
   if (__flag == 1) {\
-    json j = _statement->getColumn(#name);\
+    json j = json::parse((string)_statement->getColumn(#name));\
     name = j.template get<decltype(name)>();\
   }\
   if (__flag == 2) {\
