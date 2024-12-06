@@ -292,7 +292,6 @@ json Note::renderMS(User &requester) {
     {"reblog", nullptr},
     {"application", nullptr},
     {"account", uOwner.renderMS()},
-    {"media_attachments", json::array()},
     {"emojis", json::array()},
     {"emoji_reactions", json::array()},
     {"reactions", json::array()},
@@ -352,6 +351,21 @@ json Note::renderMS(User &requester) {
     });
   }
   j["tags"] = resptags;
+
+  std::vector<json> respmedia_attachments;
+  for (const auto attachment : mediaattachments) {
+    respmedia_attachments.push_back({
+      {"id", utils::genid()},
+      {"type", "image"},
+      {"url", attachment.url},
+      {"preview_url", attachment.url},
+      {"remote_url", attachment.url},
+      {"blurhash", attachment.blurhash},
+      {"description", attachment.description}
+    });
+  }
+  j["media_attachments"] = respmedia_attachments;
+
 
   if (replyToUri.has_value())
     j["in_reply_to_account_id"] = nReplyTo.owner;
