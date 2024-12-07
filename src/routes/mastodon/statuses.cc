@@ -13,10 +13,52 @@ POST(post_status, "/api/v1/statuses") {
   MSAUTH
 
   optional<Note> replyTo;
-  if (body["in_reply_to_id"].is_string()) {
-    replyTo = NoteService::lookup(body["in_reply_to_id"]);
+  string status;
+
+  if (mp.isValid()) {
+    // pleroma style
+    
+    std::pair<std::string_view, std::string_view> headers[20];
+    while (true) {
+      std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
+      if (!optionalPart.has_value()) {
+        break;
+      }
+
+      for (int i = 0; headers[i].first.length(); i++) {
+
+        if (headers[i].first == "content-disposition") {
+          uWS::ParameterParser pp(headers[i].second);
+          while (true) {
+            auto [key, value] = pp.getKeyValue();
+            if (!key.length()) {
+                break;
+            }
+            if (key != "name") continue;
+            auto data = optionalPart.value();
+
+
+            if (value == "status") {
+              status = data;
+            } else if (value == "in_reply_to_id") {
+              replyTo = NoteService::lookup(string(data));
+            }
+
+            
+          }
+        }
+      }
+    }
+  } else {
+    // mastodon style
+    if (body["in_reply_to_id"].is_string()) {
+      replyTo = NoteService::lookup(body["in_reply_to_id"]);
+    }
+    status = body["status"];
   }
-  Note note = NoteService::create(authuser, body["status"], replyTo);
+
+  
+  Note note = NoteService::create(authuser, status, replyTo);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }

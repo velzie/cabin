@@ -123,7 +123,7 @@ namespace Server {
 		      *body << chunk;
           if (isFin && !*isAborted) {
             CPPTRACE_TRY {
-              uWS::MultipartParser mp(contentType);
+              uWS::MultipartParser mp(strdup(contentType.c_str()));
 // https://app.wafrn.net/fediverse/post/f9ada55d-01cb-
 // 40c7-bc5c-217d4d20dd10
 
@@ -132,12 +132,13 @@ namespace Server {
                 if (body->str().empty()) j = nullptr;
                 else j = json::parse(body->str());
               } else if (mp.isValid()) {
-                mp.setBody(body->str());
+                mp.setBody(strdup(body->str().c_str()));
+                
               } else if (contentType == "application/x-www-form-urlencoded") {
                 // todo
               }
 
-              route.second(res, req, j, body->str());
+              route.second(res, req, j, body->str(), mp);
 
               if (!res->hasResponded()) {
                 res->writeStatus("204");
@@ -180,7 +181,7 @@ namespace Server {
                 // todo
               }
 
-              route.second(res, req, j, body->str());
+              route.second(res, req, j, body->str(), mp);
 
               if (!res->hasResponded()) {
                 res->writeStatus("204");

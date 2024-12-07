@@ -1,6 +1,5 @@
 #pragma once
-#define USE_DB
-
+#include "Multipart.h"
 #include <App.h>
 #include "common.h"
 #include "server.h"
@@ -11,7 +10,7 @@ using uResponse = uWS::HttpResponse<false> *;
 using uRequest = uWS::HttpRequest *;
 
 using __Handler = std::function<void(uResponse, uRequest)>;
-using __BodyHandler = std::function<void(uResponse, uRequest, json, string)>;
+using __BodyHandler = std::function<void(uResponse, uRequest, json, string, uWS::MultipartParser&)>;
 void *register_route(std::string route, __Handler h);
 void *register_route_post(std::string route, __BodyHandler h);
 
@@ -22,14 +21,14 @@ void *register_route_post(std::string route, __BodyHandler h);
   void name##_get_handle(uResponse res, uRequest req)
 
 #define POST(name, route)\
-  void name##_post_handle(uResponse, uRequest, json body, string bodyraw);\
+  void name##_post_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&);\
   static void * name##_reg = register_route_post(route, name##_post_handle);\
-  void name##_post_handle(uResponse res, uRequest req, json body, string bodyraw)
+  void name##_post_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp)
 
 #define PUT(name, route)\
-  void name##_put_handle(uResponse, uRequest, json body, string bodyraw);\
+  void name##_put_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&);\
   static void * name##_reg = register_route_post(route, name##_put_handle);\
-  void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw)
+  void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp)
 
 
 #define MIMEJRD "application/jrd+json; charset=utf-8"
