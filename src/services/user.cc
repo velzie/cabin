@@ -122,17 +122,25 @@ namespace UserService {
       .host = url.host,
       
       .username = user["preferredUsername"],
-      .displayname = user["name"],
-      .summary = user["summary"],
+      .summary = JstringOrEmpty(user, "summary"),
 
       .lastUpdatedAt = utils::millis(),
-      .isCat = user.contains("isCat") ? (bool)user["isCat"] : false,
-      .speakAsCat = user.contains("speakAsCat") ? (bool)user["speakAsCat"] : false,
+      .isCat = JboolOrFalse(user, "isCat"),
+      .speakAsCat = JboolOrFalse(user, "speakAsCat"),
 
       .inbox = user["inbox"],
-      .sharedInbox = user.contains("sharedInbox") ? user["sharedInbox"] : user["inbox"],
       .featured = user["featured"]
     };
+
+    if (user.contains("sharedInbox") && user["sharedInbox"].is_string())
+      u.sharedInbox = user["sharedInbox"];
+    else
+      u.sharedInbox = user["inbox"];
+
+    if (user.contains("name") && user["name"].is_string())
+      u.displayname = user["name"];
+    else
+      u.displayname = user["preferredUsername"];
 
     if (user.contains("icon") && user["icon"].is_object())
       u.avatar = user["icon"]["url"];
