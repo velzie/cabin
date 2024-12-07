@@ -345,6 +345,12 @@ json Note::renderMS(User &requester) {
     {"text", nullptr}
   };
 
+  if (quoteUri.has_value()) {
+    auto nQuote = NoteService::lookup_ap(quoteUri.value()).value();
+    j["quote_id"] = nQuote.id;
+    j["quote"] = nQuote.renderMS(requester);
+  }
+
   std::vector<json> respmentions;
   for (const auto mention : mentions) {
     std::stringstream acct(mention.fqn);
