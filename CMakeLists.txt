@@ -20,6 +20,7 @@ set(SOURCES
   src/http.cc
   src/server.cc
   src/database.cc
+  src/util.cc
 
   src/services/user.cc
   src/services/note.cc

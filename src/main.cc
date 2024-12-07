@@ -19,26 +19,6 @@ Config default_config = {
 Config cfg;
 json context;
 
-URL::URL(string s) {
-  char *_scheme;
-  char *_user;
-  char *_host;
-  char *_port;
-  int _port_num;
-  char *_path;
-  char *_query;
-  char *_frag;
-
-  OSSL_parse_url(s.c_str(), &_scheme, &_user, &_host, &_port, &_port_num, &_path, &_query, &_frag);
-
-  scheme = _scheme;
-  host = _host;
-  port = _port;
-  path = _path;
-  query = _query;
-  frag = _frag;
-}
-
 int m();
 int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::trace);
