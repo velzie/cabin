@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <openssl/http.h>
 
 #include <fstream>
@@ -15,6 +16,7 @@ Config default_config = {
   .sockethost = "0.0.0.0",
   .socketport = 2001,
   .instanceactor = "test3",
+  .mediapath = "media"
 };
 Config cfg;
 json context;
@@ -44,6 +46,10 @@ int main(int argc, char **argv) {
 
   std::ifstream contextst("context.json");
   context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
+
+  if (!std::filesystem::exists(cfg.mediapath)) {
+    std::filesystem::create_directory(cfg.mediapath);
+  }
 
   info("loaded ({})", cfg.domain); 
 

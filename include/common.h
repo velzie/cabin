@@ -26,6 +26,7 @@ struct Config {
 
   string instanceactor;
 
+  string mediapath;
 
   inline string baseurl() {
     return "https://"+domain+"/";
