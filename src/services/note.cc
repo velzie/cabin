@@ -115,6 +115,18 @@ namespace NoteService {
       .lastUpdatedAt = utils::millis()
     };
 
+    if (note.contains("_misskey_quote") && note["_misskey_quote"].is_string())
+      n.quoteUri = note["_misskey_quote"];
+    else if (note.contains("quoteUri") && note["quoteUri"].is_string())
+      n.quoteUri = note["quoteUri"];
+    else
+      n.quoteUri = nullopt;
+
+    if (n.quoteUri.has_value()) {
+      fetchRemote(n.quoteUri.value());
+    }
+      
+
     if (note.contains("tag") && note["tag"].is_array()) {
       for (const auto tag : (std::vector<json>)note["tag"]) {
         if (tag["type"] == "Mention") {
