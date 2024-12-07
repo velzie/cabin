@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
 
   if (!std::filesystem::exists(cfg.mediapath)) {
-    std::filesystem::create_directory(cfg.mediapath);
+    std::filesystem::create_directories(cfg.mediapath);
   }
 
   info("loaded ({})", cfg.domain); 

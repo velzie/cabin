@@ -33,7 +33,7 @@ struct Config {
   }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor, sockethost, socketport, mediapath);
 
 
 inline string JstringOrEmpty(json &j, string name) {

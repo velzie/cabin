@@ -4,11 +4,15 @@
 #include "fmt/format.h"
 #include "common.h"
 #include "server.h"
+#include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include "router.h"
 #include <execinfo.h> 
 #include <cpptrace/from_current.hpp>
-
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 std::unordered_map<std::string, __Handler> routes_get;
 std::unordered_map<std::string, __BodyHandler> routes_post;
 std::unordered_map<std::string, __BodyHandler> routes_put;
@@ -60,6 +64,30 @@ namespace Server {
       res->writeStatus("404");
       res->end("unimplemented");
     });
+
+    app->get("/media/*", [](uResponse res, uRequest req){
+      string url (req->getUrl());
+      url.erase(0, 6);
+      dbg(url);
+
+      string filePath(cfg.mediapath + url);
+      std::filesystem::path p = filePath;
+
+      if (std::filesystem::exists(p) && std::filesystem::is_regular_file(p)) {
+          res->writeHeader("Access-Control-Allow-Origin", "*");
+          res->writeHeader("Content-Type", "image/png");
+
+          std::ifstream file(p, std::ios::binary);
+          std::ostringstream ss;
+          ss << file.rdbuf();
+          res->end(ss.str());
+      }
+      res->writeStatus("404");
+      res->end();
+    });
+
+
+
     struct PerSocketData {
         /* Fill with user data */
     };
