@@ -115,12 +115,24 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
 }
 
 json getRelationship(User &you, User &them) {
+  auto query = STATEMENT("SELECT 1 FROM follow WHERE followee = ? AND follower = ?");
+
+  query.bind(1, them.uri);
+  query.bind(2, you.uri);
+  bool following = query.executeStep();
+
+  query.reset();
+
+  query.bind(1, you.uri);
+  query.bind(2, them.uri);
+  bool followed_by = query.executeStep();
+
   return { 
     {"id", them.id},
-    {"following", false},
+    {"following", following},
     {"showing_reblogs", true},
     {"notifying", false},
-    {"followed_by", true},
+    {"followed_by", followed_by},
     {"blocking", false},
     {"blocked_by", false},
     {"muting", false},

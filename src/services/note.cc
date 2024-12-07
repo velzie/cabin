@@ -285,7 +285,7 @@ json Note::renderMS(User &requester) {
     {"spoiler_text", ""},
     {"visibility", "public"},
     {"language", "en"},
-    {"uri", NOTE(id)},
+    {"uri", uri},
     {"url", NOTE(id)},
     {"replies_count", replyCount},
     {"reblogs_count", renoteCount},

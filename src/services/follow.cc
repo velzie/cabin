@@ -20,6 +20,7 @@ namespace FollowService {
       .pending = true,
       .createdAt = utils::millis(),
     };
+    f.insert();
 
     DeliveryService::Audience au = {
       .mentions = {followee}

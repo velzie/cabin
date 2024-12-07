@@ -35,6 +35,19 @@ struct Config {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor);
 
 
+inline string JstringOrEmpty(json &j, string name) {
+  if (j.contains(name) && j[name].is_string()) {
+    return j[name];
+  }
+  return "";
+}
+inline bool JboolOrFalse(json &j, string name) {
+  if (j.contains(name) && j[name].is_boolean()) {
+    return j[name];
+  }
+  return false;
+}
+
 
 extern Config cfg;
 extern json context;
@@ -47,9 +60,12 @@ class URL {
   string port;
   string path;
   string query;
+  std::map<string, string> queryMap;
   string frag;
 
   URL(string s);
+  private:
+    void parseQuery(const string& queryStr);
 };
 
 #define ARR json::array()
