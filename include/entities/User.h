@@ -88,6 +88,12 @@ int isBot;
       {"preferredUsername", username},
       {"name", displayname},
       {"summary", summary},
+      {"icon", {
+        {"type", "Image"},
+        {"url", avatar},
+        {"sensitive", false},
+        {"name", nullptr}
+      }},
       {"discoverable", true},
       {"noindex", true},
       {"attachment", json::array()},
