@@ -13,6 +13,7 @@ POST(post_status, "/api/v1/statuses") {
   MSAUTH
 
   optional<Note> replyTo;
+  optional<Note> quote;
   string status;
 
   if (mp.isValid()) {
