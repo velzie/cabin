@@ -94,10 +94,13 @@ MIGRATION_UP(init, 1) {
 
       createdAt INTEGER NOT NULL,
 
-      notiferUri TEXT,
+      notifierUri TEXT,
       notifierId TEXT,
       notifieeUri TEXT NOT NULL,
       notifieeId TEXT NOT NULL,
+
+      statusId TEXT,
+      statusUri TEXT,
 
       isread BOOLEAN NOT NULL
     )

@@ -20,6 +20,18 @@ namespace NotificationService {
     auto n = create(followee, NOTIFICATION_Follow);
     n.notifierId = follower.id;
     n.notifierUri = follower.uri;
+
+    n.insert();
+  }
+
+  void createFavorite(Note &note, User &favoritee, User &favoriter) {
+    auto n = create(favoritee, NOTIFICATION_Favorite);
+    n.notifierId = favoriter.id;
+    n.notifierUri = favoriter.uri;
+    n.statusId = note.id;
+    n.statusUri = note.uri;
+
+    n.insert();
   }
 }
 
