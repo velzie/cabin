@@ -100,7 +100,6 @@ namespace UserService {
 
     trace("fetching user {}", uri);
     URL url(uri);
-
     auto instance = InstanceService::fetchRemote(url.host);
 
     auto ia = UserService::lookup(cfg.instanceactor);
@@ -114,6 +113,12 @@ namespace UserService {
     }
 
     json user = json::parse(response->body);
+
+    if (user["type"] != "Person") {
+      // https://a.gup.pe/u/geopolitics
+      error("unprocessable actor {}", user["type"]);
+      ASSERT(false);
+    }
 
 
     User u = {
@@ -161,9 +166,6 @@ void registeruser() {
   string pubkey;
   generateRSAKeyPair(privkey, pubkey);
 
-
-  URL url("https://asd.com/@v");
-  dbg(url.path);
   // APClient cli("booping.synth.download");
   // auto r = cli.Get("/users/a005c9wl4pwj0arp");
   // dbg(r->body);
