@@ -67,6 +67,7 @@ MIGRATION_UP(init, 1) {
       username TEXT NOT NULL,
       displayname TEXT,
       summary TEXT,
+      friendlyUrl TEXT NOT NULL,
 
       lastUpdatedAt INTEGER,
       remoteFollowersCount INTEGER,

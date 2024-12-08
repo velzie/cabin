@@ -13,6 +13,7 @@ struct User {
   string username;
   string displayname;
   string summary;
+  string friendlyUrl;
 
   std::time_t lastUpdatedAt;
   int remoteFollowersCount;
@@ -42,6 +43,7 @@ int isBot;
     F(username)
     F(displayname)
     F(summary)
+    F(friendlyUrl)
 
     F(lastUpdatedAt)
     F(remoteFollowersCount);

@@ -123,6 +123,7 @@ namespace UserService {
       
       .username = user["preferredUsername"],
       .summary = JstringOrEmpty(user, "summary"),
+      .friendlyUrl = user["url"],
 
       .lastUpdatedAt = utils::millis(),
       .isCat = JboolOrFalse(user, "isCat"),
@@ -170,22 +171,22 @@ void registeruser() {
   // update_remote_user("https://booping.synth.download/users/a005c9wl4pwj0arp");
 
 
-  // User u = {
-  //   .uri = USERPAGE(ct->userid),
-  //   .id = ct->userid,
-  //   .local = 1,
-  //   .host = ct->cfg.domain,
-  //
-  //   .publicKey = pubkey,
-  //   .privateKey = privkey,
-  //   .username = "test3",
-  //   .displayname = "cabin's #3 strongest soldier",
-  //   .summary = "mrrrrrrrrrpppp",
-  //
-  //   .isBot = false,
-  //   .isCat = true,
-  //   .speakAsCat = false,
-  // };
-  // u.insert();
+  User u = {
+    .uri = USERPAGE(cfg.instanceactor),
+    .id = cfg.instanceactor,
+    .local = 1,
+    .host = cfg.domain,
+
+    .publicKey = pubkey,
+    .privateKey = privkey,
+    .username = "test3",
+    .displayname = "cabin's #3 strongest soldier",
+    .summary = "mrrrrrrrrrpppp",
+
+    .isBot = false,
+    .isCat = true,
+    .speakAsCat = false,
+  };
+  u.insert();
   
 }
