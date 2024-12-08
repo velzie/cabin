@@ -28,6 +28,7 @@ set(SOURCES
   src/services/delivery.cc
   src/services/follow.cc
   src/services/instance.cc
+  src/services/notification.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc

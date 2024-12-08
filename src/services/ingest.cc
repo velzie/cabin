@@ -1,3 +1,4 @@
+#include "services/notification.h"
 #define USE_DB
 #include <common.h>
 #include "utils.h"
@@ -50,8 +51,8 @@ namespace IngestService {
       };
       renote.insert();
     } else if (type == "Like") {
-      UserService::fetchRemote(body["actor"]);
-      NoteService::fetchRemote(body["object"]);
+      User favoriter = UserService::fetchRemote(body["actor"]);
+      Note note = NoteService::fetchRemote(body["object"]);
 
       URL likeuri(body["id"]);
       Like l = {
@@ -65,6 +66,12 @@ namespace IngestService {
       };
 
       l.insert();
+
+      if (note.local == true) {
+        User favoritee = UserService::lookup_ap(note.owner).value();
+        NotificationService::createFavorite(note, favoritee, favoriter);
+      }
+
     } else if (type == "Follow"){
       string uri = body["id"];
       FollowService::ingest(uri, body);
