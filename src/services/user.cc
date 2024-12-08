@@ -116,7 +116,7 @@ namespace UserService {
 
     if (user["type"] != "Person") {
       // https://a.gup.pe/u/geopolitics
-      error("unprocessable actor {}", user["type"]);
+      error("unprocessable actor {}", (string)user["type"]);
       ASSERT(false);
     }
 

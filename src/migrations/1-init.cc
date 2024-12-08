@@ -88,6 +88,22 @@ MIGRATION_UP(init, 1) {
   )");
 
   db->exec(R"(
+    CREATE TABLE notification(
+      id TEXT PRIMARY KEY,
+      type INTEGER NOT NULL,
+
+      createdAt INTEGER NOT NULL,
+
+      notiferUri TEXT,
+      notifierId TEXT,
+      notifieeUri TEXT NOT NULL,
+      notifieeId TEXT NOT NULL,
+
+      isread BOOLEAN NOT NULL
+    )
+  )");
+
+  db->exec(R"(
     CREATE TABLE like(
       uri TEXT PRIMARY KEY,
       id TEXT NOT NULL UNIQUE,
