@@ -39,6 +39,7 @@ json Notification::renderMS(User &requester){
     json notif = {
       {"id", id},
       {"created_at", utils::millisToIso(createdAt)},
+      {"pleroma", json::object()}
     };
 
     if (type == NOTIFICATION_Follow) {

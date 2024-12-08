@@ -1,3 +1,4 @@
+#include "entities/Notification.h"
 #include <router.h>
 #include <common.h>
 #include <QueryParser.h>
@@ -280,7 +281,38 @@ GET(instance, "/api/:v/instance") {
 
 
 GET(notifications, "/api/v1/notifications") {
-  OK(json::array(), MIMEJSON);
+  MSAUTH
+
+  auto notifications = ARR;
+
+  auto q = STATEMENT("SELECT * FROM notification WHERE notifieeId = ?");
+  q.bind(1, authuser.id);
+  
+  while (q.executeStep()) {
+    Notification n;
+    n.load(q);
+    notifications.push_back(n.renderMS(authuser));
+  }
+
+  OK(notifications, MIMEJSON);
+}
+
+GET(notification_policy, "/api//v1/notifications/policy") {
+  MSAUTH
+
+  json j = {
+    {"for_not_following", "accept"},
+    {"for_not_followers", "accept"},
+    {"for_new_accounts", "accept"},
+    {"for_private_mentions", "accept"},
+    {"for_limited_accounts", "accept"},
+    {"summary", {
+      {"pending_requests_count", 0},
+      {"pending_notifications_count", 1},
+    }},
+  };
+
+  OK(j, MIMEJSON);
 }
 
 GET(announcements, "/api/v1/announcements") {
