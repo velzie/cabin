@@ -21,7 +21,7 @@ Config default_config = {
 Config cfg;
 json context;
 
-int m();
+void registeruser();
 int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::trace);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
@@ -54,11 +54,11 @@ int main(int argc, char **argv) {
   info("loaded ({})", cfg.domain); 
 
 
+  Database::Init();
   std::thread s1([](){
-    // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
+    NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });
 
-  Database::Init();
   Server::Listen();
   s1.join();
 

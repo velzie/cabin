@@ -11,11 +11,11 @@
 
 struct NoteMention {
   string uri;
-  string givenuri;
+  string friendlyUrl;
   string fqn;
   string id;
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteMention, uri, fqn, id, givenuri);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteMention, uri, fqn, id, friendlyUrl);
 
 struct NoteHashtag {
   string name;

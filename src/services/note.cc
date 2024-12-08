@@ -131,15 +131,11 @@ namespace NoteService {
       for (const auto tag : (std::vector<json>)note["tag"]) {
         if (tag["type"] == "Mention") {
           NoteMention m;
-          auto mentionee = UserService::lookup_ap(tag["href"]);
-          if (!mentionee.has_value()) {
-            error("failed to lookup mentionee by {}", (string)tag["href"]);
-            continue; // not worth parsing
-          }
-          m.givenuri = tag["href"];
-          m.id = mentionee->id;
-          m.fqn = mentionee->acct(false);
-          m.uri = mentionee->uri;
+          auto mentionee = UserService::fetchRemote(tag["href"]);
+          m.friendlyUrl = mentionee.friendlyUrl;
+          m.id = mentionee.id;
+          m.fqn = mentionee.acct(false);
+          m.uri = mentionee.uri;
 
           n.mentions.push_back(m);
         } else if (tag["type"] == "Hashtag") {
@@ -360,7 +356,7 @@ json Note::renderMS(User &requester) {
 
     respmentions.push_back({
         {"id", mention.id},
-        {"url", mention.givenuri},
+        {"url", mention.friendlyUrl},
         {"username", user},
         {"acct", mention.fqn}
     });
