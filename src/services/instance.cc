@@ -4,6 +4,8 @@
 
 #include "http.h"
 #include "utils.h"
+
+#include <httplib.h>
 namespace InstanceService {
   optional<Instance> lookup(const string host) {
     auto q = STATEMENT("SELECT * FROM instance WHERE host = ?");
@@ -23,7 +25,7 @@ namespace InstanceService {
     }
 
     auto ia = UserService::lookup(cfg.instanceactor);
-    APClient cli(ia.value(), host);
+    httplib::Client cli("https://"+host);
 
     auto nodeinfoMetaReq = cli.Get("/.well-known/nodeinfo");
     ASSERT(nodeinfoMetaReq);
