@@ -51,7 +51,7 @@ json Notification::renderMS(User &requester){
     if (type == NOTIFICATION_Favorite) {
       auto favoriter = UserService::lookup(notifierId.value()).value();
       auto note = NoteService::lookup(statusId.value()).value();
-      notif["type"] = "favorite";
+      notif["type"] = "favourite";
       notif["account"] = favoriter.renderMS();
       notif["status"] = note.renderMS(requester);
     }
