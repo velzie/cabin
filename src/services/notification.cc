@@ -33,6 +33,16 @@ namespace NotificationService {
 
     n.insert();
   }
+
+  void createRenote(Note &note, Note &renote, User &renotee, User &renoter) {
+    auto n = create(renotee, NOTIFICATION_Renote);
+    n.notifierId = renoter.id;
+    n.notifierUri = renoter.uri;
+    n.statusId = note.id;
+    n.statusUri = note.uri;
+
+    n.insert();
+  }
 }
 
 json Notification::renderMS(User &requester){
@@ -53,6 +63,14 @@ json Notification::renderMS(User &requester){
       auto note = NoteService::lookup(statusId.value()).value();
       notif["type"] = "favourite";
       notif["account"] = favoriter.renderMS();
+      notif["status"] = note.renderMS(requester);
+    }
+
+    if (type == NOTIFICATION_Renote) {
+      auto renoter = UserService::lookup(notifierId.value()).value();
+      auto note = NoteService::lookup(statusId.value()).value();
+      notif["type"] = "reblog";
+      notif["account"] = renoter.renderMS();
       notif["status"] = note.renderMS(requester);
     }
 

@@ -33,23 +33,29 @@ namespace IngestService {
       string object = body["object"];
       Note note = NoteService::fetchRemote(object);
 
-      User renoter = UserService::fetchRemote(body["actor"]);
+      User uRenoter = UserService::fetchRemote(body["actor"]);
 
       time_t published = utils::isoToMillis(body["published"]);
       Note renote = {
         .uri = body["id"],
         .id = utils::genid(),
         .local = false,
-        .host = renoter.host,
+        .host = uRenoter.host,
 
         .renoteUri = note.uri,
         
-        .owner = renoter.uri,
+        .owner = uRenoter.uri,
         .published = published,
         .publishedClamped = utils::clampmillis(published),
         .recievedAt = utils::millis(),
       };
       renote.insert();
+
+      if (note.local) {
+        User uRenotee = UserService::lookup_ap(note.owner).value();
+        NotificationService::createRenote(note, renote, uRenotee, uRenoter);
+      }
+
     } else if (type == "Like") {
       User favoriter = UserService::fetchRemote(body["actor"]);
       Note note = NoteService::fetchRemote(body["object"]);

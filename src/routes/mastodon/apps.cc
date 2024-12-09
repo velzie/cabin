@@ -308,7 +308,7 @@ GET(notification_policy, "/api//v1/notifications/policy") {
     {"for_limited_accounts", "accept"},
     {"summary", {
       {"pending_requests_count", 0},
-      {"pending_notifications_count", 1},
+      {"pending_notifications_count", 0},
     }},
   };
 

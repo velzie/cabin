@@ -1,3 +1,4 @@
+#include "services/notification.h"
 #include "utils.h"
 #include "services/user.h"
 #include "services/follow.h"
@@ -57,6 +58,8 @@ namespace FollowService {
 
       .createdAt = utils::millis(),
     };
+
+    NotificationService::createFollow(uFollowee.value(), uFollower);
 
     json accept = {
       {"actor", followee},
