@@ -43,8 +43,9 @@ POST(post_status, "/api/v1/statuses") {
               status = data;
             } else if (value == "in_reply_to_id") {
               replyTo = NoteService::lookup(string(data));
+            } else if (value == "quote_id") {
+              quote = NoteService::lookup(string(data));
             }
-
             
           }
         }
@@ -59,7 +60,7 @@ POST(post_status, "/api/v1/statuses") {
   }
 
   
-  Note note = NoteService::create(authuser, status, replyTo);
+  Note note = NoteService::create(authuser, status, replyTo, quote);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }

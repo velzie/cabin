@@ -114,6 +114,11 @@ struct Note {
       {"tag", ARR}
     };
 
+    if (quoteUri.has_value()) {
+      j["_misskey_quote"] = *quoteUri;
+      j["quoteUri"] = *quoteUri;
+    }
+
     return j;
   }
 

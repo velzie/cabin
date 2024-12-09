@@ -32,7 +32,7 @@ namespace NoteService {
     return note;
   }
 
-  Note create(User &owner, string content, optional<Note> replyTo) {
+  Note create(User &owner, string content, optional<Note> replyTo, optional<Note> quote) {
     Note note = _create(owner);
     note.content = content;
     note.cw = "";
@@ -42,6 +42,11 @@ namespace NoteService {
     if (replyTo.has_value()) {
       note.replyToUri = replyTo->uri;
       mentions.push_back(replyTo->owner);
+    }
+
+    if (quote.has_value()) {
+      note.quoteUri = quote->uri;
+      mentions.push_back(quote->owner);
     }
 
     note.insert();
