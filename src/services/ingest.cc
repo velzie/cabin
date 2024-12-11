@@ -17,7 +17,7 @@ namespace IngestService {
 
   void Ingest(json body) {
     string type = body["type"];
-    info("starting ingest of {}", type);
+    trace("starting ingest of {}", type);
 
     auto object = body["object"];
     if (type == "Create") {

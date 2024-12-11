@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <fmt/format.h>
+#include <spdlog/common.h>
 #include <thread>
 #include "common.h"
 #include "database.h"
@@ -23,7 +24,7 @@ json context;
 
 void registeruser();
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::info);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
 
   string config_path = "config.json";

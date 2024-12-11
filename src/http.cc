@@ -129,7 +129,6 @@ httplib::Result APClient::Get(std::string pathname) {
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
       USERPAGE(user.id), sigheader, signature);
 
-  std::cout << pathname << "\n";
   auto r = cli.Get(pathname, {
       {"Accept", "application/activity+json"},
       {"Algorithm", "rsa-sha256"},
