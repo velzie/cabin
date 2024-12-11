@@ -68,7 +68,6 @@ namespace Server {
     app->get("/media/*", [](uResponse res, uRequest req){
       string url (req->getUrl());
       url.erase(0, 6);
-      dbg(url);
 
       string filePath(cfg.mediapath + url);
       std::filesystem::path p = filePath;

@@ -242,12 +242,6 @@ GET(timelines, "/api/v1/timelines/:id") {
   if (!limit) limit = 20;
   if (limit > 20) limit = 20;
 
-
-  // top ryri (180e61a5efb46fa1lkQrLikM)
-  // knizer boston
-  // arab
-  // trump
-
   string max_id (req->getQuery("max_id"));
   string min_id (req->getQuery("min_id"));
   string since_id (req->getQuery("since_id"));
@@ -272,14 +266,14 @@ GET(timelines, "/api/v1/timelines/:id") {
     // start at most recent date, paginate down but don't go further than since_id
     Note lowerNote = NoteService::lookup(since_id).value();
     q = STATEMENT(R"SQL(
-        SELECT *
-        FROM (
-          SELECT * FROM note
-          WHERE publishedClamped > ?
-          ORDER BY publishedClamped DESC
-          LIMIT ?
-        ) AS subquery
-        ORDER BY publishedClamped
+      SELECT *
+      FROM (
+        SELECT * FROM note
+        WHERE publishedClamped > ?
+        ORDER BY publishedClamped DESC
+        LIMIT ?
+      ) AS subquery
+      ORDER BY publishedClamped
     )SQL");
     q.bind(1, lowerNote.publishedClamped);
     q.bind(2, limit);

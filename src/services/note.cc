@@ -209,7 +209,6 @@ namespace NoteService {
     auto cached = lookup_ap(uri);
     if (cached.has_value()) {
       // TODO: don't skip if it's been a while
-      trace("skipping refetch of {}", uri);
       return cached.value();
     }
 
@@ -219,10 +218,6 @@ namespace NoteService {
     APClient cli(u.value(), url.host);
 
     auto response = cli.Get(url.path);
-    if (response->status != 200) {
-      dbg(response->body);
-      throw std::runtime_error("");
-    }
 
     json note = json::parse(response->body);
 

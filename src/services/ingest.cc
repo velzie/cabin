@@ -1,4 +1,5 @@
 #include "services/notification.h"
+#include <error.h>
 #define USE_DB
 #include <common.h>
 #include "utils.h"
@@ -17,10 +18,6 @@ namespace IngestService {
   void Ingest(json body) {
     string type = body["type"];
     info("starting ingest of {}", type);
-
-    body["@context"] = "";
-    std::cout << body.dump() << "\n";
-
 
     auto object = body["object"];
     if (type == "Create") {
@@ -83,6 +80,8 @@ namespace IngestService {
       FollowService::ingest(uri, body);
     } else {
       error("unimplemented activity {}", type);
+      body["@context"] = nullptr;
+      std::cout << body.dump() << "\n";
     }
   }
 
@@ -90,7 +89,9 @@ namespace IngestService {
     std::thread t([activity](){
       CPPTRACE_TRY {
         Ingest(activity);    
-      } CPPTRACE_CATCH(const std::exception &e) {
+      } CPPTRACE_CATCH(const InvalidActivityError &e) { 
+        trace(e.what());
+      } catch(const std::exception &e) {
         error("ingest {} failed: {}", (string)activity["type"], e.what());
         utils::getStackTrace();
       }

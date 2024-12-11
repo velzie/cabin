@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 #include <httplib.h>
 #include <openssl/sha.h>
+#include "error.h"
 
 std::string getDateFmt() {
   std::time_t currentTime = std::time(nullptr);
@@ -129,13 +130,18 @@ httplib::Result APClient::Get(std::string pathname) {
       USERPAGE(user.id), sigheader, signature);
 
   std::cout << pathname << "\n";
-  return cli.Get(pathname, {
+  auto r = cli.Get(pathname, {
       {"Accept", "application/activity+json"},
       {"Algorithm", "rsa-sha256"},
       {"Signature", signatureHeader},
       {"Date", date},
       {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", cfg.domain)},
   });
+
+  if (!r) throw FetchError(0);
+  if (r->status != 200) throw FetchError(r);
+
+  return r;
 }
 
 httplib::Result APClient::Post(std::string pathname, json data) {
@@ -155,7 +161,7 @@ httplib::Result APClient::Post(std::string pathname, json data) {
       R"(keyId="{}",algorithm="rsa-sha256",headers="{}",signature="{}")",
       USERPAGE(user.id), sigheader, signedDigest);
 
-  return cli.Post(pathname, {
+  auto r = cli.Post(pathname, {
       {"Accept", "application/activity+json"},
       {"Algorithm", "rsa-sha256"},
       {"Signature", signatureHeader},
@@ -163,4 +169,9 @@ httplib::Result APClient::Post(std::string pathname, json data) {
       {"Date", date},
       {"User-Agent", SOFTWARE "-" VERSION_LONG " " + FMT("({})", cfg.domain)},
   }, payload, "application/activity+json");
+
+  if (!r) throw FetchError(0);
+  if (r->status != 200 && r->status != 202) throw FetchError(r);
+
+  return r;
 }

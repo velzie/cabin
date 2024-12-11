@@ -9,6 +9,7 @@
 
 #include <common.h>
 
+#include "error.h"
 #include "database.h"
 #include "utils.h"
 #include "http.h"
@@ -94,7 +95,6 @@ namespace UserService {
     auto cached = lookup_ap(uri);
     if (cached.has_value()) {
       // TODO: don't skip if it's been a while
-      trace("skipping refetch of {}", uri);
       return cached.value();
     }
 
@@ -106,18 +106,10 @@ namespace UserService {
     APClient cli(ia.value(), url.host);
 
     auto response = cli.Get(url.path);
-    ASSERT(response);
-    if (response->status != 200){ 
-      dbg(response->body);
-      throw std::runtime_error("");
-    }
-
     json user = json::parse(response->body);
 
     if (user["type"] != "Person") {
-      // https://a.gup.pe/u/geopolitics
-      error("unprocessable actor {}", (string)user["type"]);
-      ASSERT(false);
+      throw InvalidActivityError(FMT("unknown entity type {}", (string)user["type"]));
     }
 
 
