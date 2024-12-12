@@ -26,6 +26,7 @@ namespace InstanceService {
 
     auto ia = UserService::lookup(cfg.instanceactor);
     httplib::Client cli("https://"+host);
+    cli.set_follow_location(true);
 
     auto nodeinfoMetaReq = cli.Get("/.well-known/nodeinfo");
     ASSERT(nodeinfoMetaReq);
