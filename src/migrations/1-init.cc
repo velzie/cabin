@@ -133,6 +133,17 @@ MIGRATION_UP(init, 1) {
     )
   )");
 
+  db->exec(R"(
+    CREATE TABLE emoji(
+      id TEXT NOT NULL PRIMARY KEY,
+      shortcode TEXT NOT NULL,
+      local INTEGER NOT NULL,
+      host TEXT NOT NULL,
+
+      imageurl TEXT NOT NULL
+    )
+  )");
+
   setVersion(db, 1);
 }
 
