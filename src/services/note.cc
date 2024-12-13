@@ -1,4 +1,5 @@
 #include "entities/Note.h"
+#include "services/emoji.h"
 #define USE_DB
 #include <common.h>
 #include <httplib.h>
@@ -150,6 +151,12 @@ namespace NoteService {
           h.name.erase(0, 1); // remove hashtag
           
           n.hashtags.push_back(h);
+        } else if (tag["Type"] == "Emoji") {
+          Emoji em = EmojiService::parse(tag, n.host);
+          NoteEmoji nem;
+          nem.id = em.id;
+          nem.shortcode = em.shortcode;
+          n.emojis.push_back(nem);
         } else {
           error("unkown Tag type {}", (string)tag["type"]);
         }

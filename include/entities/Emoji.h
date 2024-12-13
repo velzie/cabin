@@ -2,6 +2,7 @@
 #include "database.h"
 
 struct Emoji {
+  string address;
   string id;
   string shortcode;
   int local;
@@ -9,7 +10,8 @@ struct Emoji {
 
   string imageurl;
 
-  ORM(emoji, id,
+  ORM(emoji, address,
+      F(address)
       F(id)
       F(shortcode)
       F(local)
