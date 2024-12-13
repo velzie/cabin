@@ -1,8 +1,7 @@
-#include "entities/Note.h"
-#include "services/emoji.h"
-#define USE_DB
 #include <common.h>
 #include <httplib.h>
+#include "entities/Note.h"
+#include "services/emoji.h"
 #include <stdexcept>
 
 #include "database.h"
@@ -151,7 +150,7 @@ namespace NoteService {
           h.name.erase(0, 1); // remove hashtag
           
           n.hashtags.push_back(h);
-        } else if (tag["Type"] == "Emoji") {
+        } else if (tag["type"] == "Emoji") {
           Emoji em = EmojiService::parse(tag, n.host);
           NoteEmoji nem;
           nem.id = em.id;
@@ -289,6 +288,22 @@ json Note::renderMS(User &requester) {
   qReplied.executeStep();
   int replyCount = qReplied.getColumn(0);
 
+  vector<json> msemojis;
+  for (const auto noteemoji : emojis) {
+    auto qEmoji = STATEMENT("SELECT * FROM emoji WHERE id = ?");
+    qEmoji.bind(1, noteemoji.id);
+    qEmoji.executeStep();
+    Emoji emoji;
+    emoji.load(qEmoji);
+
+    msemojis.push_back({
+      {"url", emoji.imageurl},
+      {"shortcode", emoji.shortcode},
+      {"static_url", emoji.imageurl},
+      {"visible_in_picker", false}
+    });
+  }
+
   json j = {
     {"id", id},
     {"created_at", utils::millisToIso(published)},
@@ -314,7 +329,7 @@ json Note::renderMS(User &requester) {
     {"reblog", nullptr},
     {"application", nullptr},
     {"account", uOwner.renderMS()},
-    {"emojis", json::array()},
+    {"emojis", msemojis},
     {"emoji_reactions", json::array()},
     {"reactions", json::array()},
     {"card", nullptr},

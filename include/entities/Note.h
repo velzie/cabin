@@ -90,6 +90,7 @@ struct Note {
 
     JSON(mentions)
     JSON(hashtags)
+    JSON(emojis)
     JSON(mediaattachments)
 
     F(published)

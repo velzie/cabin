@@ -31,7 +31,7 @@ struct Emoji {
         {"url", imageurl},
       }},
       {"id", canonUri()},
-      {"name", shortcode},
+      {"name", FMT(":{}:", shortcode)},
       {"type", "Emoji"},
     };
   }

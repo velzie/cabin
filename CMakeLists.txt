@@ -29,6 +29,7 @@ set(SOURCES
   src/services/follow.cc
   src/services/instance.cc
   src/services/notification.cc
+  src/services/emoji.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
