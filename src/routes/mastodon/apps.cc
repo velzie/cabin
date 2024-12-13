@@ -1,3 +1,4 @@
+#include "entities/Emoji.h"
 #include "entities/Notification.h"
 #include <router.h>
 #include <common.h>
@@ -277,6 +278,25 @@ GET(instance, "/api/:v/instance") {
   };
 
   OK(j, MIMEJSON);
+}
+
+GET(mastodon_custom_emojis, "/api/v1/custom_emojis") {
+  json emojis = json::array();
+
+  auto q = STATEMENT("SELECT * FROM emoji");
+  while (q.executeStep()) {
+    Emoji e;
+    e.load(q);
+    emojis.push_back({
+        {"shortcode", e.shortcode + "@" + e.host},
+        {"url", e.imageurl},
+        {"static_url", e.imageurl},
+        {"visible_in_picker", true},
+        {"category", e.host},
+    });
+  }
+
+  OK(emojis, MIMEJSON);
 }
 
 
