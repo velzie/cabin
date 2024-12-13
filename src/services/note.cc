@@ -37,6 +37,23 @@ namespace NoteService {
     note.content = content;
     note.cw = "";
     note.sensitive = false;
+    
+
+    // find every emoji inside content (identified by :name:)
+    size_t pos = 0;
+    while ((pos = content.find(":", pos)) != string::npos) {
+      size_t end = content.find(":", pos + 1);
+      if (end == string::npos) {
+        break;
+      }
+      string emojiName = content.substr(pos + 1, end - pos - 1);
+      auto emoji = EmojiService::lookupAddress(emojiName);
+      if (emoji.has_value()) {
+        note.emojis.push_back(emoji->renderNoteEmoji());
+      }
+      pos = end + 1;
+    }
+
 
     std::vector<string> mentions;
     if (replyTo.has_value()) {
@@ -299,7 +316,7 @@ json Note::renderMS(User &requester) {
 
     msemojis.push_back({
       {"url", emoji.imageurl},
-      {"shortcode", emoji.shortcode},
+      {"shortcode", emoji.address},
       {"static_url", emoji.imageurl},
       {"visible_in_picker", false}
     });

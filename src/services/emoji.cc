@@ -25,4 +25,17 @@ namespace EmojiService {
     INSERT_OR_UPDATE(e, address, id, utils::genid());
     return e;
   }
+
+  optional<Emoji> lookupAddress(const string address) {
+    auto q = STATEMENT("SELECT * FROM emoji WHERE address = ?");
+    q.bind(1, address);
+
+    if (!q.executeStep()) {
+      return nullopt;
+    }
+
+    Emoji emoji;
+    emoji.load(q);
+    return emoji;
+  }
 }

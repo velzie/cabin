@@ -288,7 +288,7 @@ GET(mastodon_custom_emojis, "/api/v1/custom_emojis") {
     Emoji e;
     e.load(q);
     emojis.push_back({
-        {"shortcode", e.shortcode + "@" + e.host},
+        {"shortcode", e.address},
         {"url", e.imageurl},
         {"static_url", e.imageurl},
         {"visible_in_picker", true},

@@ -1,5 +1,6 @@
 #pragma once
 #include "database.h"
+#include "entities/Note.h"
 
 struct Emoji {
   string address;
@@ -22,6 +23,13 @@ struct Emoji {
 
   string canonUri() {
     return API("emojis/" + shortcode);
+  }
+
+  NoteEmoji renderNoteEmoji() {
+    NoteEmoji nem;
+    nem.id = id;
+    nem.shortcode = shortcode;
+    return nem;
   }
 
   json renderTag() {

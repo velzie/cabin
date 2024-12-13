@@ -10,7 +10,7 @@ GET(pleroma_emojis, "/api/v1/pleroma/emoji") {
   while (q.executeStep()) {
     Emoji e;
     e.load(q);
-    emojis[e.shortcode + "@" + e.host] = {
+    emojis[e.address] = {
         {"tags", {FMT("pack:{}", e.host)}},
         {"image_url", "/302?url="+e.imageurl}
     };
