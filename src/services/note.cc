@@ -32,7 +32,7 @@ namespace NoteService {
     return note;
   }
 
-  Note create(User &owner, string content, optional<Note> replyTo, optional<Note> quote) {
+  Note create(User &owner, string content, optional<Note> replyTo, optional<Note> quote, bool preview) {
     Note note = _create(owner);
     note.content = content;
     note.cw = "";
@@ -49,24 +49,25 @@ namespace NoteService {
       mentions.push_back(quote->owner);
     }
 
-    note.insert();
+    if (!preview) {
+      note.insert();
 
+      json activity = {
+        {"type", "Create"},
+        {"actor", note.owner},
+        {"id", NOTE(note.id)+"/activity"},
+        {"published", utils::millisToIso(note.published)},
+        {"object", note.renderAP()},
+      };
 
-    json activity = {
-      {"type", "Create"},
-      {"actor", note.owner},
-      {"id", NOTE(note.id)+"/activity"},
-      {"published", utils::millisToIso(note.published)},
-      {"object", note.renderAP()},
-    };
-
-    DeliveryService::Audience au = {
-      .actor = owner,
-      .mentions = mentions,
-      .aspublic = true,
-      .followers = true,
-    };
-    DeliveryService::QueueDelivery(activity, au);
+      DeliveryService::Audience au = {
+        .actor = owner,
+        .mentions = mentions,
+        .aspublic = true,
+        .followers = true,
+      };
+      DeliveryService::QueueDelivery(activity, au);
+    }
 
     return note;
   }

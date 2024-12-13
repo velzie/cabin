@@ -16,6 +16,8 @@ POST(post_status, "/api/v1/statuses") {
   optional<Note> quote;
   string status;
 
+  bool isPreview = false;
+
   if (mp.isValid()) {
     // pleroma style
     
@@ -45,6 +47,8 @@ POST(post_status, "/api/v1/statuses") {
               replyTo = NoteService::lookup(string(data));
             } else if (value == "quote_id") {
               quote = NoteService::lookup(string(data));
+            } else if (value == "preview" && string(data) == "true") {
+              isPreview = true;
             }
             
           }
@@ -60,7 +64,7 @@ POST(post_status, "/api/v1/statuses") {
   }
 
   
-  Note note = NoteService::create(authuser, status, replyTo, quote);
+  Note note = NoteService::create(authuser, status, replyTo, quote, isPreview);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }
