@@ -1,15 +1,14 @@
 #include "SQLiteCpp/Statement.h"
+#include "entities/Emoji.h"
 #include "entities/EmojiReact.h"
-#include "services/emoji.h"
-#define USE_DB
+#include "entities/Note.h"
 #include <router.h>
 #include <common.h>
 #include "database.h"
 #include "utils.h"
-#include "services/note.h"
-#include "services/user.h"
 #include "http.h"
 #include "entities/Like.h"
+#include "services/NoteService.h"
 
 POST(post_status, "/api/v1/statuses") {
   MSAUTH
@@ -46,9 +45,9 @@ POST(post_status, "/api/v1/statuses") {
             if (value == "status") {
               status = data;
             } else if (value == "in_reply_to_id") {
-              replyTo = NoteService::lookup(string(data));
+              replyTo = Note::lookupid(string(data));
             } else if (value == "quote_id") {
-              quote = NoteService::lookup(string(data));
+              quote = Note::lookupid(string(data));
             } else if (value == "preview" && string(data) == "true") {
               isPreview = true;
             }
@@ -60,7 +59,7 @@ POST(post_status, "/api/v1/statuses") {
   } else {
     // mastodon style
     if (body["in_reply_to_id"].is_string()) {
-      replyTo = NoteService::lookup(body["in_reply_to_id"]);
+      replyTo = Note::lookupid(body["in_reply_to_id"]);
     }
     status = body["status"];
   }
@@ -75,7 +74,7 @@ GET(status, "/api/v1/statuses/:id") {
   MSAUTH
   string id (req->getParameter("id"));
 
-  auto n = NoteService::lookup(id);
+  auto n = Note::lookupid(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
@@ -88,7 +87,7 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   MSAUTH
   string id (req->getParameter("id"));
 
-  auto note = NoteService::lookup(id);
+  auto note = Note::lookupid(id);
   if (!note.has_value()) {
     ERROR(404, "no note");
   }
@@ -119,7 +118,7 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
 
   auto resp = cli.Post("/inbox", activity);
 
-  note = NoteService::lookup(id);
+  note = Note::lookupid(id);
   OK(note->renderMS(authuser), MIMEJSON);
 }
 
@@ -135,7 +134,7 @@ PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
   }
 
 
-  auto note = NoteService::lookup(id);
+  auto note = Note::lookupid(id);
   if (!note.has_value()) {
     ERROR(404, "no note");
   }
@@ -151,7 +150,7 @@ PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
     .object = note->uri
   };
 
-  auto emoji = EmojiService::lookupAddress(emojiname);
+  auto emoji = Emoji::lookupaddress(emojiname);
   if (emoji.has_value()) {
     react.emojiText = nullopt;
     react.emojiId = emoji->id;
@@ -175,7 +174,7 @@ PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
   if (emoji.has_value()) {
     activity["content"] = FMT(":{}:", emoji->address);
     activity["tag"] = {
-      emoji->renderTag()
+      emoji->renderAPTag()
     };
   } else {
     activity["content"] = react.emojiText;
@@ -183,7 +182,7 @@ PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
 
   auto resp = cli.Post("/inbox", activity);
 
-  note = NoteService::lookup(id);
+  note = Note::lookupid(id);
   OK(note->renderMS(authuser), MIMEJSON);
 }
 
@@ -191,7 +190,7 @@ POST(status_renote, "/api/v1/statuses/:id/reblog") {
   MSAUTH
 
   string id(req->getParameter("id"));
-  auto note = NoteService::lookup(id);
+  auto note = Note::lookupid(id);
   if (!note.has_value()) {
     ERROR(404, "no note");
   }
@@ -205,7 +204,7 @@ GET(status_context, "/api/v1/statuses/:id/context") {
   MSAUTH
 
   string id (req->getParameter("id"));
-  auto originalnote = NoteService::lookup(id);
+  auto originalnote = Note::lookupid(id);
   if (!originalnote.has_value()) {
     ERROR(404, "no note");
   }
@@ -253,7 +252,7 @@ GET(status_context, "/api/v1/statuses/:id/context") {
 
 GET(status_favourited_by, "/api/v1/statuses/:id/favourited_by") {
   string id (req->getParameter("id"));
-  auto n = NoteService::lookup(id);
+  auto n = Note::lookupid(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
@@ -264,7 +263,7 @@ GET(status_favourited_by, "/api/v1/statuses/:id/favourited_by") {
   qFavourited.bind(1, n->uri);
 
   while (qFavourited.executeStep()) {
-    User u = UserService::lookup_ap(qFavourited.getColumn(0)).value();
+    User u = User::lookupuri(qFavourited.getColumn(0)).value();
     accounts.push_back(u.renderMS());
   }
 
@@ -273,7 +272,7 @@ GET(status_favourited_by, "/api/v1/statuses/:id/favourited_by") {
 
 GET(status_reblogged_by, "/api/v1/statuses/:id/reblogged_by") {
   string id (req->getParameter("id"));
-  auto n = NoteService::lookup(id);
+  auto n = Note::lookupid(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
@@ -284,7 +283,7 @@ GET(status_reblogged_by, "/api/v1/statuses/:id/reblogged_by") {
   qRenoted.bind(1, n->uri);
 
   while (qRenoted.executeStep()) {
-    User u = UserService::lookup_ap(qRenoted.getColumn(0)).value();
+    User u = User::lookupuri(qRenoted.getColumn(0)).value();
     accounts.push_back(u.renderMS());
   }
 
@@ -295,7 +294,7 @@ GET(status_reactions, "/api/v1/statuses/:id/reactions") {
   MSAUTH
 
   string id (req->getParameter("id"));
-  auto n = NoteService::lookup(id);
+  auto n = Note::lookupid(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
@@ -309,7 +308,7 @@ GET(status_reactions_pleroma, "/api/v1/pleroma/statuses/:id/reactions") {
   MSAUTH
 
   string id (req->getParameter("id"));
-  auto n = NoteService::lookup(id);
+  auto n = Note::lookupid(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
@@ -340,19 +339,19 @@ GET(timelines, "/api/v1/timelines/:id") {
 
   if (!max_id.empty()) {
     // start at max_id and paginated down
-    Note upperNote = NoteService::lookup(max_id).value();
+    Note upperNote = Note::lookupid(max_id).value();
     q = STATEMENT("SELECT * FROM note WHERE publishedClamped < ? ORDER BY publishedClamped DESC LIMIT ?");
     q.bind(1, upperNote.publishedClamped);
     q.bind(2, limit);
   } else if (!min_id.empty()) {
     // start at low id, paginate up
-    Note lowerNote = NoteService::lookup(min_id).value();
+    Note lowerNote = Note::lookupid(min_id).value();
     q = STATEMENT("SELECT * FROM note WHERE publishedClamped > ? ORDER BY publishedClamped DESC LIMIT ?");
     q.bind(1, lowerNote.publishedClamped);
     q.bind(2, limit);
   } else if (!since_id.empty()) {
     // start at most recent date, paginate down but don't go further than since_id
-    Note lowerNote = NoteService::lookup(since_id).value();
+    Note lowerNote = Note::lookupid(since_id).value();
     q = STATEMENT(R"SQL(
       SELECT *
       FROM (

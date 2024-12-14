@@ -14,7 +14,6 @@ void *register_migration_down(int ver, MigrationHandler h) {
   return nullptr;
 }
 
-
 namespace Database {
   SQLite::Database *conn;
   void Init() {

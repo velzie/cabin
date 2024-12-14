@@ -1,5 +1,6 @@
 #pragma once
 #include "database.h"
+#include "entity.h"
 #include "utils.h"
 #include "entities/User.h"
 
@@ -38,7 +39,7 @@ struct NoteEmoji {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteEmoji, shortcode, id);
 
 
-struct Note {
+struct Note : Entity {
   string uri;
   string id;
   int local;
@@ -103,7 +104,11 @@ struct Note {
     F(remoteLikeCount)
   )
 
+  LOOKUPKEY(Note, note, id);
+  LOOKUPKEY(Note, note, uri);
 
+  static Note ingest(const json note);
+  static Note ingestAnnounce(const json data);
   json renderAP();
   json renderReactionsMS(User &requester, bool fullAccounts);
   json renderMS(User &requester);

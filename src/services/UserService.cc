@@ -13,7 +13,6 @@
 #include "database.h"
 #include "utils.h"
 #include "http.h"
-#include "services/instance.h"
 
 bool generateRSAKeyPair(std::string& privateKeyBuffer, std::string& publicKeyBuffer, int bits = 2048) {
   bool success = false;
@@ -63,92 +62,7 @@ cleanup:
 }
 
 namespace UserService {
-  optional<User> lookup(const string id) {
-    auto q = STATEMENT("SELECT * FROM user WHERE id = ?");
-    q.bind(1, id);
 
-    if (!q.executeStep()) {
-      return nullopt;
-    }
-  
-    User u;
-    u.load(q);
-    return u;
-  }
-
-  optional<User> lookup_ap(const string id) {
-    auto q = STATEMENT("SELECT * FROM user WHERE uri = ?");
-    q.bind(1, id);
-
-    if (!q.executeStep()) {
-      return nullopt;
-    }
-  
-    User u;
-    u.load(q);
-    return u;
-  }
-
-
-
-  User fetchRemote(const string uri) {
-    auto cached = lookup_ap(uri);
-    if (cached.has_value()) {
-      // TODO: don't skip if it's been a while
-      return cached.value();
-    }
-
-    trace("fetching user {}", uri);
-    URL url(uri);
-    auto instance = InstanceService::fetchRemote(url.host);
-
-    auto ia = UserService::lookup(cfg.instanceactor);
-    APClient cli(ia.value(), url.host);
-
-    auto response = cli.Get(url.path);
-    json user = json::parse(response->body);
-
-    if (user["type"] != "Person") {
-      throw InvalidActivityError(FMT("unknown entity type {}", (string)user["type"]));
-    }
-
-
-    User u = {
-      .uri = uri,
-      .local = false,
-      .host = url.host,
-      
-      .username = user["preferredUsername"],
-      .summary = JstringOrEmpty(user, "summary"),
-      .friendlyUrl = user["url"],
-
-      .lastUpdatedAt = utils::millis(),
-      .isCat = JboolOrFalse(user, "isCat"),
-      .speakAsCat = JboolOrFalse(user, "speakAsCat"),
-
-      .inbox = user["inbox"],
-      .featured = user["featured"]
-    };
-
-    if (user.contains("sharedInbox") && user["sharedInbox"].is_string())
-      u.sharedInbox = user["sharedInbox"];
-    else
-      u.sharedInbox = user["inbox"];
-
-    if (user.contains("name") && user["name"].is_string())
-      u.displayname = user["name"];
-    else
-      u.displayname = user["preferredUsername"];
-
-    if (user.contains("icon") && user["icon"].is_object())
-      u.avatar = user["icon"]["url"];
-
-    if (user.contains("image") && user["image"].is_string())
-      u.banner = user["image"]["url"];
-
-    INSERT_OR_UPDATE(u, uri, id, utils::genid());
-    return u;
-  }
 }
 
 

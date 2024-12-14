@@ -1,8 +1,9 @@
-#include "services/notification.h"
+#include "entities/User.h"
+#include "services/NotificationService.h"
+#include "services/FetchService.h"
+#include "services/FollowService.h"
+#include "services/DeliveryService.h"
 #include "utils.h"
-#include "services/user.h"
-#include "services/follow.h"
-#include "services/delivery.h"
 #include <stdexcept>
 
 
@@ -37,12 +38,12 @@ namespace FollowService {
     string followee = follow["object"];
     string follower = follow["actor"];
 
-    auto uFollowee = UserService::lookup_ap(followee);
+    auto uFollowee = User::lookupuri(followee);
     if (!uFollowee.has_value()) {
       throw std::runtime_error("follow request that doesn't exist..");
     }
 
-    auto uFollower = UserService::fetchRemote(follower);
+    auto uFollower = FetchService::fetch<User>(follower);
 
     string id = utils::genid();
     URL url(uri);

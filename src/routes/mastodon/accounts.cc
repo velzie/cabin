@@ -1,12 +1,11 @@
 #include "QueryParser.h"
 #include <string_view>
 #include <vector>
-#define USE_DB
 #include <router.h>
 #include <common.h>
 #include "database.h"
 #include "entities/Note.h"
-#include "services/follow.h"
+#include "services/FollowService.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   MSAUTH
@@ -148,7 +147,7 @@ json getRelationship(User &you, User &them) {
 POST(account_follow, "/api/v1/accounts/:id/follow") {
   MSAUTH
   
-  auto user = UserService::lookup((string) req->getParameter("id"));
+  auto user = User::lookupid((string) req->getParameter("id"));
   if (!user.has_value()) {
     ERROR(404, "no such user");
   }
@@ -156,7 +155,7 @@ POST(account_follow, "/api/v1/accounts/:id/follow") {
   FollowService::create(authuser, user->uri);
 
   // rerender, not ideal but whatever
-  user = UserService::lookup((string) req->getParameter("id"));
+  user = User::lookupid((string) req->getParameter("id"));
   
   OK(user->renderMS(), MIMEJSON);
 }
@@ -171,7 +170,7 @@ GET(account_featured_tags, "/api/v1/accounts/:id/featured_tags") {
 
 // https://docs.joinmastodon.org/methods/accounts/#following
 GET(account_following, "/api/v1/accounts/:id/following") {
-  auto user = UserService::lookup((string) req->getParameter("id"));
+  auto user = User::lookupid((string) req->getParameter("id"));
   if (!user.has_value()) {
     ERROR(404, "no such user");
   }
@@ -182,7 +181,7 @@ GET(account_following, "/api/v1/accounts/:id/following") {
   following.bind(1, user->uri);
 
   while (following.executeStep()) {
-    User u = UserService::lookup_ap(following.getColumn("follower")).value();
+    User u = User::lookupuri(following.getColumn("follower")).value();
     response.push_back(u.renderMS());
   }
 
@@ -218,7 +217,7 @@ GET(account_relationships, "/api/v1/accounts/relationships") {
   }
 
   for (const string userid : ids) {
-    auto user = UserService::lookup(userid);
+    auto user = User::lookupid(userid);
     if (!user.has_value()) {
       ERROR(404, "no such user");
     }

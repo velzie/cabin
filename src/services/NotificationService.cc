@@ -1,10 +1,8 @@
-#include "services/notification.h"
+#include "services/NotificationService.h"
 
 #include "entities/Emoji.h"
 #include "entities/Notification.h"
 #include "utils.h"
-#include "services/user.h"
-#include "services/note.h"
 
 namespace NotificationService {
   Notification create(User &notifiee, int type) {
@@ -71,30 +69,30 @@ json Notification::renderMS(User &requester){
     };
 
     if (type == NOTIFICATION_Follow) {
-      auto follower = UserService::lookup(notifierId.value()).value();
+      auto follower = User::lookupid(notifierId.value()).value();
       notif["type"] = "follow";
       notif["account"] = follower.renderMS();
     }
 
     if (type == NOTIFICATION_Favorite) {
-      auto favoriter = UserService::lookup(notifierId.value()).value();
-      auto note = NoteService::lookup(statusId.value()).value();
+      auto favoriter = User::lookupid(notifierId.value()).value();
+      auto note = Note::lookupid(statusId.value()).value();
       notif["type"] = "favourite";
       notif["account"] = favoriter.renderMS();
       notif["status"] = note.renderMS(requester);
     }
 
     if (type == NOTIFICATION_Renote) {
-      auto renoter = UserService::lookup(notifierId.value()).value();
-      auto note = NoteService::lookup(statusId.value()).value();
+      auto renoter = User::lookupid(notifierId.value()).value();
+      auto note = Note::lookupid(statusId.value()).value();
       notif["type"] = "reblog";
       notif["account"] = renoter.renderMS();
       notif["status"] = note.renderMS(requester);
     }
 
     if (type == NOTIFICATION_React) {
-      auto favoriter = UserService::lookup(notifierId.value()).value();
-      auto note = NoteService::lookup(statusId.value()).value();
+      auto favoriter = User::lookupid(notifierId.value()).value();
+      auto note = Note::lookupid(statusId.value()).value();
       notif["type"] = "pleroma:emoji_reaction";
       notif["account"] = favoriter.renderMS();
       notif["status"] = note.renderMS(requester);

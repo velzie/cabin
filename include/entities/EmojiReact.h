@@ -29,4 +29,9 @@ struct EmojiReact {
       OPT(emojiId)
       OPT(emojiText)
   )
+
+  LOOKUPKEY(EmojiReact, emojireact, uri);
+  LOOKUPKEY(EmojiReact, emojireact, id);
+
+  static EmojiReact ingest(const json data);
 };

@@ -1,8 +1,8 @@
+#include "entities/User.h"
 #define USE_DB
 #include "router.h"
 #include "common.h"
 #include "database.h"
-#include "services/user.h"
 
 GET(webfinger, "/.well-known/webfinger") {
   std::string resource(req->getQuery("resource"));
@@ -30,7 +30,7 @@ GET(webfinger, "/.well-known/webfinger") {
 
   string usersbase = USERPAGE("");
   if (resource.rfind(usersbase, 0) == 0) {
-    auto lookup = UserService::lookup_ap(usersbase);
+    auto lookup = User::lookupuri(usersbase);
     if (lookup.has_value()) {
       u = lookup.value();
     } else {

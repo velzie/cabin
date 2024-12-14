@@ -26,6 +26,11 @@ struct Follow {
       F(createdAt)
   )
 
+  LOOKUPKEY(Follow, follow, uri);
+  LOOKUPKEY(Follow, follow, id);
+
+  static Follow ingest(const json data);
+
   json renderAP() {
     return {
       {"id", FOLLOW(id)},

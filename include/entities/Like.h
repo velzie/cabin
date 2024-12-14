@@ -19,4 +19,9 @@ struct Like {
       F(owner)
       F(object)
   )
+
+  LOOKUPKEY(Like, like, id);
+  LOOKUPKEY(Like, like, uri);
+
+  static Like ingest(const json object);
 };

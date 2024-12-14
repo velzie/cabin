@@ -1,6 +1,5 @@
 
 #include "entities/Instance.h"
-#include "services/user.h"
 
 #include "http.h"
 #include "utils.h"
@@ -25,7 +24,7 @@ namespace InstanceService {
       return cached.value();
     }
 
-    auto ia = UserService::lookup(cfg.instanceactor);
+    auto ia = INSTANCEACTOR;
     httplib::Client cli("https://"+host);
     cli.set_follow_location(true);
 

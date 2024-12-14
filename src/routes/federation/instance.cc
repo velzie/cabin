@@ -1,3 +1,4 @@
+#include "entities/User.h"
 #include <stdexcept>
 #define USE_DB
 
@@ -6,8 +7,7 @@
 #include <optional>
 #include "utils.h"
 #include "database.h"
-#include "services/ingest.h"
-#include "services/user.h"
+#include "services/IngestService.h"
 
 POST(inbox, "/inbox") {
   if (body["type"] == "Delete") return;
@@ -25,7 +25,7 @@ POST(userinbox, "/users/:id/inbox") {
 GET(user, "/users/:id") {
   std::string uid(req->getParameter("id"));
 
-  auto u = UserService::lookup(uid);
+  auto u = User::lookupid(uid);
   if (!u.has_value()) {
     ERROR(404, "no user");
   }

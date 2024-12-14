@@ -1,15 +1,14 @@
 #include "utils.h"
 #include "http.h"
 
-#include "services/delivery.h"
-#include "services/user.h"
+#include "services/DeliveryService.h"
 
 namespace DeliveryService {
 
   void Deliver(string instance, json activity) {
     URL url(instance);
 
-    User ia = UserService::lookup(cfg.instanceactor).value();
+    User ia = INSTANCEACTOR;
     APClient cli(ia, url.host);
 
     auto resp = cli.Post("/inbox", activity);
@@ -25,7 +24,7 @@ namespace DeliveryService {
 
       while (q.executeStep()) {
         string follower = q.getColumn("follower");
-        auto uFollower = UserService::lookup_ap(follower);
+        auto uFollower = User::lookupuri(follower);
         inboxes.push_back(uFollower->inbox);
       }
     }

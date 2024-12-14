@@ -3,7 +3,6 @@
 #include <App.h>
 #include "common.h"
 #include "server.h"
-#include "services/user.h"
 
 
 using uResponse = uWS::HttpResponse<false> *;
@@ -62,5 +61,5 @@ void *register_route_put(std::string route, __BodyHandler h);
 
 
 #define MSAUTH\
-  auto _authuser = UserService::lookup(cfg.instanceactor);\
+  auto _authuser = User::lookupid(cfg.instanceactor);\
   User authuser = _authuser.value();

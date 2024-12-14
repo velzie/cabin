@@ -10,6 +10,7 @@
 #define HOMEPAGE "https://github.com/velzie/cabin"
 
 using nlohmann::json;
+using std::get;
 using std::string;
 using std::optional;
 using std::nullopt;
@@ -36,13 +37,13 @@ struct Config {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor, sockethost, socketport, mediapath);
 
 
-inline string JstringOrEmpty(json &j, string name) {
+inline string JstringOrEmpty(const json &j, string name) {
   if (j.contains(name) && j[name].is_string()) {
     return j[name];
   }
   return "";
 }
-inline bool JboolOrFalse(json &j, string name) {
+inline bool JboolOrFalse(const json &j, string name) {
   if (j.contains(name) && j[name].is_boolean()) {
     return j[name];
   }

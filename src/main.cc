@@ -9,7 +9,6 @@
 #include "common.h"
 #include "database.h"
 #include "server.h"
-#include "services/note.h"
 
 
 Config default_config = {
@@ -57,7 +56,7 @@ int main(int argc, char **argv) {
 
   Database::Init();
   std::thread s1([](){
-    NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
+    // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });
 
   Server::Listen();

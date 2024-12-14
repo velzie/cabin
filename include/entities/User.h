@@ -62,6 +62,10 @@ int isBot;
     F(featured)
   )
 
+  LOOKUPKEY(User, user, id);
+  LOOKUPKEY(User, user, uri);
+
+  static User ingest(const json object);
   json renderAP() {
     ASSERT(local);
 

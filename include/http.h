@@ -5,6 +5,8 @@
 #include "database.h"
 #include "entities/User.h"
 
+#define INSTANCEACTOR User::lookupid(cfg.instanceactor).value()
+
 class APClient {
   std::string instance;
   httplib::Client cli; 

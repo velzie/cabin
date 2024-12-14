@@ -12,9 +12,18 @@ namespace Database {
 
 #define STATEMENT(string) SQLite::Statement(*Database::conn, string);
 
+#define LOOKUPKEY(entity, table, key)\
+  static optional<entity> lookup##key(const string key) {\
+    auto q = STATEMENT("SELECT * FROM "#table" WHERE "#key" = ?");\
+    q.bind(1, key);\
+    if (!q.executeStep()) return nullopt;\
+    entity e;\
+    e.load(q);\
+    return e;\
+  }
 
 #define ORM(table, key, fields)\
-    inline void load(SQLite::Statement &statement) {\
+    void load(SQLite::Statement &statement) {\
       auto _statement = &statement;\
       SQLite::Statement *_query;\
       int __flag = 1;\
@@ -22,7 +31,7 @@ namespace Database {
       std::vector<string> names;\
       fields\
     }\
-    inline int insert() {\
+    int insert() {\
       int __flag = 0;\
       std::vector<string> names;\
       SQLite::Statement *_statement;\
@@ -44,7 +53,7 @@ namespace Database {
       fields\
       return _query->exec();\
     }\
-    inline int update() {\
+    int update() {\
       int __flag = 0;\
       std::vector<string> names;\
       SQLite::Statement *_statement;\

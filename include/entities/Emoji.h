@@ -32,15 +32,9 @@ struct Emoji {
     return nem;
   }
 
-  json renderTag() {
-    return {
-      {"icon", {
-        {"type", "Image"},
-        {"url", imageurl},
-      }},
-      {"id", canonUri()},
-      {"name", FMT(":{}:", address)},
-      {"type", "Emoji"},
-    };
-  }
+  LOOKUPKEY(Emoji, emoji, id);
+  LOOKUPKEY(Emoji, emoji, address);
+
+  static Emoji ingestAPTag(const json tag, const string host);
+  json renderAPTag();
 };
