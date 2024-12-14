@@ -23,6 +23,17 @@ namespace NotificationService {
     n.insert();
   }
 
+  void createBite(optional<Note> note, User &biteee, User &biter) {
+    auto n = create(biteee, NOTIFICATION_Bite);
+    n.notifierId = biter.id;
+    n.notifierUri = biter.uri;
+    if (note.has_value()) {
+      n.statusId = note->id;
+      n.statusUri = note->uri;
+    }
+    n.insert();
+  }
+
   void createFavorite(Note &note, User &favoritee, User &favoriter) {
     auto n = create(favoritee, NOTIFICATION_Favorite);
     n.notifierId = favoriter.id;
@@ -60,50 +71,3 @@ namespace NotificationService {
     n.insert();
   }
 }
-
-json Notification::renderMS(User &requester){
-    json notif = {
-      {"id", id},
-      {"created_at", utils::millisToIso(createdAt)},
-      {"pleroma", json::object()}
-    };
-
-    if (type == NOTIFICATION_Follow) {
-      auto follower = User::lookupid(notifierId.value()).value();
-      notif["type"] = "follow";
-      notif["account"] = follower.renderMS();
-    }
-
-    if (type == NOTIFICATION_Favorite) {
-      auto favoriter = User::lookupid(notifierId.value()).value();
-      auto note = Note::lookupid(statusId.value()).value();
-      notif["type"] = "favourite";
-      notif["account"] = favoriter.renderMS();
-      notif["status"] = note.renderMS(requester);
-    }
-
-    if (type == NOTIFICATION_Renote) {
-      auto renoter = User::lookupid(notifierId.value()).value();
-      auto note = Note::lookupid(statusId.value()).value();
-      notif["type"] = "reblog";
-      notif["account"] = renoter.renderMS();
-      notif["status"] = note.renderMS(requester);
-    }
-
-    if (type == NOTIFICATION_React) {
-      auto favoriter = User::lookupid(notifierId.value()).value();
-      auto note = Note::lookupid(statusId.value()).value();
-      notif["type"] = "pleroma:emoji_reaction";
-      notif["account"] = favoriter.renderMS();
-      notif["status"] = note.renderMS(requester);
-
-      if (emojiUrl.has_value()) {
-        notif["emoji"] = FMT(":{}:", emojiText.value());
-        notif["emoji_url"] = emojiUrl.value();
-      } else {
-        notif["emoji"] = emojiText.value();
-      }
-    }
-
-    return notif;
-  }

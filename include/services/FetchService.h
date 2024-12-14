@@ -1,9 +1,10 @@
 #pragma once
 #include <variant>
+#include "entities/Bite.h"
 #include "entities/Note.h"
 #include "entities/User.h"
 
-using AnyEntity = std::variant<User, Note>;
+using AnyEntity = std::variant<User, Note, Bite>;
 
 namespace FetchService {
   AnyEntity fetch(const string uri);

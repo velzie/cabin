@@ -6,6 +6,7 @@
 #include "database.h"
 #include "entities/Note.h"
 #include "services/FollowService.h"
+#include "services/BiteService.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   MSAUTH
@@ -155,6 +156,21 @@ POST(account_follow, "/api/v1/accounts/:id/follow") {
   FollowService::create(authuser, user->uri);
 
   // rerender, not ideal but whatever
+  user = User::lookupid((string) req->getParameter("id"));
+  
+  OK(user->renderMS(), MIMEJSON);
+}
+
+POST(account_bite, "/api/v1/users/:id/bite") {
+  MSAUTH
+  
+  auto user = User::lookupid((string) req->getParameter("id"));
+  if (!user.has_value()) {
+    ERROR(404, "no such user");
+  }
+
+  BiteService::create(authuser, user.value());
+
   user = User::lookupid((string) req->getParameter("id"));
   
   OK(user->renderMS(), MIMEJSON);

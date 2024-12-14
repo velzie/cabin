@@ -25,6 +25,9 @@ struct Bite {
       OPT(bitNote)
   )
 
+  LOOKUPKEY(Bite, bite, id);
+  LOOKUPKEY(Bite, bite, uri);
+
   json renderAP() {
     return {
       {"id", uri},

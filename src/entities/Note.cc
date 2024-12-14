@@ -137,7 +137,7 @@ Note Note::ingest(const json note) {
   // recursively fetch until the initial post in the thread
   Note topmost = n;
   while (topmost.replyToUri.has_value()) {
-    topmost = Note::lookupid(topmost.replyToUri.value()).value();
+    topmost = Note::lookupuri(topmost.replyToUri.value()).value();
   }
 
   // now we can safely take the conversation id

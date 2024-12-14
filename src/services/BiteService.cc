@@ -9,6 +9,7 @@ namespace BiteService {
   Bite create(User &user, User &biteee) {
     Bite b;
     string id = utils::genid();
+    b.owner = user.uri;
     b.uri = API("bite/"+id);
     b.id = id;
     b.local = true;
@@ -30,7 +31,12 @@ namespace BiteService {
 
   Bite ingest(const json data) {
     User biter = FetchService::fetch<User>(data["actor"]);
-    AnyEntity target = FetchService::fetch(data["object"]);
+    string targeturi;
+    if (!data["target"].is_null() && data["target"].is_string()) {
+      targeturi = data["target"];
+    }
+    dbg(targeturi);
+    AnyEntity target = FetchService::fetch(targeturi);
 
     URL biteuri(data["id"]);
     Bite b;
@@ -51,6 +57,14 @@ namespace BiteService {
       }
     } else if (std::holds_alternative<User>(target)) { 
       auto biteee = get<User>(target);
+      b.bitUser = biteee.uri;
+
+      if (biteee.local == true) {
+        NotificationService::createBite(nullopt, biteee, biter);
+      }
+    } else if (std::holds_alternative<Bite>(target)) { 
+      auto bite = get<Bite>(target);
+      auto biteee = User::lookupuri(bite.owner).value();
       b.bitUser = biteee.uri;
 
       if (biteee.local == true) {

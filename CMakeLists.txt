@@ -28,6 +28,7 @@ set(SOURCES
   src/entities/Like.cc
   src/entities/Note.cc
   src/entities/User.cc
+  src/entities/Notification.cc
 
   src/services/UserService.cc
   src/services/NoteService.cc
@@ -37,6 +38,7 @@ set(SOURCES
   src/services/InstanceService.cc
   src/services/NotificationService.cc
   src/services/FetchService.cc
+  src/services/BiteService.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc

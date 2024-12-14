@@ -130,7 +130,8 @@ MIGRATION_UP(init, 1) {
       host TEXT NOT NULL,
 
       owner TEXT NOT NULL,
-      object TEXT NOT NULL
+      bitUser TEXT,
+      bitNote TEXT
     )
   )");
 
