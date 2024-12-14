@@ -1,5 +1,6 @@
 #include "services/notification.h"
 
+#include "entities/Emoji.h"
 #include "entities/Notification.h"
 #include "utils.h"
 #include "services/user.h"
@@ -30,6 +31,23 @@ namespace NotificationService {
     n.notifierUri = favoriter.uri;
     n.statusId = note.id;
     n.statusUri = note.uri;
+
+    n.insert();
+  }
+
+  void createReact(Note &note, User &reactee, User &reacter, optional<Emoji> &emoji, optional<string> emojiText) {
+    auto n = create(reactee, NOTIFICATION_React);
+    n.notifierId = reacter.id;
+    n.notifierUri = reacter.uri;
+    n.statusId = note.id;
+    n.statusUri = note.uri;
+
+    if (emoji.has_value()) {
+      n.emojiText = emoji->address;
+      n.emojiUrl = emoji->imageurl;
+    } else {
+      n.emojiText = emojiText.value();
+    }
 
     n.insert();
   }
@@ -72,6 +90,21 @@ json Notification::renderMS(User &requester){
       notif["type"] = "reblog";
       notif["account"] = renoter.renderMS();
       notif["status"] = note.renderMS(requester);
+    }
+
+    if (type == NOTIFICATION_React) {
+      auto favoriter = UserService::lookup(notifierId.value()).value();
+      auto note = NoteService::lookup(statusId.value()).value();
+      notif["type"] = "pleroma:emoji_reaction";
+      notif["account"] = favoriter.renderMS();
+      notif["status"] = note.renderMS(requester);
+
+      if (emojiUrl.has_value()) {
+        notif["emoji"] = FMT(":{}:", emojiText.value());
+        notif["emoji_url"] = emojiUrl.value();
+      } else {
+        notif["emoji"] = emojiText.value();
+      }
     }
 
     return notif;

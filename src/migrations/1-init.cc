@@ -103,6 +103,9 @@ MIGRATION_UP(init, 1) {
       statusId TEXT,
       statusUri TEXT,
 
+      emojiText TEXT,
+      emojiUrl TEXT,
+
       isread BOOLEAN NOT NULL
     )
   )");

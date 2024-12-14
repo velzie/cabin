@@ -9,6 +9,7 @@
 #define NOTIFICATION_Poll 4
 #define NOTIFICATION_Update 5
 #define NOTIFICATION_Bite 6
+#define NOTIFICATION_React 7
 
 struct Notification {
   string id;
@@ -23,6 +24,9 @@ struct Notification {
 
   optional<string> statusUri;
   optional<string> statusId;
+
+  optional<string> emojiText;
+  optional<string> emojiUrl;
 
   int isread;
 
@@ -39,6 +43,9 @@ struct Notification {
 
     OPT(statusUri)
     OPT(statusId)
+
+    OPT(emojiText)
+    OPT(emojiUrl)
 
     F(isread)
 

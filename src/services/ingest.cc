@@ -94,8 +94,10 @@ namespace IngestService {
         .object = body["object"]
       };
 
+      optional<Emoji> oem;
       if (body["tag"].is_array() && body["tag"][0].is_object()) {
         Emoji em = EmojiService::parse(body["tag"][0], reacturi.host);
+        oem = em;
         e.emojiText = nullopt;
         e.emojiId = em.id;
       } else {
@@ -104,6 +106,11 @@ namespace IngestService {
       }
 
       e.insert();
+
+      if (note.local == true) {
+        User reactee = UserService::lookup_ap(note.owner).value();
+        NotificationService::createReact(note, reactee, reacter, oem, e.emojiText);
+      }
     } else if (type == "Follow"){
       string uri = body["id"];
       FollowService::ingest(uri, body);
