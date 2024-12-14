@@ -5,6 +5,7 @@
 #include "http.h"
 #include "utils.h"
 
+#include <error.h>
 #include <httplib.h>
 namespace InstanceService {
   optional<Instance> lookup(const string host) {
@@ -29,8 +30,10 @@ namespace InstanceService {
     cli.set_follow_location(true);
 
     auto nodeinfoMetaReq = cli.Get("/.well-known/nodeinfo");
-    ASSERT(nodeinfoMetaReq);
-    ASSERT(nodeinfoMetaReq->status == 200);
+    if (!nodeinfoMetaReq)
+      throw FetchError(0);
+    if (nodeinfoMetaReq->status != 200)
+      throw FetchError(nodeinfoMetaReq->status);
     json nodeinfoMeta = json::parse(nodeinfoMetaReq->body);
 
 
@@ -44,8 +47,10 @@ namespace InstanceService {
     ASSERT(nodeinfourl.host == host);
 
     auto nodeinfoReq = cli.Get(nodeinfourl.path);
-    ASSERT(nodeinfoReq);
-    ASSERT(nodeinfoReq->status == 200);
+    if (!nodeinfoReq)
+      throw FetchError(0);
+    if (nodeinfoReq->status != 200)
+      throw FetchError(nodeinfoReq->status);
     json nodeinfo = json::parse(nodeinfoReq->body);
 
     Instance i;

@@ -438,3 +438,55 @@ json Note::renderMS(User &requester) {
 
   return j;
 }
+
+json Note::renderAP() {
+    ASSERT(local);
+    vector<json> tags;
+
+    for (const auto hashtag : hashtags) {
+      tags.push_back({
+        {"type", "Hashtag"},
+        {"href", hashtag.href},
+        {"name", hashtag.name}
+      });
+    }
+
+    for (const auto mention : mentions) {
+      tags.push_back({
+        {"type", "Mention"},
+        {"href", mention.uri},
+        {"name", mention.fqn}
+      });
+    }
+
+    for (const auto emoji : emojis) {
+      Emoji em = EmojiService::lookup(emoji.id).value();
+      tags.push_back(em.renderTag());
+    }
+
+    
+
+
+    json j = {
+      {"@context", context},
+      {"id", NOTE(id)},
+      {"type", "Note"},
+      {"inReplyTo", replyToUri},
+      {"published", utils::millisToIso(published)},
+      {"url", NOTE(id)},
+      {"attributedTo", owner},
+      {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
+      {"cc", {owner+ "/followers"}},
+      {"sensitive", false},
+      {"content", content},
+      {"attachment", ARR},
+      {"tag", tags}
+    };
+
+    if (quoteUri.has_value()) {
+      j["_misskey_quote"] = *quoteUri;
+      j["quoteUri"] = *quoteUri;
+    }
+
+    return j;
+  }

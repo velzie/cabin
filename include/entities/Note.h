@@ -104,31 +104,6 @@ struct Note {
   )
 
 
-  json renderAP() {
-    ASSERT(local);
-    json j = {
-      {"@context", context},
-      {"id", NOTE(id)},
-      {"type", "Note"},
-      {"inReplyTo", replyToUri},
-      {"published", utils::millisToIso(published)},
-      {"url", NOTE(id)},
-      {"attributedTo", owner},
-      {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
-      {"cc", {owner+ "/followers"}},
-      {"sensitive", false},
-      {"content", content},
-      {"attachment", ARR},
-      {"tag", ARR}
-    };
-
-    if (quoteUri.has_value()) {
-      j["_misskey_quote"] = *quoteUri;
-      j["quoteUri"] = *quoteUri;
-    }
-
-    return j;
-  }
-
+  json renderAP();
   json renderMS(User &requester);
 };
