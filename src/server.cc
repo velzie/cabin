@@ -190,7 +190,7 @@ namespace Server {
     }
 
     for (const auto route : routes_put) {
-      app->post(route.first, [route](uResponse res, uRequest req){
+      app->put(route.first, [route](uResponse res, uRequest req){
 		    auto isAborted = std::make_shared<bool>(false);
 		    auto body = std::make_shared<std::stringstream>();
 		    res->onData([req, res, isAborted, body, route](std::string_view chunk, bool isFin) mutable {
@@ -201,7 +201,8 @@ namespace Server {
 
               json j;
               if (req->getHeader("content-type").find("json") != std::string::npos) {
-                j = json::parse(body->str());
+                if (body->str().size() > 0)
+                  j = json::parse(body->str());
               } else if (mp.isValid()) {
                 mp.setBody(body->str());
               } else if (req->getHeader("content-type") == "application/x-www-form-urlencoded") {

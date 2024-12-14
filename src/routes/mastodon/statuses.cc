@@ -1,4 +1,6 @@
 #include "SQLiteCpp/Statement.h"
+#include "entities/EmojiReact.h"
+#include "services/emoji.h"
 #define USE_DB
 #include <router.h>
 #include <common.h>
@@ -96,6 +98,7 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
     .uri = LIKE(likeid),
     .id = likeid,
     .local = true,
+    .host = cfg.domain,
 
     .owner = authuser.uri,
     .object = note->uri
@@ -113,6 +116,70 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
     {"_misskey_reaction", "❤"},
     {"type", "Like"}
   };
+
+  auto resp = cli.Post("/inbox", activity);
+
+  note = NoteService::lookup(id);
+  OK(note->renderMS(authuser), MIMEJSON);
+}
+
+PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
+  MSAUTH
+  string id (req->getParameter("id"));
+  string emojiname (req->getParameter("emoji"));
+  emojiname = httplib::detail::decode_url(emojiname, false);
+  ASSERT(emojiname.length() > 2);
+  if (emojiname[0] == ':') {
+    emojiname.erase(0, 1);
+    emojiname.pop_back();
+  }
+
+
+  auto note = NoteService::lookup(id);
+  if (!note.has_value()) {
+    ERROR(404, "no note");
+  }
+
+  string reactid = utils::genid();
+  EmojiReact react = {
+    .uri = REACT(reactid),
+    .id = reactid,
+    .local = true,
+    .host = cfg.domain,
+
+    .owner = authuser.uri,
+    .object = note->uri
+  };
+
+  auto emoji = EmojiService::lookupAddress(emojiname);
+  if (emoji.has_value()) {
+    react.emojiText = nullopt;
+    react.emojiId = emoji->id;
+  } else {
+    react.emojiId = nullopt;
+    react.emojiText = emojiname;
+  }
+
+  react.insert();
+
+  URL url(note->uri);
+  APClient cli(authuser, url.host);
+
+  json activity = {
+    {"actor", authuser.uri},
+    {"id", react.uri},
+    {"object", note->uri},
+    {"type", "EmojiReact"}
+  };
+
+  if (emoji.has_value()) {
+    activity["content"] = FMT(":{}:", emoji->address);
+    activity["tag"] = {
+      emoji->renderTag()
+    };
+  } else {
+    activity["content"] = react.emojiText;
+  }
 
   auto resp = cli.Post("/inbox", activity);
 

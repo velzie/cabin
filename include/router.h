@@ -13,6 +13,7 @@ using __Handler = std::function<void(uResponse, uRequest)>;
 using __BodyHandler = std::function<void(uResponse, uRequest, json, string, uWS::MultipartParser&)>;
 void *register_route(std::string route, __Handler h);
 void *register_route_post(std::string route, __BodyHandler h);
+void *register_route_put(std::string route, __BodyHandler h);
 
 
 #define GET(name, route)\
@@ -27,7 +28,7 @@ void *register_route_post(std::string route, __BodyHandler h);
 
 #define PUT(name, route)\
   void name##_put_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&);\
-  static void * name##_reg = register_route_post(route, name##_put_handle);\
+  static void * name##_reg = register_route_put(route, name##_put_handle);\
   void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp)
 
 
