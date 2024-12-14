@@ -225,13 +225,30 @@ GET(status_reblogged_by, "/api/v1/statuses/:id/reblogged_by") {
 }
 
 GET(status_reactions, "/api/v1/statuses/:id/reactions") {
+  MSAUTH
+
   string id (req->getParameter("id"));
   auto n = NoteService::lookup(id);
   if (!n.has_value()) {
     ERROR(404, "no note");
   }
 
-  json reactions = json::array();
+
+  json reactions = n.value().renderReactionsMS(authuser, true);
+  OK(reactions, MIMEJSON);
+}
+
+GET(status_reactions_pleroma, "/api/v1/pleroma/statuses/:id/reactions") {
+  MSAUTH
+
+  string id (req->getParameter("id"));
+  auto n = NoteService::lookup(id);
+  if (!n.has_value()) {
+    ERROR(404, "no note");
+  }
+
+
+  json reactions = n.value().renderReactionsMS(authuser, true);
   OK(reactions, MIMEJSON);
 }
 

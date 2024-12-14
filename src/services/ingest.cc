@@ -104,7 +104,6 @@ namespace IngestService {
       }
 
       e.insert();
-      // std::cout << body.dump() << "\n";
     } else if (type == "Follow"){
       string uri = body["id"];
       FollowService::ingest(uri, body);

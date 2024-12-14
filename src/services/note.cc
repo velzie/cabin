@@ -277,6 +277,65 @@ namespace NoteService {
   }
 }
 
+json Note::renderReactionsMS(User &requester, bool fullAccounts) {
+  std::map<string, json> emojireacts;
+  auto qReacted = STATEMENT("SELECT * FROM emojireact WHERE object = ?");
+  qReacted.bind(1, uri);
+  while (qReacted.executeStep()) {
+    EmojiReact emreact;
+    emreact.load(qReacted);
+
+    string emname;
+    if (emreact.emojiId.has_value()) {
+      Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
+      emname = em.address;
+    } else {
+      emname = emreact.emojiText.value();
+    }
+
+    if (emojireacts.count(emname)) {
+      json r = emojireacts[emname];
+      r["count"] = r["count"].get<int>() + 1;
+
+      if (fullAccounts) {
+        auto acc = UserService::lookup(emreact.ownerId).value();
+        r["accounts"].push_back(acc.renderMS());
+      } else {
+        r["account_ids"].push_back(emreact.ownerId);
+      }
+
+      emojireacts[emname] = r;
+    } else {
+      json r = {
+        {"count", 1},
+        {"name", emname},
+        {"me", false}, // TODO:
+      };
+
+      if (fullAccounts) {
+        auto acc = UserService::lookup(emreact.ownerId).value();
+        r["accounts"] = {acc.renderMS()};
+      } else {
+        r["account_ids"] = {emreact.ownerId};
+      }
+
+      if (emreact.emojiId.has_value()) {
+        Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
+        r["url"] = em.imageurl;
+        r["static_url"] = em.imageurl;
+      }
+
+      emojireacts.insert({emname, r});
+    }
+  }
+
+  vector<json> emojireactsarr;
+  for (const auto [key, value] : emojireacts) {
+    emojireactsarr.push_back(value);
+  }
+
+  return emojireactsarr;
+}
 
 json Note::renderMS(User &requester) {
   User uOwner = UserService::lookup_ap(owner).value();
@@ -323,47 +382,7 @@ json Note::renderMS(User &requester) {
     });
   }
 
-  std::map<string, json> emojireacts;
-  auto qReacted = STATEMENT("SELECT * FROM emojireact WHERE object = ?");
-  qReacted.bind(1, uri);
-  while (qReacted.executeStep()) {
-    EmojiReact emreact;
-    emreact.load(qReacted);
-
-    string emname;
-    if (emreact.emojiId.has_value()) {
-      Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
-      emname = em.address;
-    } else {
-      emname = emreact.emojiText.value();
-    }
-
-    if (emojireacts.count(emname)) {
-      json r = emojireacts[emname];
-      r["count"] = r["count"].get<int>() + 1;
-      r["account_ids"].push_back(emreact.ownerId);
-      emojireacts[emname] = r;
-    } else {
-      json r = {
-        {"count", 1},
-        {"name", emname},
-        {"me", false}, // TODO:
-        {"account_ids", {emreact.ownerId}}
-      };
-
-      if (emreact.emojiId.has_value()) {
-        Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
-        r["url"] = em.imageurl;
-        r["static_url"] = em.imageurl;
-      }
-
-      emojireacts.insert({emname, r});
-    }
-  }
-  vector<json> emojireactsarr;
-  for (const auto [key, value] : emojireacts) {
-    emojireactsarr.push_back(value);
-  }
+  auto emojireactsarr = renderReactionsMS(requester, false);
 
   json j = {
     {"id", id},

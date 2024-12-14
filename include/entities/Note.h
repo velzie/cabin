@@ -105,5 +105,6 @@ struct Note {
 
 
   json renderAP();
+  json renderReactionsMS(User &requester, bool fullAccounts);
   json renderMS(User &requester);
 };
