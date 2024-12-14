@@ -8,6 +8,7 @@ struct EmojiReact {
   string host;
 
   string owner;
+  string ownerId;
   string object;
 
   optional<string> emojiId;
@@ -22,6 +23,7 @@ struct EmojiReact {
       F(host)
 
       F(owner)
+      F(ownerId)
       F(object)
 
       OPT(emojiId)

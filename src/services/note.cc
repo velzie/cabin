@@ -1,6 +1,7 @@
 #include <common.h>
 #include <httplib.h>
 #include "entities/Note.h"
+#include "entities/EmojiReact.h"
 #include "services/emoji.h"
 #include <stdexcept>
 
@@ -322,6 +323,48 @@ json Note::renderMS(User &requester) {
     });
   }
 
+  std::map<string, json> emojireacts;
+  auto qReacted = STATEMENT("SELECT * FROM emojireact WHERE object = ?");
+  qReacted.bind(1, uri);
+  while (qReacted.executeStep()) {
+    EmojiReact emreact;
+    emreact.load(qReacted);
+
+    string emname;
+    if (emreact.emojiId.has_value()) {
+      Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
+      emname = em.address;
+    } else {
+      emname = emreact.emojiText.value();
+    }
+
+    if (emojireacts.count(emname)) {
+      json r = emojireacts[emname];
+      r["count"] = r["count"].get<int>() + 1;
+      r["account_ids"].push_back(emreact.ownerId);
+      emojireacts[emname] = r;
+    } else {
+      json r = {
+        {"count", 1},
+        {"name", emname},
+        {"me", false}, // TODO:
+        {"account_ids", {emreact.ownerId}}
+      };
+
+      if (emreact.emojiId.has_value()) {
+        Emoji em = EmojiService::lookup(emreact.emojiId.value()).value();
+        r["url"] = em.imageurl;
+        r["static_url"] = em.imageurl;
+      }
+
+      emojireacts.insert({emname, r});
+    }
+  }
+  vector<json> emojireactsarr;
+  for (const auto [key, value] : emojireacts) {
+    emojireactsarr.push_back(value);
+  }
+
   json j = {
     {"id", id},
     {"created_at", utils::millisToIso(published)},
@@ -348,8 +391,8 @@ json Note::renderMS(User &requester) {
     {"application", nullptr},
     {"account", uOwner.renderMS()},
     {"emojis", msemojis},
-    {"emoji_reactions", json::array()},
-    {"reactions", json::array()},
+    {"emoji_reactions", emojireactsarr},
+    {"reactions", emojireactsarr},
     {"card", nullptr},
     {"poll", nullptr},
 
@@ -361,7 +404,7 @@ json Note::renderMS(User &requester) {
       }},
       {"expires_at", nullptr},
       {"direct_conversation_id", nullptr},
-      {"emoji_reactions", ARR},
+      {"emoji_reactions", emojireactsarr},
       {"spoiler_text", {
         {"text/plain", ""}
       }},

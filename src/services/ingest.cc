@@ -90,6 +90,7 @@ namespace IngestService {
         .host = reacturi.host,
 
         .owner = body["actor"],
+        .ownerId = reacter.id,
         .object = body["object"]
       };
 
