@@ -22,14 +22,21 @@ set(SOURCES
   src/database.cc
   src/util.cc
 
-  src/services/user.cc
-  src/services/note.cc
-  src/services/ingest.cc
-  src/services/delivery.cc
-  src/services/follow.cc
-  src/services/instance.cc
-  src/services/notification.cc
-  src/services/emoji.cc
+  src/entities/Emoji.cc
+  src/entities/EmojiReact.cc
+  src/entities/Follow.cc
+  src/entities/Like.cc
+  src/entities/Note.cc
+  src/entities/User.cc
+
+  src/services/UserService.cc
+  src/services/NoteService.cc
+  src/services/IngestService.cc
+  src/services/DeliveryService.cc
+  src/services/FollowService.cc
+  src/services/InstanceService.cc
+  src/services/NotificationService.cc
+  src/services/FetchService.cc
 
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
