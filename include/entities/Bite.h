@@ -1,5 +1,6 @@
 #pragma once
 #include "database.h"
+#include "utils.h"
 
 struct Bite {
   string uri;
@@ -8,7 +9,9 @@ struct Bite {
   string host;
 
   string owner;
-  string object;
+
+  optional<string> bitUser;
+  optional<string> bitNote;
 
   ORM(bite, uri,
       F(uri)
@@ -17,6 +20,19 @@ struct Bite {
       F(host)
 
       F(owner)
-      F(object)
+
+      OPT(bitUser)
+      OPT(bitNote)
   )
+
+  json renderAP() {
+    return {
+      {"id", uri},
+      {"type", "Bite"},
+      {"actor", owner},
+      {"target", bitUser.value()},
+      {"to", bitUser.value()},
+      {"published", utils::dateISO()},
+    };
+  }
 };

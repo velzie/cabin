@@ -1,5 +1,6 @@
 #include "entities/EmojiReact.h"
 #include "entities/Note.h"
+#include "services/BiteService.h"
 #include "services/FetchService.h"
 #include "services/NotificationService.h"
 #include <error.h>
@@ -29,31 +30,9 @@ namespace IngestService {
       Note::ingestAnnounce(body);
     } else if (type == "Like") {
       Like::ingest(body);
-    }
-    // else if (type == "Bite") {
-    //   User biter = UserService::fetchRemote(body["actor"]);
-    //   Note note = NoteService::fetchRemote(body["object"]);
-    //
-    //   URL likeuri(body["id"]);
-    //   Like l = {
-    //     .uri = body["id"],
-    //     .id = utils::genid(),
-    //     .local = 0,
-    //     .host = likeuri.host,
-    //
-    //     .owner = body["actor"],
-    //     .object = body["object"]
-    //   };
-    //
-    //   l.insert();
-    //
-    //   if (note.local == true) {
-    //     User favoritee = UserService::lookup_ap(note.owner).value();
-    //     NotificationService::createFavorite(note, favoritee, favoriter);
-    //   }
-    //
-    // }
-    else if (type == "EmojiReact") {
+    } else if (type == "Bite") {
+      BiteService::ingest(body);
+    } else if (type == "EmojiReact") {
       EmojiReact::ingest(body);
     } else if (type == "Follow") {
       FollowService::ingest(body["id"], body);
