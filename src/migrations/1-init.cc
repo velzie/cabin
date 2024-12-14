@@ -123,6 +123,18 @@ MIGRATION_UP(init, 1) {
   )");
 
   db->exec(R"(
+    CREATE TABLE bite(
+      uri TEXT PRIMARY KEY,
+      id TEXT NOT NULL UNIQUE,
+      local INTEGER NOT NULL,
+      host TEXT NOT NULL,
+
+      owner TEXT NOT NULL,
+      object TEXT NOT NULL
+    )
+  )");
+
+  db->exec(R"(
     CREATE TABLE follow(
       uri TEXT PRIMARY KEY,
       id TEXT NOT NULL UNIQUE,
