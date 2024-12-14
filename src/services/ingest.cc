@@ -1,3 +1,5 @@
+#include "entities/EmojiReact.h"
+#include "services/emoji.h"
 #include "services/notification.h"
 #include <error.h>
 #define USE_DB
@@ -75,6 +77,33 @@ namespace IngestService {
         NotificationService::createFavorite(note, favoritee, favoriter);
       }
 
+    } else if (type == "EmojiReact") {
+      User reacter = UserService::fetchRemote(body["actor"]);
+      Note note = NoteService::fetchRemote(body["object"]);
+
+      URL reacturi(body["id"]);
+
+      EmojiReact e = {
+        .uri = body["id"],
+        .id = utils::genid(),
+        .local = 0,
+        .host = reacturi.host,
+
+        .owner = body["actor"],
+        .object = body["object"]
+      };
+
+      if (body["tag"].is_array() && body["tag"][0].is_object()) {
+        Emoji em = EmojiService::parse(body["tag"][0], reacturi.host);
+        e.emojiText = nullopt;
+        e.emojiId = em.id;
+      } else {
+        e.emojiId = nullopt;
+        e.emojiText = body["content"];
+      }
+
+      e.insert();
+      // std::cout << body.dump() << "\n";
     } else if (type == "Follow"){
       string uri = body["id"];
       FollowService::ingest(uri, body);

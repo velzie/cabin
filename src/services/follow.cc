@@ -63,7 +63,7 @@ namespace FollowService {
 
     json accept = {
       {"actor", followee},
-      {"id", API("no/ones/gonna/check/this/ever")},
+      {"id", API("accepts/"+utils::genid())},
       {"object", f.renderAP()},
       {"type", "Accept"}
     };

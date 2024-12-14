@@ -138,7 +138,7 @@ httplib::Result APClient::Get(std::string pathname) {
   });
 
   if (!r) throw FetchError(0);
-  if (r->status != 200) throw FetchError(r);
+  if (r->status != 200) throw FetchError(r->status);
 
   return r;
 }
@@ -170,7 +170,7 @@ httplib::Result APClient::Post(std::string pathname, json data) {
   }, payload, "application/activity+json");
 
   if (!r) throw FetchError(0);
-  if (r->status != 200 && r->status != 202) throw FetchError(r);
+  if (r->status != 200 && r->status != 202) throw FetchError(r->status);
 
   return r;
 }
