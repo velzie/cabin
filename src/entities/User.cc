@@ -19,7 +19,7 @@ User User::ingest(const json user) {
   u.speakAsCat = JboolOrFalse(user, "speakAsCat");
 
   u.inbox = user["inbox"];
-  u.featured = user["featured"];
+  u.featured = JstringOrEmpty(user, "featured");
 
   if (user.contains("sharedInbox") && user["sharedInbox"].is_string())
     u.sharedInbox = user["sharedInbox"];
