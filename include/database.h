@@ -97,6 +97,15 @@ namespace Database {
   \
   _counter++;
 
+#define BOOL(name)\
+  names.push_back(#name);\
+  if (__flag == 1)\
+    name = (bool)(int)_statement->getColumn(#name);\
+  if (__flag == 2)\
+      _query->bind((int)_counter, name);\
+  \
+  _counter++;
+
 #define OPT(name)\
   names.push_back(#name);\
   if (__flag == 1) {\
