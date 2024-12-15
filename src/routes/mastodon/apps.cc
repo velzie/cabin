@@ -16,11 +16,24 @@ std::string join(const std::vector<std::string>& vec, const std::string& delimit
 
 json stored_app;
 POST(apps, "/api/v1/apps") {
+  string client_name;
+  string website;
+  string scopes;
+  string redirect_uris;
 
-  string query("?" + bodyraw);
-  string client_name(uWS::getDecodedQueryValue("client_name", query));
-  string website(uWS::getDecodedQueryValue("website", query));
-  string scopes(uWS::getDecodedQueryValue("scopes", query));
+  if (req->getHeader("content-type") == "application/json") {
+    client_name = body["client_name"];
+    redirect_uris = body["redirect_uris"];
+    scopes = body["scopes"];
+    website = body["website"];
+  } else {
+    string query("?" + bodyraw);
+    client_name = (uWS::getDecodedQueryValue("client_name", query));
+    website = (uWS::getDecodedQueryValue("website", query));
+    scopes = (uWS::getDecodedQueryValue("scopes", query));
+    redirect_uris = req->getParameter("redirect_uris");
+  }
+
 
 
   json r = {
@@ -28,8 +41,8 @@ POST(apps, "/api/v1/apps") {
     {"name", client_name},
     {"website", website},
     {"scopes", scopes},
-    {"redirect_uri", req->getParameter("redirect_uris")},
-    {"redirect_uris", req->getParameter("redirect_uris")},
+    {"redirect_uri", redirect_uris},
+    {"redirect_uris", redirect_uris},
     {"client_id", "placeholder"},
     {"client_secret", "placeholder_secret"}
   };
