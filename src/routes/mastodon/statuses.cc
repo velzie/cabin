@@ -5,6 +5,7 @@
 #include <router.h>
 #include <common.h>
 #include "database.h"
+#include "querybuilder.h"
 #include "utils.h"
 #include "http.h"
 #include "entities/Like.h"
@@ -333,37 +334,34 @@ GET(timelines, "/api/v1/timelines/:id") {
   string min_id (req->getQuery("min_id"));
   string since_id (req->getQuery("since_id"));
 
-  // default, no pagination
-  SQLite::Statement q = STATEMENT("SELECT * FROM note ORDER BY publishedClamped DESC LIMIT ?");
-  q.bind(1, limit);
+  QueryBuilder query;
+  query = query
+    .select({"*"})
+    .from("note")
+    .limit(limit);
 
   if (!max_id.empty()) {
     // start at max_id and paginated down
     Note upperNote = Note::lookupid(max_id).value();
-    q = STATEMENT("SELECT * FROM note WHERE publishedClamped < ? ORDER BY publishedClamped DESC LIMIT ?");
-    q.bind(1, upperNote.publishedClamped);
-    q.bind(2, limit);
-  } else if (!min_id.empty()) {
+    query = query.where("publishedClamped < ", upperNote.publishedClamped).orderBy("publishedClamped");
+  }
+
+  if (!min_id.empty()) {
     // start at low id, paginate up
     Note lowerNote = Note::lookupid(min_id).value();
-    q = STATEMENT("SELECT * FROM note WHERE publishedClamped > ? ORDER BY publishedClamped DESC LIMIT ?");
-    q.bind(1, lowerNote.publishedClamped);
-    q.bind(2, limit);
-  } else if (!since_id.empty()) {
+    query = query.where("publishedClamped > ", lowerNote.publishedClamped).orderBy("publishedClamped");
+  }
+
+  if (!since_id.empty()) {
     // start at most recent date, paginate down but don't go further than since_id
     Note lowerNote = Note::lookupid(since_id).value();
-    q = STATEMENT(R"SQL(
-      SELECT *
-      FROM (
-        SELECT * FROM note
-        WHERE publishedClamped > ?
-        ORDER BY publishedClamped DESC
-        LIMIT ?
-      ) AS subquery
-      ORDER BY publishedClamped
-    )SQL");
-    q.bind(1, lowerNote.publishedClamped);
-    q.bind(2, limit);
+    query = query
+      .select({"*"})
+      .from(
+          query
+          .orderBy("publishedClamped", "DESC")
+      )
+      .orderBy("publishedClamped");
   }
 
 
@@ -373,6 +371,7 @@ GET(timelines, "/api/v1/timelines/:id") {
   string ret_min_id;
 
 
+  auto q = query.build();
   while (q.executeStep()) {
     Note n;
     n.load(q);

@@ -13,14 +13,15 @@ class QueryBuilder {
   optional<int> m_limit;
   optional<int> m_offset;
 
-  std::map<string, string> m_where;
+  using SqlType = std::variant<time_t, bool, string>;
+  std::map<string, SqlType> m_where;
   std::map<string, QueryBuilder> m_wherein;
 
 
 
 
   public:
-  QueryBuilder where(const string key, const string value) {
+  QueryBuilder where(const string key, const SqlType value) {
     m_where[key] = value;
     return *this;
   }
@@ -51,7 +52,7 @@ class QueryBuilder {
     return *this;
   }
 
-  QueryBuilder orderBy(const string _orderBy, const string _direction) {
+  QueryBuilder orderBy(const string _orderBy, const string _direction = "ASC") {
     m_orderBy = _orderBy;
     m_direction = _direction;
     return *this;
@@ -111,7 +112,13 @@ class QueryBuilder {
 
       if (!m_where.empty()) {
         for (auto [key, value] : m_where) {
-          q.bind(ibind, value);
+          if (std::holds_alternative<time_t>(value)) {
+            q.bind(ibind, std::get<time_t>(value));
+          } else if (std::holds_alternative<bool>(value)) {
+            q.bind(ibind, std::get<bool>(value));
+          } else if (std::holds_alternative<string>(value)) {
+            q.bind(ibind, std::get<string>(value));
+          }
           ibind++;
         }
       }
