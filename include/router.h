@@ -46,6 +46,9 @@ void *register_route_put(std::string route, __BodyHandler h);
   res->writeStatus("200");\
   res->writeHeader("Content-Type", mime);\
   res->writeHeader("Access-Control-Allow-Origin", "*");\
+  res->writeHeader("Access-Control-Allow-Headers", "*");\
+  res->writeHeader("Access-Control-Expose-Headers", HEADERLIST);\
+  res->writeHeader("Access-Control-Allow-Credentials", "true");\
   res->write(json.dump());\
   res->end();\
   return

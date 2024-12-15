@@ -319,86 +319,74 @@ GET(status_reactions_pleroma, "/api/v1/pleroma/statuses/:id/reactions") {
   OK(reactions, MIMEJSON);
 }
 
-GET(timelines, "/api/v1/timelines/:id") {
+#define PAGINATE(query, entity, paginateBy)\
+  std::stringstream ss(string(req->getQuery("limit")));\
+  int limit = 0;\
+  ss >> limit;\
+  if (!limit) limit = 20;\
+  if (limit > 20) limit = 20;\
+  query = query.limit(limit);\
+  string max_id (req->getQuery("max_id"));\
+  string min_id (req->getQuery("min_id"));\
+  string since_id (req->getQuery("since_id"));\
+  if (!max_id.empty()) {\
+    /*start at max_id and paginated down*/ \
+    entity upperEnt = entity::lookupid(max_id).value();\
+    query = query.where(#paginateBy" < ", upperEnt.paginateBy).orderBy(#paginateBy, "DESC");\
+  }\
+  if (!min_id.empty()) {\
+    /* start at low id, paginate up*/\
+    entity lowerEnt = entity::lookupid(min_id).value();\
+    query = query.where(#paginateBy" > ", lowerEnt.paginateBy).orderBy("publishedClamped", "DESC");\
+  }\
+  if (!since_id.empty()) {\
+    /* start at most recent date, paginate down but don't go further than since_id */\
+    entity lowerNote = entity::lookupid(since_id).value();\
+    query = query\
+      .select({"*"})\
+      .from(\
+          query\
+          .orderBy(#paginateBy, "DESC")\
+      )\
+      .orderBy(#paginateBy);\
+  }\
+  json response = json::array();\
+  string ret_max_id;\
+  string ret_min_id;\
+  auto q = query.build();\
+  while (q.executeStep()) {\
+    entity n;\
+    n.load(q);\
+    if (ret_min_id.empty()) ret_min_id = n.id;\
+    ret_max_id = n.id;\
+    response.push_back(n.renderMS(authuser));\
+  }\
+  res->writeHeader("Link",\
+      FMT("<{}>; rel=\"next\",<{}>; rel=\"prev\"",\
+        FMT("{}?max_id={}", req->getUrl(), ret_max_id),\
+        FMT("{}?min_id={}", req->getUrl(), ret_min_id)\
+      )\
+  );\
+  OK(response, MIMEJSON);\
+
+
+GET(timelines, "/api/v1/timelines/home") {
   MSAUTH
-
-  string tlname (req->getParameter("id"));
-
-  std::stringstream ss(string(req->getQuery("limit")));
-  int limit = 0;
-  ss >> limit;
-  if (!limit) limit = 20;
-  if (limit > 20) limit = 20;
-
-  string max_id (req->getQuery("max_id"));
-  string min_id (req->getQuery("min_id"));
-  string since_id (req->getQuery("since_id"));
 
   QueryBuilder query;
   query = query
     .select({"*"})
     .from("note")
-    .orderBy("publishedClamped", "DESC")
-    .limit(limit);
-
-  if (tlname == "home") {
-    QueryBuilder followers;
-    query = query.whereIn("owner", 
-        followers
-        .select({"followee"})
-        .from("follow")
-        .where("follower = ", authuser.uri)
-    );
-  }
-
-  if (!max_id.empty()) {
-    // start at max_id and paginated down
-    Note upperNote = Note::lookupid(max_id).value();
-    query = query.where("publishedClamped < ", upperNote.publishedClamped).orderBy("publishedClamped", "DESC");
-  }
-
-  if (!min_id.empty()) {
-    // start at low id, paginate up
-    Note lowerNote = Note::lookupid(min_id).value();
-    query = query.where("publishedClamped > ", lowerNote.publishedClamped).orderBy("publishedClamped", "DESC");
-  }
-
-  if (!since_id.empty()) {
-    // start at most recent date, paginate down but don't go further than since_id
-    Note lowerNote = Note::lookupid(since_id).value();
-    query = query
-      .select({"*"})
-      .from(
-          query
-          .orderBy("publishedClamped", "DESC")
-      )
-      .orderBy("publishedClamped");
-  }
+    .orderBy("publishedClamped", "DESC");
 
 
-  json response = json::array();
-
-  string ret_max_id;
-  string ret_min_id;
-
-
-  auto q = query.build();
-  while (q.executeStep()) {
-    Note n;
-    n.load(q);
-
-    if (ret_min_id.empty()) ret_min_id = n.id;
-    ret_max_id = n.id;
-
-    response.push_back(n.renderMS(authuser));
-  }
-
-  res->writeHeader("Link",
-      FMT("<{}>; rel=\"next\",<{}>; rel=\"prev\"", 
-        MAPI(FMT("timelines/{}?max_id={}", tlname, ret_max_id)),
-        MAPI(FMT("timelines/{}?min_id={}", tlname, ret_min_id))
-      )
+  QueryBuilder followers;
+  query = query.whereIn("owner", 
+      followers
+      .select({"followee"})
+      .from("follow")
+      .where("follower = ", authuser.uri)
   );
 
-  OK(response, MIMEJSON);
+  PAGINATE(query, Note, publishedClamped);
 }

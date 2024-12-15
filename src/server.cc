@@ -51,8 +51,9 @@ namespace Server {
 
     app->options("/*", [](uResponse res, uRequest req){
       res->writeStatus("204");
-      res->writeHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+      res->writeHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
       res->writeHeader("Access-Control-Allow-Headers", "*");
+      res->writeHeader("Access-Control-Expose-Headers", HEADERLIST);
       res->writeHeader("Access-Control-Allow-Origin", "*");
       res->writeHeader("Access-Control-Allow-Credentials", "true");
       res->endWithoutBody();

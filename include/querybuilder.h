@@ -6,7 +6,7 @@ class QueryBuilder {
   vector<string> columns;
 
   optional<string> m_table;
-  optional<QueryBuilder*> m_tableSubquery;
+  std::shared_ptr<QueryBuilder> m_tableSubquery;
 
   optional<string> m_orderBy;
   optional<string> m_direction;
@@ -22,45 +22,66 @@ class QueryBuilder {
 
   public:
   QueryBuilder where(const string key, const SqlType value) {
-    m_where[key] = value;
-    return *this;
+    QueryBuilder q = *this;
+    q.m_where[key] = value;
+    return q;
   }
 
   QueryBuilder select(const vector<string> _columns) {
-    columns = _columns;
-    queryType = "SELECT";
-    return *this;
+    QueryBuilder q = *this;
+    q.columns = _columns;
+    q.queryType = "SELECT";
+    q.reset();
+    return q;
   }
 
   QueryBuilder from(const string table) {
-    this->m_table = table;
-    return *this;
+    QueryBuilder q = *this;
+    q.m_table = table;
+    return q;
   }
 
   QueryBuilder from(QueryBuilder subquery) {
-    this->m_tableSubquery = &subquery;
-    return *this;
+    QueryBuilder q = *this;
+    // TODO: this is bad use moves instead
+    q.m_tableSubquery = std::make_shared<QueryBuilder>(subquery);
+    return q;
   }
 
   QueryBuilder limit(int limit) {
-    m_limit = limit;
-    return *this;
+    QueryBuilder q = *this;
+    q.m_limit = limit;
+    return q;
   }
 
   QueryBuilder offset(int _offset) {
-    m_offset = _offset;
-    return *this;
+    QueryBuilder q = *this;
+    q.m_offset = _offset;
+    return q;
   }
 
   QueryBuilder orderBy(const string _orderBy, const string _direction = "ASC") {
-    m_orderBy = _orderBy;
-    m_direction = _direction;
-    return *this;
+    QueryBuilder q = *this;
+    q.m_orderBy = _orderBy;
+    q.m_direction = _direction;
+    return q;
   }
 
   QueryBuilder whereIn(const string key, QueryBuilder subquery) {
-    m_wherein[key] = std::move(subquery);
-    return *this;
+    QueryBuilder q = *this;
+    q.m_wherein[key] = std::move(subquery);
+    return q;
+  }
+
+  void reset() {
+    m_where.clear();
+    m_wherein.clear();
+    m_table.reset();
+    m_tableSubquery.reset();
+    m_orderBy.reset();
+    m_direction.reset();
+    m_limit.reset();
+    m_offset.reset();
   }
 
   SQLite::Statement build() {
@@ -76,7 +97,7 @@ class QueryBuilder {
       if (m_table.has_value()) {
         query += m_table.value();
       } else {
-        query += "(" + m_tableSubquery.value()->build().getExpandedSQL() + ")";
+        query += "(" + m_tableSubquery->build().getExpandedSQL() + ")";
       }
 
       if (!m_where.empty() || !m_wherein.empty()) {
@@ -106,7 +127,6 @@ class QueryBuilder {
         query += " LIMIT ?"; 
       }
 
-      dbg(query);
       auto q = STATEMENT(query);
       int ibind = 1;
 
