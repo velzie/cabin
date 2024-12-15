@@ -338,18 +338,29 @@ GET(timelines, "/api/v1/timelines/:id") {
   query = query
     .select({"*"})
     .from("note")
+    .orderBy("publishedClamped", "DESC")
     .limit(limit);
+
+  if (tlname == "home") {
+    QueryBuilder followers;
+    query = query.whereIn("owner", 
+        followers
+        .select({"followee"})
+        .from("follow")
+        .where("follower = ", authuser.uri)
+    );
+  }
 
   if (!max_id.empty()) {
     // start at max_id and paginated down
     Note upperNote = Note::lookupid(max_id).value();
-    query = query.where("publishedClamped < ", upperNote.publishedClamped).orderBy("publishedClamped");
+    query = query.where("publishedClamped < ", upperNote.publishedClamped).orderBy("publishedClamped", "DESC");
   }
 
   if (!min_id.empty()) {
     // start at low id, paginate up
     Note lowerNote = Note::lookupid(min_id).value();
-    query = query.where("publishedClamped > ", lowerNote.publishedClamped).orderBy("publishedClamped");
+    query = query.where("publishedClamped > ", lowerNote.publishedClamped).orderBy("publishedClamped", "DESC");
   }
 
   if (!since_id.empty()) {
