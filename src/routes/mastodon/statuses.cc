@@ -390,3 +390,15 @@ GET(timelines, "/api/v1/timelines/home") {
 
   PAGINATE(query, Note, publishedClamped);
 }
+
+GET(timeline_federated, "/api/v1/timelines/public") {
+  MSAUTH
+
+  QueryBuilder query;
+  query = query
+    .select({"*"})
+    .from("note")
+    .orderBy("publishedClamped", "DESC");
+
+  PAGINATE(query, Note, publishedClamped);
+}

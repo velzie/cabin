@@ -9,6 +9,7 @@
 #include "common.h"
 #include "database.h"
 #include "server.h"
+#include "workers/BubbleFetcher.h"
 
 
 Config default_config = {
@@ -16,14 +17,15 @@ Config default_config = {
   .sockethost = "0.0.0.0",
   .socketport = 2001,
   .instanceactor = "test3",
-  .mediapath = "media"
+  .mediapath = "media",
+  .bubbledHosts = {"wetdry.world"}
 };
 Config cfg;
 json context;
 
 void registeruser();
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::info);
+  spdlog::set_level(spdlog::level::debug);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
 
   string config_path = "config.json";
@@ -55,6 +57,7 @@ int main(int argc, char **argv) {
 
 
   Database::Init();
+  BubbleFetcher::Launch();
   std::thread s1([](){
     // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });

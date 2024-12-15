@@ -40,6 +40,8 @@ set(SOURCES
   src/services/FetchService.cc
   src/services/BiteService.cc
 
+  src/workers/BubbleFetcher.cc
+
   src/routes/federation/webfinger.cc
   src/routes/federation/meta.cc
   src/routes/federation/notes.cc

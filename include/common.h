@@ -28,13 +28,14 @@ struct Config {
   string instanceactor;
 
   string mediapath;
+  vector<string> bubbledHosts;
 
   inline string baseurl() {
     return "https://"+domain+"/";
   }
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor, sockethost, socketport, mediapath);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Config, domain, instanceactor, sockethost, socketport, mediapath, bubbledHosts);
 
 
 inline string JstringOrEmpty(const json &j, string name) {
