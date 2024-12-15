@@ -97,7 +97,7 @@ GET(instance, "/api/:v/instance") {
   json j = {
     {"domain", cfg.domain},
     {"title", "Cabin"},
-    {"version", "4.0.0rc1"},
+    {"version", "4.0.0rc1 (compatible; Cabin 0.0.0)"},
     {"source_url", "https://github.com/mastodon/mastodon"},
     {"description", "The original server operated by the Mastodon gGmbH non-profit"},
     {"usage", {
