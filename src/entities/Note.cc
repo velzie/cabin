@@ -68,7 +68,7 @@ Note Note::ingest(const json note) {
   }
     
 
-  if (note.contains("tag") && note["tag"].is_array()) {
+  if (note.at("tag").is_array()) {
     for (const auto tag : note["tag"]) {
       if (tag["type"] == "Mention") {
         NoteMention m;

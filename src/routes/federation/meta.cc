@@ -71,9 +71,10 @@ json NodeMeta(std::string version) {
         "pleroma_emoji_reactions",
         "exposable_reactions",
         "custom_emoji_reactions",
+        "bubble_timeline",
         "pleroma:bites",
       }},
-      {"localBubbleInstances", ARR},
+      {"localBubbleInstances", cfg.bubbledHosts},
       {"staffAccounts", ARR},
       {"publicTimelineVisibility", {
         {"bubble", false},

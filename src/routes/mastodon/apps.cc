@@ -215,6 +215,7 @@ GET(instance, "/api/:v/instance") {
           "exposable_reactions",
           "custom_emoji_reactions",
           "pleroma:bites",
+          "bubble_timeline"
         }},
         {"fields_limits", {
           {"max_fields", 2147483647},

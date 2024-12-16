@@ -47,7 +47,7 @@ void BubbleFetcher::Launch() {
           // we're probably rate limited or the server is down
           warn("BubbleFetcher({}) sleeping for 30 minutes", host);
           std::this_thread::sleep_for(std::chrono::minutes(30));
-      }
+        }
 
         std::this_thread::sleep_for(std::chrono::seconds(30));
       }

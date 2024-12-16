@@ -34,7 +34,7 @@ User User::ingest(const json user) {
   if (user.contains("icon") && user["icon"].is_object())
     u.avatar = user["icon"]["url"];
 
-  if (user.contains("image") && user["image"].is_string())
+  if (user.contains("image") && user["image"].is_object())
     u.banner = user["image"]["url"];
 
   INSERT_OR_UPDATE(u, uri, id, utils::genid());

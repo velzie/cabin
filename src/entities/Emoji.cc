@@ -25,7 +25,7 @@ Emoji Emoji::ingestAPTag(const json tag, const string host) {
   e.address = shortcode + "_" + sanitizedhost;
   e.host = host;
   e.local = false;
-  e.imageurl = tag["icon"]["url"];
+  e.imageurl = tag.at("icon").at("url");
   
 
   INSERT_OR_UPDATE(e, address, id, utils::genid());
