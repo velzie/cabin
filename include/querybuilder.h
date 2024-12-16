@@ -188,7 +188,6 @@ class QueryBuilder {
         query += " LIMIT ?"; 
       }
 
-      dbg(query);
       auto q = STATEMENT(query);
       int ibind = 1;
 
