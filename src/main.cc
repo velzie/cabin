@@ -9,6 +9,7 @@
 #include "common.h"
 #include "database.h"
 #include "server.h"
+#include "utils.h"
 #include "workers/BubbleFetcher.h"
 
 
@@ -27,6 +28,9 @@ void registeruser();
 int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::debug);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
+
+
+  dbg(utils::isoToMillis("2024-12-14T01:30:25.097852Z"));
 
   string config_path = "config.json";
   std::ifstream s(config_path);

@@ -267,7 +267,7 @@ json Note::renderMS(User &requester) {
     {"visibility", "public"},
     {"language", "en"},
     {"uri", uri},
-    {"url", NOTE(id)},
+    {"url", uri},
     {"replies_count", replyCount},
     {"reblogs_count", renoteCount},
     {"favourites_count", favouriteCount},

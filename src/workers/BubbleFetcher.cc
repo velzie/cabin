@@ -41,12 +41,13 @@ void BubbleFetcher::Launch() {
       while (true) {
         CPPTRACE_TRY {
           fetcher.Update();
-        } CPPTRACE_CATCH(const std::exception &e) { 
-          error("bubble fetch {}", host, e.what());
-          utils::getStackTrace();
+        } CPPTRACE_CATCH(const FetchError &e) { 
           // we're probably rate limited or the server is down
-          warn("BubbleFetcher({}) sleeping for 30 minutes", host);
+          warn("BubbleFetcher({}): {} sleeping for 30 minutes", e.what(), host);
           std::this_thread::sleep_for(std::chrono::minutes(30));
+        } catch (const std::exception &e) {
+          error("bubble fetch {} {}", host, e.what());
+          utils::getStackTrace();
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(30));

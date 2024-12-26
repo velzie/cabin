@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "http.h"
+#include <cpptrace/from_current.hpp>
 
 #include "services/DeliveryService.h"
 

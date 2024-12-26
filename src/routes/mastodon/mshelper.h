@@ -42,8 +42,8 @@
   }\
   res->writeHeader("Link",\
       FMT("<{}>; rel=\"next\",<{}>; rel=\"prev\"",\
-        FMT("{}?max_id={}", req->getUrl(), ret_max_id),\
-        FMT("{}?min_id={}", req->getUrl(), ret_min_id)\
+        FMT("https://{}{}?max_id={}", cfg.domain, req->getUrl(), ret_max_id),\
+        FMT("https://{}{}?min_id={}", cfg.domain, req->getUrl(), ret_min_id)\
       )\
   );\
   OK(response, MIMEJSON);\

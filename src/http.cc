@@ -95,9 +95,14 @@ std::string signWithPrivateKey(const std::string &privkey,
   }
 
 err:
+  ERR_free_strings();
 cleanup:
   EVP_MD_CTX_free(mdctx);
   EVP_PKEY_free(privateKey);
+  BIO_free(bio);
+
+
+
 
   return base64Encode(signature.data(), sigLen);
 }

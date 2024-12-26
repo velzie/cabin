@@ -124,7 +124,11 @@ POST(status_like, "/api/v1/statuses/:id/favourite") {
   OK(note->renderMS(authuser), MIMEJSON);
 }
 
-PUT(status_addreaction, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
+PUT(status_addreaction_pleroma, "/api/v1/pleroma/statuses/:id/reactions/:emoji") {
+  REDIRECT(FMT("/api/v1/statuses/{}/react/{}", req->getParameter("id"), req->getParameter("emoji")));
+}
+
+PUT(status_addreaction, "/api/v1/statuses/:id/react/:emoji") {
   MSAUTH
   string id (req->getParameter("id"));
   string emojiname (req->getParameter("emoji"));
@@ -332,11 +336,14 @@ GET(timelines, "/api/v1/timelines/home") {
 
   QueryBuilder followers;
   query = query.where(
-      IN("owner", 
-        followers
-        .select({"followee"})
-        .from("follow")
-        .where(EQ("follower", authuser.uri))
+      OR(
+        IN("owner", 
+          followers
+          .select({"followee"})
+          .from("follow")
+          .where(EQ("follower", authuser.uri))
+        ),
+        EQ("owner", authuser.uri)
       )
   );
 
