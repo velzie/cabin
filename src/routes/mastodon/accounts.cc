@@ -75,10 +75,19 @@ GET(account_lookup, "/api/v1/accounts/lookup") {
   std::getline(acct, user, '@');
   std::getline(acct, host);
 
+  QueryBuilder qb;
+  auto q = qb.select().where(
+    AND(
+      EQ("username", user),
+      EQ("host", host)
+    )
+  ).build();
+
+
   User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE username = ? AND host = ? LIMIT 1");
-  q.bind(1, user);
-  q.bind(2, host);
+  // auto q = STATEMENT("SELECT * FROM user WHERE username = ? AND host = ? LIMIT 1");
+  // q.bind(1, user);
+  // q.bind(2, host);
 
   if (!q.executeStep()) {
     ERROR(404, "no account");

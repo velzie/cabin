@@ -36,13 +36,13 @@ void *register_route_put(std::string route, __BodyHandler h);
 #define MIMEAP "application/activity+json; charset=utf-8"
 
 #define REDIRECT(url)\
-  res->writeStatus("302");\
+{ res->writeStatus("302");\
   res->writeHeader("Location", url);\
   res->end();\
-  return
+  return; }
 
 #define OK(json, mime)\
-  trace("200 ok {}", req->getUrl());\
+{ trace("200 ok {}", req->getUrl());\
   res->writeStatus("200");\
   res->writeHeader("Content-Type", mime);\
   res->writeHeader("Access-Control-Allow-Origin", "*");\
@@ -51,16 +51,16 @@ void *register_route_put(std::string route, __BodyHandler h);
   res->writeHeader("Access-Control-Allow-Credentials", "true");\
   res->write(json.dump());\
   res->end();\
-  return
+  return; }
 
 #define ERROR(status, text)\
-  error("returned {} from {}: {}", status, req->getUrl(), text);\
+{ error("returned {} from {}: {}", status, req->getUrl(), text);\
   res->writeStatus(#status);\
   res->writeHeader("Access-Control-Allow-Origin", "*");\
   res->writeHeader("Content-Type", "text/plain");\
   res->write(text);\
   res->end();\
-  return
+  return; }
 
 
 #define MSAUTH\

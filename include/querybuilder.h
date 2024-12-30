@@ -53,6 +53,13 @@ class QueryBuilder {
     return q;
   }
 
+  QueryBuilder select() {
+    QueryBuilder q = *this;
+    q.columns = {"*"};
+    q.queryType = "SELECT";
+    q.reset();
+    return q;
+  }
   QueryBuilder select(const vector<string> _columns) {
     QueryBuilder q = *this;
     q.columns = _columns;
