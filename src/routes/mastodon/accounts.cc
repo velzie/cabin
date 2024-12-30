@@ -3,10 +3,12 @@
 #include <vector>
 #include <router.h>
 #include <common.h>
+#include "SQLiteCpp/Statement.h"
 #include "database.h"
 #include "entities/Note.h"
 #include "services/FollowService.h"
 #include "services/BiteService.h"
+#include "querybuilder.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   MSAUTH
@@ -111,6 +113,35 @@ GET(account_statuses, "/api/v1/accounts/:id/statuses") {
 
 
 
+  OK(response, MIMEJSON);
+}
+
+// https://docs.joinmastodon.org/methods/accounts/#search
+GET(accounts_search, "/api/v1/accounts/search") {
+  MSAUTH
+  std::stringstream ss(string(req->getQuery("limit")));
+  int limit = 0;
+  ss >> limit;
+  if (!limit) limit = 40;
+  if (limit > 80) limit = 80;
+
+  string query (req->getQuery("q"));
+
+  QueryBuilder q;
+
+  SQLite::Statement s = q.select({"*"})
+    .from("user")
+    // FIXME: sql injection
+    .where(GT(FMT("instr(username, \"{}\")", query), 0))
+    .limit(limit)
+    .build();
+
+  json response = json::array();
+  while (s.executeStep()) {
+    User u;
+    u.load(s);
+    response.push_back(u.renderMS());
+  }
   OK(response, MIMEJSON);
 }
 
