@@ -62,9 +62,11 @@ set(SOURCES
   src/migrations/1-init.cc
 )
 
+# add_link_options(-static)
 # add_compile_options(-fsanitize=address -rdynamic)
 # add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
-target_link_libraries(cabin PUBLIC nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets z fmt uSockets)
-target_link_libraries(cabin PRIVATE spdlog dwarf cpptrace::cpptrace)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+target_link_libraries(cabin PUBLIC nlohmann_json::nlohmann_json SQLiteCpp dbg_macro z fmt uSockets)
+target_link_libraries(cabin PRIVATE spdlog dwarf cpptrace::cpptrace OpenSSL::SSL)
