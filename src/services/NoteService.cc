@@ -36,6 +36,7 @@ namespace NoteService {
     note.content = content;
     note.cw = contentWarning;
     note.sensitive = false;
+    note.visibility = visibility;
     
 
     // find every emoji inside content (identified by :name:)
