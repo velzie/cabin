@@ -9,6 +9,7 @@
 #include "services/FollowService.h"
 #include "services/BiteService.h"
 #include "querybuilder.h"
+#include "mshelper.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   MSAUTH
@@ -91,29 +92,17 @@ GET(account_lookup, "/api/v1/accounts/lookup") {
 GET(account_statuses, "/api/v1/accounts/:id/statuses") {
   MSAUTH
   string uid (req->getParameter("id"));
+  auto u = User::lookupid(uid);
 
-  User u;
-  auto q = STATEMENT("SELECT * FROM user WHERE id = ? LIMIT 1");
-  q.bind(1, uid);
-  if (!q.executeStep()) {
-    ERROR(404, "");
-  }
-  u.load(q);
+  if (!u.has_value()) ERROR(404, "no such user??");
 
+  // TODO: once pinned lists are implemented
+  if (!req->getQuery("pinned").empty()) OK(ARR, MIMEJSON);
 
-  auto notes = STATEMENT("SELECT * FROM note WHERE owner = ?");
-  notes.bind(1, u.uri);
+  QueryBuilder query;
+  query = query.select({"*"}).from("note").where(EQ("owner", u->uri)).orderBy("publishedClamped", "DESC");
 
-  json response = json::array();
-  while (notes.executeStep()) {
-    Note n;
-    n.load(notes);
-    response.push_back(n.renderMS(authuser));
-  }
-
-
-
-  OK(response, MIMEJSON);
+  PAGINATE(query, Note, publishedClamped);
 }
 
 // https://docs.joinmastodon.org/methods/accounts/#search
