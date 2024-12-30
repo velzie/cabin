@@ -98,7 +98,7 @@ int isBot;
         {"type", "Image"},
         {"url", avatar},
         {"sensitive", false},
-        {"name", nullptr}
+        // {"name", nullptr}
       }},
       {"discoverable", true},
       {"noindex", true},
