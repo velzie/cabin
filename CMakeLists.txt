@@ -11,6 +11,7 @@ add_subdirectory(.third-party/spdlog)
 add_subdirectory(.third-party/dbg-macro)
 add_subdirectory(.third-party/fmt)
 add_subdirectory(wrapusockets)
+add_subdirectory(wrapcpptrace)
 
 include_directories(include)
 include_directories(.third-party/uWebSockets/src)
@@ -65,4 +66,5 @@ set(SOURCES
 # add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
-target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets cpptrace dwarf z spdlog)
+target_link_libraries(cabin PUBLIC nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets z fmt uSockets)
+target_link_libraries(cabin PRIVATE spdlog dwarf cpptrace::cpptrace)

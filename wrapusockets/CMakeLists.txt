@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
   uSockets_content
   GIT_REPOSITORY https://github.com/uNetworking/uSockets
-  GIT_TAG v0.8.5
+  GIT_TAG v0.8.8
   GIT_SHALLOW ON
   GIT_SUBMODULES ""
 )
