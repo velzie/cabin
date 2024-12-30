@@ -18,6 +18,8 @@ GET(notes, "/notes/:id") {
     ERROR(404, "no such note");
   }
   
+  auto r = note->renderAP();
+  r["@context"] = context;
 
-  OK(note->renderAP(), MIMEAP);
+  OK(r, MIMEAP);
 }

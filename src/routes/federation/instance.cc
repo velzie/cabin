@@ -30,5 +30,7 @@ GET(user, "/users/:id") {
     ERROR(404, "no user");
   }
 
-  OK(u->renderAP(), MIMEAP);
+  auto r = u->renderAP();
+  r["@context"] = context;
+  OK(r, MIMEAP);
 }
