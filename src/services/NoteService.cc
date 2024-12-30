@@ -31,12 +31,11 @@ namespace NoteService {
     return n;
   }
 
-  Note create(User &owner, string content, optional<Note> replyTo, optional<Note> quote, bool preview) {
+  Note create(User &owner, string content, optional<string> contentWarning, optional<Note> replyTo, optional<Note> quote, bool preview, int visibility) {
     Note note = _create(owner);
     note.content = content;
-    note.cw = "";
+    note.cw = contentWarning;
     note.sensitive = false;
-    note.visibility = NOTEVISIBILITY_Public;
     
 
     // find every emoji inside content (identified by :name:)

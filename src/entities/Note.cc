@@ -416,6 +416,10 @@ json Note::renderAP() {
       {"tag", tags}
     };
 
+    if (cw.has_value()) {
+      j["cw"] = cw.value();
+    }
+
     if (visibility == NOTEVISIBILITY_Public) {
       j["to"] = {"https://www.w3.org/ns/activitystreams#Public"};
       j["cc"] = {FOLLOWERS(uOwner.id)};

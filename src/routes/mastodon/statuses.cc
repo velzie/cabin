@@ -17,7 +17,9 @@ POST(post_status, "/api/v1/statuses") {
 
   optional<Note> replyTo;
   optional<Note> quote;
+  optional<string> cw;
   string status;
+  int visibility = NOTEVISIBILITY_Public;
 
   bool isPreview = false;
 
@@ -64,10 +66,26 @@ POST(post_status, "/api/v1/statuses") {
       replyTo = Note::lookupid(body["in_reply_to_id"]);
     }
     status = body["status"];
+
+    if (body["visibility"].is_string()) {
+      if (body["visibility"] == "direct") {
+        visibility = NOTEVISIBILITY_Direct;
+      } else if (body["visibility"] == "private") {
+        visibility = NOTEVISIBILITY_Followers;
+      } else if (body["visibility"] == "unlisted") {
+        visibility = NOTEVISIBILITY_Home;
+      } else if (body["visibility"] == "public") {
+        visibility = NOTEVISIBILITY_Public;
+      }
+    }
+
+    if (body["spoiler_text"].is_string()) {
+      cw = body["spoiler_text"].get<string>();
+    }
   }
 
   
-  Note note = NoteService::create(authuser, status, replyTo, quote, isPreview);
+  Note note = NoteService::create(authuser, status, cw, replyTo, quote, isPreview, visibility);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }
