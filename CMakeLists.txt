@@ -9,6 +9,8 @@ add_subdirectory(.third-party/json)
 add_subdirectory(.third-party/sqlitecpp)
 add_subdirectory(.third-party/spdlog)
 add_subdirectory(.third-party/dbg-macro)
+add_subdirectory(.third-party/fmt)
+add_subdirectory(wrapusockets)
 
 include_directories(include)
 include_directories(.third-party/uWebSockets/src)
@@ -59,8 +61,8 @@ set(SOURCES
   src/migrations/1-init.cc
 )
 
-add_compile_options(-fsanitize=address -rdynamic)
-add_link_options(-fsanitize=address -rdynamic)
+# add_compile_options(-fsanitize=address -rdynamic)
+# add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
-target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets cpptrace dwarf z fmt)
+target_link_libraries(cabin nlohmann_json::nlohmann_json OpenSSL::SSL SQLiteCpp dbg_macro usockets cpptrace dwarf z spdlog)
