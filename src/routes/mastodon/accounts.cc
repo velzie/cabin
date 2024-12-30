@@ -6,10 +6,12 @@
 #include "SQLiteCpp/Statement.h"
 #include "database.h"
 #include "entities/Note.h"
+#include "services/FetchService.h"
 #include "services/FollowService.h"
 #include "services/BiteService.h"
 #include "querybuilder.h"
 #include "mshelper.h"
+#include "http.h"
 
 GET(account_verify_credentials, "/api/v1/accounts/verify_credentials") {
   MSAUTH
@@ -69,14 +71,17 @@ GET(account, "/api/v1/accounts/:id") {
 
 // https://docs.joinmastodon.org/methods/accounts/#get
 GET(account_lookup, "/api/v1/accounts/lookup") {
-  std::stringstream acct (string(req->getQuery("acct")));
+  string acct(req->getQuery("acct"));
+  std::stringstream ss(acct);
 
   string user, host;
-  std::getline(acct, user, '@');
-  std::getline(acct, host);
+  std::getline(ss, user, '@');
+  std::getline(ss, host);
 
   QueryBuilder qb;
-  auto q = qb.select().where(
+  auto q = qb.select()
+    .from("user")
+    .where(
     AND(
       EQ("username", user),
       EQ("host", host)
@@ -85,14 +90,21 @@ GET(account_lookup, "/api/v1/accounts/lookup") {
 
 
   User u;
-  // auto q = STATEMENT("SELECT * FROM user WHERE username = ? AND host = ? LIMIT 1");
-  // q.bind(1, user);
-  // q.bind(2, host);
 
   if (!q.executeStep()) {
-    ERROR(404, "no account");
+    httplib::Client cli("https://"+host);
+    auto webfingerRes = cli.Get("/.well-known/webfinger?resource=acct:"+acct);
+    if (!webfingerRes || webfingerRes->status != 200) ERROR(404, "no account");
+    json webfinger = json::parse(webfingerRes->body);
+    ASSERT(webfinger["links"].is_array());
+    ASSERT(webfinger["links"][0].is_object());
+    ASSERT(webfinger["links"][0]["href"].is_string());
+    string href = webfinger["links"][0]["href"];
+    spdlog::info("webfingering {}", href);
+    u = FetchService::fetch<User>(href);
+  } else {
+    u.load(q);
   }
-  u.load(q);
 
   OK(u.renderMS(), MIMEJSON);
 }

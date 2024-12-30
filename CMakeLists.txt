@@ -63,8 +63,8 @@ set(SOURCES
 )
 
 # add_link_options(-static)
-# add_compile_options(-fsanitize=address -rdynamic)
-# add_link_options(-fsanitize=address -rdynamic)
+add_compile_options(-fsanitize=address -rdynamic)
+add_link_options(-fsanitize=address -rdynamic)
 add_executable(cabin ${SOURCES})
 
 set(OPENSSL_USE_STATIC_LIBS TRUE)

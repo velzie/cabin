@@ -152,7 +152,8 @@ MIGRATION_UP(init, 1) {
 
   db->exec(R"(
     CREATE TABLE emoji(
-      id TEXT NOT NULL PRIMARY KEY,
+      address TEXT NOT NULL PRIMARY KEY,
+      id TEXT NOT NULL,
       shortcode TEXT NOT NULL,
       local INTEGER NOT NULL,
       host TEXT NOT NULL,
