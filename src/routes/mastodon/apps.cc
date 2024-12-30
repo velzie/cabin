@@ -1,9 +1,10 @@
 #include "entities/Emoji.h"
+#include "querybuilder.h"
 #include "entities/Notification.h"
 #include <router.h>
 #include <common.h>
 #include <QueryParser.h>
-
+#include "mshelper.h"
 
 std::string join(const std::vector<std::string>& vec, const std::string& delimiter) {
     if (vec.empty()) return "";
@@ -97,7 +98,7 @@ GET(instance, "/api/:v/instance") {
   json j = {
     {"domain", cfg.domain},
     {"title", "Cabin"},
-    {"version", "4.0.0rc1 (compatible; Cabin 0.0.0)"},
+    {"version", "4.0.0rc1 (compatible; Akkoma 0.0.0)"},
     {"source_url", "https://github.com/mastodon/mastodon"},
     {"description", "The original server operated by the Mastodon gGmbH non-profit"},
     {"usage", {
@@ -316,19 +317,15 @@ GET(mastodon_custom_emojis, "/api/v1/custom_emojis") {
 
 GET(notifications, "/api/v1/notifications") {
   MSAUTH
-
-  auto notifications = ARR;
-
-  auto q = STATEMENT("SELECT * FROM notification WHERE notifieeId = ?");
-  q.bind(1, authuser.id);
   
-  while (q.executeStep()) {
-    Notification n;
-    n.load(q);
-    notifications.push_back(n.renderMS(authuser));
-  }
+  QueryBuilder query;
+  query = query
+    .select({"*"})
+    .from("notification")
+    .orderBy("createdAt", "DESC");
 
-  OK(notifications, MIMEJSON);
+
+  PAGINATE(query, Notification, createdAt);
 }
 
 GET(notification_policy, "/api//v1/notifications/policy") {

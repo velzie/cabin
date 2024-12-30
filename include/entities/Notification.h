@@ -51,5 +51,6 @@ struct Notification {
 
   )
 
+  LOOKUPKEY(Notification, notification, id);
   json renderMS(User &requester);
 };

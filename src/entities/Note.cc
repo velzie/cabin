@@ -376,6 +376,8 @@ json Note::renderAP() {
     ASSERT(local);
     vector<json> tags;
 
+    auto uOwner = User::lookupuri(owner).value();
+
     for (const auto hashtag : hashtags) {
       tags.push_back({
         {"type", "Hashtag"},
@@ -401,20 +403,38 @@ json Note::renderAP() {
 
 
     json j = {
-      {"@context", context},
+      // {"@context", context},
       {"id", NOTE(id)},
       {"type", "Note"},
       {"inReplyTo", replyToUri},
       {"published", utils::millisToIso(published)},
       {"url", NOTE(id)},
       {"attributedTo", owner},
-      {"to", {"https://www.w3.org/ns/activitystreams#Public"}},
-      {"cc", {owner+ "/followers"}},
       {"sensitive", false},
       {"content", content},
       {"attachment", ARR},
       {"tag", tags}
     };
+
+    if (visibility == NOTEVISIBILITY_Public) {
+      j["to"] = {"https://www.w3.org/ns/activitystreams#Public"};
+      j["cc"] = {FOLLOWERS(uOwner.id)};
+    } else if (visibility == NOTEVISIBILITY_Home) {
+      j["to"] = {FOLLOWERS(uOwner.id)};
+      j["cc"] = {"https://www.w3.org/ns/activitystreams#Public"};
+    } else if (visibility == NOTEVISIBILITY_Followers) {
+      j["to"] = {FOLLOWERS(uOwner.id)};
+      j["cc"] = {FOLLOWERS(uOwner.id)};
+    } else if (visibility == NOTEVISIBILITY_Direct) {
+      j["to"] = ARR;
+      j["cc"] = ARR;
+    } else {
+      ASSERT(0);
+    }
+
+    for (const auto mention : mentions) {
+      j["to"].push_back(mention.uri);
+    }
 
     if (quoteUri.has_value()) {
       j["_misskey_quote"] = *quoteUri;

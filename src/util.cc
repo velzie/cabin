@@ -56,7 +56,7 @@ string dateISO() {
 
 time_t millis() {
   auto now = std::chrono::system_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+  auto duration = std::chrono::duration_cast<std::chrono::seconds>(
       now.time_since_epoch());
   return duration.count();
 }

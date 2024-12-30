@@ -87,8 +87,8 @@ void registeruser() {
 
     .publicKey = pubkey,
     .privateKey = privkey,
-    .username = "test3",
-    .displayname = "cabin's #3 strongest soldier",
+    .username = "test",
+    .displayname = "cabin's strongest soldier",
     .summary = "mrrrrrrrrrpppp",
 
     .isBot = false,

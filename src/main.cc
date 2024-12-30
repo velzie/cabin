@@ -26,7 +26,7 @@ json context;
 
 void registeruser();
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::trace);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
 
 

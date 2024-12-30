@@ -1,5 +1,6 @@
 #include "common.h"
 #include "database.h"
+#include "entity.h"
 #include <variant>
 
 
@@ -148,6 +149,14 @@ class QueryBuilder {
       expandUnionBind(*qunion.right, q, ibind);
     }
   };
+
+  template<typename T> optional<T> getOne() {
+    auto s = build();
+    if (!s.executeStep()) return nullopt;
+    T e;
+    e.load(s);
+    return e;
+  }
 
   SQLite::Statement build() {
     string query;

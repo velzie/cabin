@@ -80,6 +80,7 @@ class URL {
 #define LIKE(id) API("likes/" + id)
 #define REACT(id) API("react/" + id)
 #define FOLLOW(id) API("follows/" + id)
+#define FOLLOWERS(id) USERPAGE(id) + "/followers"
 
 #define ASSERT(expr) \
     if (!(expr)) { \

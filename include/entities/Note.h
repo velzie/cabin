@@ -15,6 +15,15 @@ struct NoteMention {
   string friendlyUrl;
   string fqn;
   string id;
+
+  static NoteMention fromUser(User &u) {
+    NoteMention nm;
+    nm.uri = u.uri;
+    nm.friendlyUrl = u.friendlyUrl;
+    nm.fqn = u.acct(false);
+    nm.id = u.id;
+    return nm;
+  }
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteMention, uri, fqn, id, friendlyUrl);
 
