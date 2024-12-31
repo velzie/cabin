@@ -28,6 +28,7 @@ namespace NoteService {
     n.published = published;
     n.publishedClamped = published;
     n.recievedAt = published;
+    n.conversation = utils::genid();
     return n;
   }
 
