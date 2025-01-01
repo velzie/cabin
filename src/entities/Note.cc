@@ -39,19 +39,32 @@ Note Note::ingest(const json note) {
 
   std::time_t published = utils::isoToMillis(note["published"]);
   Note n;
-  n.uri = note["id"],
-  n.local = false,
-  n.host = url.host,
+  n.uri = note["id"];
+  n.local = false;
+  n.host = url.host;
 
-  n.replyToUri = nullopt,
-  n.conversation = utils::genid(),
+  n.replyToUri = nullopt;
+  n.conversation = utils::genid();
 
-  n.content = note["content"],
-  n.sensitive = false,
-  n.owner = note["attributedTo"],
-  n.published = published,
-  n.publishedClamped = utils::clampmillis(published),
-  n.recievedAt = utils::millis(),
+  n.content = note["content"];
+  n.sensitive = false;
+  n.owner = note["attributedTo"];
+  n.published = published;
+  n.publishedClamped = utils::clampmillis(published);
+  n.recievedAt = utils::millis();
+
+  if (
+      note["to"].is_string() && note["to"] == AS_PUBLIC ||
+      note["to"].is_array() && note["to"].contains(AS_PUBLIC)) {
+    n.visibility = NOTEVISIBILITY_Public;
+  } else if (
+      note["cc"].is_string() && note["cc"] == AS_PUBLIC ||
+      note["cc"].is_array() && note["cc"].contains(AS_PUBLIC)) {
+    n.visibility = NOTEVISIBILITY_Home;
+  } else {
+    n.visibility = NOTEVISIBILITY_Followers;
+    // how is direct going to work?
+  }
 
 
   n.lastUpdatedAt = utils::millis();
@@ -421,11 +434,11 @@ json Note::renderAP() {
     }
 
     if (visibility == NOTEVISIBILITY_Public) {
-      j["to"] = {"https://www.w3.org/ns/activitystreams#Public"};
+      j["to"] = {AS_PUBLIC};
       j["cc"] = {FOLLOWERS(uOwner.id)};
     } else if (visibility == NOTEVISIBILITY_Home) {
       j["to"] = {FOLLOWERS(uOwner.id)};
-      j["cc"] = {"https://www.w3.org/ns/activitystreams#Public"};
+      j["cc"] = {AS_PUBLIC};
     } else if (visibility == NOTEVISIBILITY_Followers) {
       j["to"] = {FOLLOWERS(uOwner.id)};
       j["cc"] = {FOLLOWERS(uOwner.id)};

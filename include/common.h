@@ -81,6 +81,7 @@ class URL {
 #define REACT(id) API("react/" + id)
 #define FOLLOW(id) API("follows/" + id)
 #define FOLLOWERS(id) USERPAGE(id) + "/followers"
+#define AS_PUBLIC "https://www.w3.org/ns/activitystreams#Public"
 
 #define ASSERT(expr) \
     if (!(expr)) { \
