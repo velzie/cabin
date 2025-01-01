@@ -54,8 +54,19 @@ POST(post_status, "/api/v1/statuses") {
               quote = Note::lookupid(string(data));
             } else if (value == "preview" && string(data) == "true") {
               isPreview = true;
+            } else if (value == "visibility") {
+              if (string(data) == "direct") {
+                visibility = NOTEVISIBILITY_Direct;
+              } else if (string(data) == "private") {
+                visibility = NOTEVISIBILITY_Followers;
+              } else if (string(data) == "unlisted") {
+                visibility = NOTEVISIBILITY_Home;
+              } else if (string(data) == "public") {
+                visibility = NOTEVISIBILITY_Public;
+              }
+            } else if (value == "spoiler_text") {
+              cw = string(data);
             }
-            
           }
         }
       }

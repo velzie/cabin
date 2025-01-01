@@ -373,6 +373,18 @@ json Note::renderMS(User &requester) {
   }
   j["media_attachments"] = respmedia_attachments;
 
+  if (visibility == NOTEVISIBILITY_Public) {
+    j["visibility"] = "public";
+  } else if (visibility == NOTEVISIBILITY_Home) {
+    j["visibility"] = "unlisted";
+  } else if (visibility == NOTEVISIBILITY_Followers) {
+    j["visibility"] = "private";
+  } else if (visibility == NOTEVISIBILITY_Direct) {
+    j["visibility"] = "direct";
+  } else {
+    ASSERT(0);
+  }
+
 
   if (replyToUri.has_value())
     j["in_reply_to_account_id"] = nReplyTo.owner;
