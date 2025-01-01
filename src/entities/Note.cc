@@ -172,6 +172,8 @@ Note Note::ingest(const json note) {
   n.conversation = topmost.conversation;
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
+  std::sort(localUsersMentioned.begin(), localUsersMentioned.end());
+  localUsersMentioned.erase(std::unique(localUsersMentioned.begin(), localUsersMentioned.end()), localUsersMentioned.end());
   for (auto u : localUsersMentioned) {
     NotificationService::createMention(n, uOwner, u);
   }
