@@ -18,6 +18,15 @@ namespace NotificationService {
     return n;
   }
 
+  void createMention(Note &note, User &mentioner, User &mentionee) {
+    auto n = create(mentionee, NOTIFICATION_Mention);
+    n.notifierId = mentioner.id;
+    n.notifierUri = mentioner.uri;
+    n.statusId = note.id;
+    n.statusUri = note.uri;
+    n.insert();
+  }
+
   void createFollow(User &followee, User &follower) {
     auto n = create(followee, NOTIFICATION_Follow);
     n.notifierId = follower.id;

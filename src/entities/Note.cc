@@ -76,16 +76,24 @@ Note Note::ingest(const json note) {
   else
     n.quoteUri = nullopt;
 
+  vector<User> localUsersMentioned;
+
   if (n.quoteUri.has_value()) {
-    FetchService::fetch(n.quoteUri.value());
+    auto nQuoted = FetchService::fetch<Note>(n.quoteUri.value());
+    if (nQuoted.local) {
+      User uQuoted = User::lookupuri(nQuoted.owner).value();
+      localUsersMentioned.push_back(uQuoted);
+    }
   }
     
-
   if (note.at("tag").is_array()) {
     for (const auto tag : note["tag"]) {
       if (tag["type"] == "Mention") {
         NoteMention m;
         auto mentionee = get<User>(FetchService::fetch(tag["href"]));
+        if (mentionee.local) {
+          localUsersMentioned.push_back(mentionee);
+        }
         m.friendlyUrl = mentionee.friendlyUrl;
         m.id = mentionee.id;
         m.fqn = mentionee.acct(false);
@@ -141,11 +149,16 @@ Note Note::ingest(const json note) {
     n.replyToUri = std::make_optional(note["inReplyTo"]);
   }
 
-  FetchService::fetch(note["attributedTo"]);
+  auto uOwner = FetchService::fetch<User>(note["attributedTo"]);
 
-  if (n.replyToUri.has_value())
+  if (n.replyToUri.has_value()) {
     // TODO: if one ingest fails they will all fail, maybe not good
-    FetchService::fetch(n.replyToUri.value());
+    auto nReplyTo = FetchService::fetch<Note>(n.replyToUri.value());
+    if (nReplyTo.local) {
+      User uReplyTo = User::lookupuri(nReplyTo.owner).value();
+      localUsersMentioned.push_back(uReplyTo);
+    }
+  }
 
   // recursively fetch until the initial post in the thread
   Note topmost = n;
@@ -156,6 +169,10 @@ Note Note::ingest(const json note) {
   // now we can safely take the conversation id
   n.conversation = topmost.conversation;
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
+
+  for (auto u : localUsersMentioned) {
+    NotificationService::createMention(n, uOwner, u);
+  }
 
   return n;
 }

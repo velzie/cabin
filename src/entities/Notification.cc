@@ -45,6 +45,14 @@ json Notification::renderMS(User &requester){
       }
     }
 
+    if (type == NOTIFICATION_Mention) {
+      auto mentioner = User::lookupid(notifierId.value()).value();
+      auto note = Note::lookupid(statusId.value()).value();
+      notif["type"] = "mention";
+      notif["account"] = mentioner.renderMS();
+      notif["status"] = note.renderMS(requester);
+    }
+
     if (type == NOTIFICATION_Bite) {
       auto biter = User::lookupid(notifierId.value()).value();
       notif["type"] = "bite";

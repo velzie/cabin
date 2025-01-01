@@ -4,6 +4,7 @@
 #include "entities/Note.h"
 
 namespace NotificationService {
+  void createMention(Note &note, User &mentioner, User &mentionee);
   void createFollow(User &followee, User &follower);
   void createBite(optional<Note> note, User &biteee, User &biter);
   void createRenote(Note &note, Note &renote, User &renotee, User &renoter);
