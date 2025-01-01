@@ -57,11 +57,11 @@ Note Note::ingest(const json note) {
 
   if (
       (note["to"].is_string() && note["to"] == AS_PUBLIC) ||
-      (note["to"].is_array() && note["to"].contains(AS_PUBLIC))) {
+      (note["to"].is_array() && std::find(note["to"].begin(), note["to"].end(), AS_PUBLIC) != note["to"].end())) {
     n.visibility = NOTEVISIBILITY_Public;
   } else if (
       (note["cc"].is_string() && note["cc"] == AS_PUBLIC) ||
-      (note["cc"].is_array() && note["cc"].contains(AS_PUBLIC))) {
+      (note["cc"].is_array() && std::find(note["cc"].begin(), note["cc"].end(), AS_PUBLIC) != note["cc"].end())) {
     n.visibility = NOTEVISIBILITY_Home;
   } else {
     n.visibility = NOTEVISIBILITY_Followers;
