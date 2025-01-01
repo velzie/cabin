@@ -226,7 +226,8 @@ namespace Server {
                 if (body->str().empty()) j = nullptr;
                 else j = json::parse(body->str());
               } else if (mp.isValid()) {
-                mp.setBody(strdup(body->str().c_str()));
+                auto *s = new string(body->str());
+                mp.setBody(*s);
                 
               } else if (contentType == "application/x-www-form-urlencoded") {
                 // todo
