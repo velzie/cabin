@@ -3,11 +3,14 @@
 #include "entities/Emoji.h"
 #include "entities/Notification.h"
 #include "utils.h"
+#include <random>
 
 namespace NotificationService {
   Notification create(User &notifiee, int type) {
     Notification n;
-    n.id = utils::genid();
+    // id cannot be a regular id for pleroma reasons. do millis + random int
+    thread_local std::mt19937 rng(std::random_device{}());
+    n.id = std::to_string(utils::millis() * 100 + rng() % 100);
     n.createdAt = utils::millis();
     n.type = type;
     n.notifieeId = notifiee.id;
