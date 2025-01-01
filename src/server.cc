@@ -30,6 +30,7 @@ struct WSSession {
   std::queue<json> queue;
   std::vector<string> streams;
   string userid = cfg.instanceactor;
+  int *closed = new int(0);
 };
 std::mutex managingSessionsLock;
 vector<WSSession *> sessions;
@@ -141,8 +142,10 @@ namespace Server {
         .open = [](uWS::WebSocket<false, true, WSSession> *ws) {
           managingSessionsLock.lock();
           sessions.push_back(ws->getUserData());
+          int *closed = ws->getUserData()->closed;
           managingSessionsLock.unlock();
-          uWS::Loop::get()->addPostHandler(new int, [ws](uWS::Loop*){
+          uWS::Loop::get()->addPostHandler(new int, [ws, closed](uWS::Loop*){
+            if (*closed == 1) return;
             managingSessionsLock.lock();
             while (ws->getUserData()->queue.size() > 0) {
               ws->send(ws->getUserData()->queue.front().dump(), uWS::OpCode::TEXT);
@@ -176,6 +179,7 @@ namespace Server {
         },
         .close = [](auto *ws, int /*code*/, std::string_view /*message*/) {
           managingSessionsLock.lock();
+          *ws->getUserData()->closed = 1;
           sessions.erase(std::remove(sessions.begin(), sessions.end(), ws->getUserData()), sessions.end());
           managingSessionsLock.unlock();
         }
