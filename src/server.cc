@@ -1,11 +1,19 @@
 #include <App.h>
 #include <Multipart.h>
 
+#include "Loop.h"
+#include "entities/Note.h"
+#include "entities/Notification.h"
 #include "fmt/format.h"
 #include "common.h"
 #include "server.h"
 #include <filesystem>
 #include <iostream>
+#include <memory>
+#include <mutex>
+#include <openssl/err.h>
+#include <queue>
+#include <shared_mutex>
 #include <stdexcept>
 #include "router.h"
 #include <execinfo.h> 
@@ -13,9 +21,19 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+
 std::unordered_map<std::string, __Handler> routes_get;
 std::unordered_map<std::string, __BodyHandler> routes_post;
 std::unordered_map<std::string, __BodyHandler> routes_put;
+
+struct WSSession {
+  std::queue<json> queue;
+  std::vector<string> streams;
+  string userid = cfg.instanceactor;
+};
+std::mutex managingSessionsLock;
+vector<WSSession *> sessions;
+
 void *register_route(std::string route, __Handler h) {
   routes_get[route] = h;
   return nullptr;
@@ -44,7 +62,32 @@ string getStackTrace() {
 }
 
 namespace Server {
+
   uWS::App *app;
+
+  void PublishEvent(ServerEvent e) {
+    managingSessionsLock.lock();
+    if (auto n = std::get_if<Notification>(&e)) {
+      for (auto &s : sessions) {
+        if (n->notifieeId == s->userid && std::find(s->streams.begin(), s->streams.end(), "user") != s->streams.end()) {
+          User u = User::lookupid(s->userid).value();
+          s->queue.push({
+            {"stream", {"user"}},
+            {"event", "notification"},
+            {"payload", n->renderMS(u).dump()}
+          });
+        }
+      }
+    } else if (auto n = std::get_if<Note>(&e)) {
+      // for (auto &s : sessions) {
+      //   if (std::find(s->streams.begin(), s->streams.end(), "public") != s->streams.end()) {
+      //     s->queue.push(n->toJSON());
+      //   }
+      // }
+    }
+    
+    managingSessionsLock.unlock();
+  }
 
   void Listen() {
     app = new uWS::App();
@@ -87,11 +130,7 @@ namespace Server {
     });
 
 
-
-    struct PerSocketData {
-        /* Fill with user data */
-    };
-    app->ws<PerSocketData>("/*", {
+    app->ws<WSSession>("/api/v1/streaming", {
         /* Settings */
         .compression = uWS::SHARED_COMPRESSOR,
         .maxPayloadLength = 16 * 1024,
@@ -99,11 +138,32 @@ namespace Server {
         .maxBackpressure = 1 * 1024 * 1024,
         /* Handlers */
         .upgrade = nullptr,
-        .open = [](auto */*ws*/) {
-
+        .open = [](uWS::WebSocket<false, true, WSSession> *ws) {
+          managingSessionsLock.lock();
+          sessions.push_back(ws->getUserData());
+          managingSessionsLock.unlock();
+          uWS::Loop::get()->addPostHandler(new int, [ws](uWS::Loop*){
+            managingSessionsLock.lock();
+            while (ws->getUserData()->queue.size() > 0) {
+              ws->send(ws->getUserData()->queue.front().dump(), uWS::OpCode::TEXT);
+              ws->getUserData()->queue.pop();
+            }
+            managingSessionsLock.unlock();
+          });
         },
-        .message = [](auto *ws, std::string_view message, uWS::OpCode opCode) {
-            ws->send(message, opCode);
+        .message = [](uWS::WebSocket<false, true, WSSession> *ws, std::string_view message, uWS::OpCode opCode) {
+          dbg("message: {}", message);
+          json j = json::parse(message);
+          if (j["type"] == "subscribe") {
+            managingSessionsLock.lock();
+            ws->getUserData()->streams.push_back(j["stream"]);
+            managingSessionsLock.unlock();
+          } else if (j["type"] == "unsubscribe") {
+            managingSessionsLock.lock();
+            auto &streams = ws->getUserData()->streams;
+            streams.erase(std::remove(streams.begin(), streams.end(), j["stream"]), streams.end());
+            managingSessionsLock.unlock();
+          }
         },
         .drain = [](auto */*ws*/) {
             /* Check getBufferedAmount here */
@@ -114,8 +174,10 @@ namespace Server {
         .pong = [](auto */*ws*/, std::string_view) {
 
         },
-        .close = [](auto */*ws*/, int /*code*/, std::string_view /*message*/) {
-
+        .close = [](auto *ws, int /*code*/, std::string_view /*message*/) {
+          managingSessionsLock.lock();
+          sessions.erase(std::remove(sessions.begin(), sessions.end(), ws->getUserData()), sessions.end());
+          managingSessionsLock.unlock();
         }
     });
 

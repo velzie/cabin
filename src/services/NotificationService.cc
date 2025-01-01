@@ -2,10 +2,17 @@
 
 #include "entities/Emoji.h"
 #include "entities/Notification.h"
+#include "server.h"
 #include "utils.h"
 #include <random>
 
 namespace NotificationService {
+
+  void publish(Notification n) {
+    n.insert();
+    Server::PublishEvent(n);
+  }
+
   Notification create(User &notifiee, int type) {
     Notification n;
     // id cannot be a regular id for pleroma reasons. do millis + random int
@@ -24,15 +31,14 @@ namespace NotificationService {
     n.notifierUri = mentioner.uri;
     n.statusId = note.id;
     n.statusUri = note.uri;
-    n.insert();
+    publish(n);
   }
 
   void createFollow(User &followee, User &follower) {
     auto n = create(followee, NOTIFICATION_Follow);
     n.notifierId = follower.id;
     n.notifierUri = follower.uri;
-
-    n.insert();
+    publish(n);
   }
 
   void createBite(optional<Note> note, User &biteee, User &biter) {
@@ -43,7 +49,7 @@ namespace NotificationService {
       n.statusId = note->id;
       n.statusUri = note->uri;
     }
-    n.insert();
+    publish(n);
   }
 
   void createFavorite(Note &note, User &favoritee, User &favoriter) {
@@ -53,7 +59,7 @@ namespace NotificationService {
     n.statusId = note.id;
     n.statusUri = note.uri;
 
-    n.insert();
+    publish(n);
   }
 
   void createReact(Note &note, User &reactee, User &reacter, optional<Emoji> &emoji, optional<string> emojiText) {
@@ -70,7 +76,7 @@ namespace NotificationService {
       n.emojiText = emojiText.value();
     }
 
-    n.insert();
+    publish(n);
   }
 
   void createRenote(Note &note, Note &renote, User &renotee, User &renoter) {
@@ -80,6 +86,6 @@ namespace NotificationService {
     n.statusId = note.id;
     n.statusUri = note.uri;
 
-    n.insert();
+    publish(n);
   }
 }
