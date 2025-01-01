@@ -17,6 +17,7 @@ Note Note::ingestAnnounce(const json data) {
   rn.id = utils::genid();
   rn.local = false;
   rn.host = uRenoter.host;
+  rn.visibility = 0;
 
   rn.renoteUri = note.uri;
     
@@ -42,6 +43,7 @@ Note Note::ingest(const json note) {
   n.uri = note["id"];
   n.local = false;
   n.host = url.host;
+  n.visibility = 0;
 
   n.replyToUri = nullopt;
   n.conversation = utils::genid();
