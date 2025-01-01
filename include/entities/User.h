@@ -117,45 +117,5 @@ int isBot;
     return FMT("{}@{}", username, host);
   }
   
-  json renderMS() {
-   return {
-    {"id", id},
-    {"username", username},
-    {"acct", acct(true)},
-    {"display_name", displayname},
-    {"locked", false},
-    {"bot", false},
-    {"created_at", "2016-03-16T14:34:26.392Z"},
-    {"note", summary},
-    {"url", USERPAGE(id)},
-    {"avatar", avatar},
-    {"avatar_static", avatar},
-    {"header", banner},
-    {"header_static", banner},
-    {"followers_count", 320472},
-    {"following_count", 453},
-    {"statuses_count", 61163},
-    {"last_status_at", "2019-12-05T03:03:02.595Z"},
-    {"emojis", json::array()},
-    {"fields", json::array()},
-    {"pleroma",{
-      {"background_image", nullptr},
-      {"skip_thread_containment", false},
-      {"is_moderator", false},
-      {"is_admin", true},
-      {"ap_id", uri},
-      {"tags", ARR},
-      {"also_known_as", {}},
-      {"hide_follows", true},
-      {"hide_follows_count", false},
-      {"hide_followers", true},
-      {"hide_followers_count", false},
-      {"is_confirmed", true},
-      {"is_suggested", false},
-      {"hide_favorites", true},
-      {"favicon", FMT("https://{}/favicon.png", host)},
-      {"relationship", json::object()},
-    }}
-  };
-}
+  json renderMS();
 };
