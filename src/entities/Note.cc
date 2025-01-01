@@ -56,12 +56,12 @@ Note Note::ingest(const json note) {
   n.recievedAt = utils::millis();
 
   if (
-      note["to"].is_string() && note["to"] == AS_PUBLIC ||
-      note["to"].is_array() && note["to"].contains(AS_PUBLIC)) {
+      (note["to"].is_string() && note["to"] == AS_PUBLIC) ||
+      (note["to"].is_array() && note["to"].contains(AS_PUBLIC))) {
     n.visibility = NOTEVISIBILITY_Public;
   } else if (
-      note["cc"].is_string() && note["cc"] == AS_PUBLIC ||
-      note["cc"].is_array() && note["cc"].contains(AS_PUBLIC)) {
+      (note["cc"].is_string() && note["cc"] == AS_PUBLIC) ||
+      (note["cc"].is_array() && note["cc"].contains(AS_PUBLIC))) {
     n.visibility = NOTEVISIBILITY_Home;
   } else {
     n.visibility = NOTEVISIBILITY_Followers;
@@ -172,10 +172,12 @@ Note Note::ingest(const json note) {
   n.conversation = topmost.conversation;
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
-  std::sort(localUsersMentioned.begin(), localUsersMentioned.end());
-  localUsersMentioned.erase(std::unique(localUsersMentioned.begin(), localUsersMentioned.end()), localUsersMentioned.end());
+  vector<string> alreadyNotifiedIds;
   for (auto u : localUsersMentioned) {
-    NotificationService::createMention(n, uOwner, u);
+    if (std::find(alreadyNotifiedIds.begin(), alreadyNotifiedIds.end(), u.id) == alreadyNotifiedIds.end()) {
+      NotificationService::createMention(n, uOwner, u);
+      alreadyNotifiedIds.push_back(u.id);
+    }
   }
 
   return n;
