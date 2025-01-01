@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <filesystem>
 #include <openssl/http.h>
 
@@ -24,13 +25,23 @@ Config default_config = {
 Config cfg;
 json context;
 
+#define LOCK_FILE "/tmp/cabin.lock"
+
 void registeruser();
 int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::trace);
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
 
+  int lockFile = open(LOCK_FILE, O_CREAT | O_RDWR, 0666);
+  if (lockFile < 0) {
+      std::cerr << "Error: Unable to open lock file." << std::endl;
+      exit(EXIT_FAILURE);
+  }
 
-  dbg(utils::isoToMillis("2024-12-14T01:30:25.097852Z"));
+  if (lockf(lockFile, F_TLOCK, 0) < 0) {
+      std::cerr << "Error: Unable to lock file." << std::endl;
+      exit(EXIT_FAILURE);
+  }
 
   string config_path = "config.json";
   std::ifstream s(config_path);
