@@ -23,6 +23,7 @@ namespace NoteService {
     n.id = id;
     n.local = 1;
     n.host = cfg.domain;
+    n.visibility = NOTEVISIBILITY_Public;
 
     n.owner = USERPAGE(owner.id);
     n.published = published;
@@ -128,6 +129,7 @@ namespace NoteService {
     Note note = _create(owner);
     note.renoteUri = renotee.uri;
     note.insert();
+    note.visibility = NOTEVISIBILITY_Public;
 
     json activity = {
       {"type", "Announce"},
