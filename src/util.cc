@@ -62,15 +62,15 @@ time_t millis() {
 }
 
 void getStackTrace() {
-  // auto t = cpptrace::from_current_exception();
-  //
-  // t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f)
-  // {
-  //   return f.filename.find(".third-party") != std::string::npos ||
-  //   f.filename.find("/usr") != std::string::npos;
-  // }), t.frames.end());
-  //
-  // t.print_with_snippets();
+  auto t = cpptrace::from_current_exception();
+
+  t.frames.erase(std::remove_if(t.frames.begin(), t.frames.end(), [](auto f)
+  {
+    return f.filename.find(".third-party") != std::string::npos ||
+    f.filename.find("/usr") != std::string::npos;
+  }), t.frames.end());
+
+  t.print_with_snippets();
   // free everything
 }
 

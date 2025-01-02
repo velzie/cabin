@@ -12,6 +12,25 @@
 #include "services/NoteService.h"
 #include "mshelper.h"
 
+POST(post_media, "/api/:v/media") {
+  MSAUTH
+
+  if (mp.isValid()) {
+    dbg("?");
+    std::pair<std::string_view, std::string_view> headers[20];
+    while (true) {
+      std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
+      if (!optionalPart.has_value()) {
+        break;
+      }
+
+      for (int i = 0; headers[i].first.length(); i++) {
+        dbg(headers[i]);
+      }
+    }
+  }
+}
+
 POST(post_status, "/api/v1/statuses") {
   MSAUTH
 

@@ -1,6 +1,7 @@
 #include "entities/Note.h"
 #include "entities/Emoji.h"
 #include "entities/EmojiReact.h"
+#include "entities/Media.h"
 #include "services/FetchService.h"
 #include "services/NotificationService.h"
 
@@ -124,22 +125,8 @@ Note Note::ingest(const json note) {
   if (note.contains("attachment") && note["attachment"].is_array()) {
     for (const auto attachment : (std::vector<json>)note["attachment"]) {
       if (attachment["type"] == "Document") {
-        NoteAttachment a;
-        a.url = attachment["url"];
-
-        if (attachment.contains("name") && attachment["name"].is_string()) {
-          a.description = attachment["name"];
-        }
-
-        if (attachment.contains("blurhash") && attachment["blurhash"].is_string()) {
-          a.blurhash = attachment["blurhash"];
-        }
-
-        a.sensitive = false;
-        if (attachment.contains("sensitive") && attachment["sensitive"].is_boolean()) {
-          a.sensitive = attachment["sensitive"];
-        }
-        n.mediaattachments.push_back(a);
+        Media m = Media::ingest(attachment);
+        n.mediaIds.push_back(m.id);
       }
     }
   }
@@ -383,16 +370,8 @@ json Note::renderMS(User &requester) {
   j["tags"] = resptags;
 
   std::vector<json> respmedia_attachments;
-  for (const auto attachment : mediaattachments) {
-    respmedia_attachments.push_back({
-      {"id", utils::genid()},
-      {"type", "image"},
-      {"url", attachment.url},
-      {"preview_url", attachment.url},
-      {"remote_url", attachment.url},
-      {"blurhash", attachment.blurhash},
-      {"description", attachment.description}
-    });
+  for (const auto mediaId : mediaIds) {
+    respmedia_attachments.push_back(Media::lookupid(mediaId).value().renderMS(requester));
   }
   j["media_attachments"] = respmedia_attachments;
 

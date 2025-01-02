@@ -24,7 +24,7 @@ MIGRATION_UP(init, 1) {
       mentions JSON NOT NULL,
       hashtags JSON NOT NULL,
       emojis JSON NOT NULL,
-      mediaattachments JSON NOT NULL,
+      mediaIds JSON NOT NULL,
 
       published INTEGER NOT NULL,
       publishedClamped INTEGER,
@@ -175,6 +175,23 @@ MIGRATION_UP(init, 1) {
 
       emojiId TEXT,
       emojiText TEXT
+    )
+  )");
+
+  db->exec(R"(
+    CREATE TABLE media(
+      id PRIMARY KEY NOT NULL,
+      local INTEGER NOT NULL,
+
+      owner TEXT,
+
+      mimeType TEXT NOT NULL,
+      url TEXT NOT NULL,
+      description TEXT NOT NULL,
+      blurhash JSON,
+      sensitive BOOLEAN NOT NULL,
+
+      createdAt INTEGER NOT NULL
     )
   )");
 

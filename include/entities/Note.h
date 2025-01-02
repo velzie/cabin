@@ -33,14 +33,6 @@ struct NoteHashtag {
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteHashtag, name, href);
 
-struct NoteAttachment {
-  string url;
-  string description;
-  string blurhash;
-  bool sensitive;
-};
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(NoteAttachment, url, description, blurhash, sensitive);
-
 struct NoteEmoji {
   string shortcode; // note that this won't change even if the db's entry does
   string id; // our id's not the ap one
@@ -69,7 +61,7 @@ struct Note : Entity {
   std::vector<NoteMention> mentions;
   std::vector<NoteHashtag> hashtags;
   std::vector<NoteEmoji> emojis;
-  std::vector<NoteAttachment> mediaattachments;
+  std::vector<string> mediaIds;
 
   time_t published;
   time_t publishedClamped;
@@ -101,7 +93,7 @@ struct Note : Entity {
     JSON(mentions)
     JSON(hashtags)
     JSON(emojis)
-    JSON(mediaattachments)
+    JSON(mediaIds)
 
     F(published)
     F(publishedClamped)
