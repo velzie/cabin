@@ -293,6 +293,7 @@ json Note::renderMS(User &requester) {
   favs.bind(1, uri);
   favs.executeStep();
   int favouriteCount = favs.getColumn(0);
+  if (remoteLikeCount.value() && remoteLikeCount.value() > favouriteCount) favouriteCount = remoteLikeCount.value();
 
   auto qFavourited = STATEMENT("SELECT COUNT(*) FROM like WHERE object = ? AND owner = ?");
   qFavourited.bind(1, uri);
@@ -304,11 +305,13 @@ json Note::renderMS(User &requester) {
   qRenoted.bind(1, uri);
   qRenoted.executeStep();
   int renoteCount = qRenoted.getColumn(0);
+  if (remoteRenoteCount.value() && remoteRenoteCount.value() > renoteCount) renoteCount = remoteRenoteCount.value();
 
   auto qReplied = STATEMENT("SELECT COUNT(*) from note WHERE replyToUri = ?");
   qReplied.bind(1, uri);
   qReplied.executeStep();
   int replyCount = qReplied.getColumn(0);
+
 
   vector<json> msemojis;
   for (const auto noteemoji : emojis) {
