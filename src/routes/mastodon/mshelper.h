@@ -20,14 +20,10 @@
   }\
   if (!since_id.empty()) {\
     /* start at most recent date, paginate down but don't go further than since_id */\
-    entity lowerNote = entity::lookupid(since_id).value();\
+    entity upperEnt = entity::lookupid(since_id).value();\
     query = query\
-      .select({"*"})\
-      .from(\
-          query\
-          .orderBy(#paginateBy, "DESC")\
-      )\
-      .orderBy(#paginateBy);\
+      .where(GT(#paginateBy, upperEnt.paginateBy))\
+      .orderBy(#paginateBy, "DESC");\
   }\
   json response = json::array();\
   string ret_max_id;\

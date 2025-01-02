@@ -98,7 +98,7 @@ GET(instance, "/api/:v/instance") {
   json j = {
     {"domain", cfg.domain},
     {"title", "Cabin"},
-    {"version", "4.0.0rc1 (compatible; Akkoma 0.0.0)"},
+    {"version", "2.7.2 (compatible; Pleroma 2.4.50+akkoma)"},
     {"source_url", "https://github.com/mastodon/mastodon"},
     {"description", "The original server operated by the Mastodon gGmbH non-profit"},
     {"usage", {
