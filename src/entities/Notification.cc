@@ -5,7 +5,10 @@ json Notification::renderMS(User &requester){
     json notif = {
       {"id", id},
       {"created_at", utils::millisToIso(createdAt)},
-      {"pleroma", json::object()}
+      {"pleroma", {
+        {"is_seen", isread},
+        {"is_muted", false}
+      }}
     };
 
     if (type == NOTIFICATION_Follow) {

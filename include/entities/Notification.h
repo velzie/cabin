@@ -28,7 +28,7 @@ struct Notification {
   optional<string> emojiText;
   optional<string> emojiUrl;
 
-  int isread;
+  bool isread;
 
   ORM(notification, id,
     F(id)
@@ -47,8 +47,7 @@ struct Notification {
     OPT(emojiText)
     OPT(emojiUrl)
 
-    F(isread)
-
+    BOOL(isread)
   )
 
   LOOKUPKEY(Notification, notification, id);
