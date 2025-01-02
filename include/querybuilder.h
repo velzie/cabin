@@ -42,6 +42,7 @@ class QueryBuilder {
   optional<int> m_offset;
 
   vector<QueryConstraint> m_constraints;
+  std::map<string, SqlType> m_updateSets;
 
 
 
@@ -60,11 +61,25 @@ class QueryBuilder {
     q.reset();
     return q;
   }
+
   QueryBuilder select(const vector<string> _columns) {
     QueryBuilder q = *this;
     q.columns = _columns;
     q.queryType = "SELECT";
     q.reset();
+    return q;
+  }
+
+  QueryBuilder update() {
+    QueryBuilder q = *this;
+    q.queryType = "UPDATE";
+    q.reset();
+    return q;
+  }
+
+  QueryBuilder set(const string column, SqlType value) {
+    QueryBuilder q = *this;
+    q.m_updateSets[column] = value;
     return q;
   }
 
@@ -218,6 +233,44 @@ class QueryBuilder {
       }
 
       return q;
+    } else if (queryType == "UPDATE") {
+      query = "UPDATE " + m_table.value() + " SET ";
+      for (auto [k, v] : m_updateSets) {
+        query += k + " = ?,";
+      }
+      query.pop_back();
+      query += " WHERE ";
+
+      if (!m_constraints.empty()) {
+        for (auto c : m_constraints) {
+          expandUnion(c, query);
+          query += " AND ";
+        }
+      }
+
+      query.erase(query.size() - 5);
+
+      auto q = STATEMENT(query);
+      int ibind = 1;
+
+      for (auto [k, v] : m_updateSets) {
+        if (std::holds_alternative<time_t>(v)) {
+          q.bind(ibind, std::get<time_t>(v));
+        } else if (std::holds_alternative<bool>(v)) {
+          q.bind(ibind, std::get<bool>(v));
+        } else if (std::holds_alternative<string>(v)) {
+          q.bind(ibind, std::get<string>(v));
+        }
+        ibind++;
+      }
+
+      for (auto un : m_constraints) {
+        expandUnionBind(un, q, ibind);
+      }
+
+      return q;
+    } else {
+      ASSERT(false);
     }
     ASSERT(false);
   }

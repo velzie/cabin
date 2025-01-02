@@ -237,10 +237,10 @@ namespace Server {
 
               route.second(res, req, j, body->str(), mp, reqUrl);
 
-              if (!res->hasResponded()) {
-                res->writeStatus("204");
-                res->endWithoutBody();
-              }
+              // if (!res->hasResponded()) {
+              //   res->writeStatus("204");
+              //   res->endWithoutBody();
+              // }
             } CPPTRACE_CATCH(const std::exception& e) {
               res->writeStatus("500");
               res->writeHeader("Content-Type", "text/plain");

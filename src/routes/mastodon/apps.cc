@@ -322,6 +322,7 @@ GET(notifications, "/api/v1/notifications") {
   query = query
     .select({"*"})
     .from("notification")
+    .where(EQ("notifieeId", authuser.id))
     .orderBy("createdAt", "DESC");
 
 
@@ -348,4 +349,55 @@ GET(notification_policy, "/api//v1/notifications/policy") {
 
 GET(announcements, "/api/v1/announcements") {
   OK(json::array(), MIMEJSON);
+}
+
+POST(pleroma_notifications_read, "/api/v1/pleroma/notifications/read") {
+  MSAUTH
+
+
+  if (!mp.isValid()) ERROR(400, "invalid multipart");
+  std::pair<std::string_view, std::string_view> headers[20];
+
+  string maxId;
+  while (true) {
+    std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
+    if (!optionalPart.has_value()) {
+      break;
+    }
+
+    for (int i = 0; headers[i].first.length(); i++) {
+      if (headers[i].first == "content-disposition") {
+        uWS::ParameterParser pp(headers[i].second);
+        while (true) {
+          auto [key, value] = pp.getKeyValue();
+          if (key.empty()) break;
+          if (key == "name") {
+            if (value == "max_id") {
+              maxId = optionalPart.value();
+            }
+          }
+        }
+      }
+    }
+  }
+  if (maxId.empty()) ERROR(400, "max_id is required");
+
+  QueryBuilder qb;
+  qb.update()
+    .from("notification")
+    .set("isread", true)
+    .where(LTE("id", maxId))
+    .where(EQ("notifieeId", authuser.id))
+    .build()
+    .exec();
+
+
+  qb = qb
+    .select()
+    .from("notification")
+    .where(EQ("notifieeId", authuser.id))
+    .orderBy("createdAt", "DESC");
+
+
+  PAGINATE(qb, Notification, createdAt);
 }
