@@ -8,27 +8,27 @@
 using uResponse = uWS::HttpResponse<false> *;
 using uRequest = uWS::HttpRequest *;
 
-using __Handler = std::function<void(uResponse, uRequest)>;
-using __BodyHandler = std::function<void(uResponse, uRequest, json, string, uWS::MultipartParser&)>;
+using __Handler = std::function<void(uResponse, uRequest, string)>;
+using __BodyHandler = std::function<void(uResponse, uRequest, json, string, uWS::MultipartParser&, string)>;
 void *register_route(std::string route, __Handler h);
 void *register_route_post(std::string route, __BodyHandler h);
 void *register_route_put(std::string route, __BodyHandler h);
 
 
 #define GET(name, route)\
-  void name##_get_handle(uResponse, uRequest);\
+  void name##_get_handle(uResponse, uRequest, string);\
   static void * name##_reg = register_route(route, name##_get_handle);\
-  void name##_get_handle(uResponse res, uRequest req)
+  void name##_get_handle(uResponse res, uRequest req, string reqUrl)
 
 #define POST(name, route)\
-  void name##_post_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&);\
+  void name##_post_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&, string);\
   static void * name##_reg = register_route_post(route, name##_post_handle);\
-  void name##_post_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp)
+  void name##_post_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp, string reqUrl)
 
 #define PUT(name, route)\
-  void name##_put_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&);\
+  void name##_put_handle(uResponse, uRequest, json body, string bodyraw, uWS::MultipartParser&, string);\
   static void * name##_reg = register_route_put(route, name##_put_handle);\
-  void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp)
+  void name##_put_handle(uResponse res, uRequest req, json body, string bodyraw, uWS::MultipartParser&mp, string reqUrl)
 
 
 #define MIMEJRD "application/jrd+json; charset=utf-8"
@@ -42,7 +42,7 @@ void *register_route_put(std::string route, __BodyHandler h);
   return; }
 
 #define OK(json, mime)\
-{ trace("200 ok {}", req->getUrl());\
+{ trace("200 ok {}", reqUrl);\
   res->writeStatus("200");\
   res->writeHeader("Content-Type", mime);\
   res->writeHeader("Access-Control-Allow-Origin", "*");\

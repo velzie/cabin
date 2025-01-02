@@ -188,7 +188,8 @@ namespace Server {
     for (const auto route : routes_get) {
       app->get(route.first, [route](uResponse res, uRequest req){
         CPPTRACE_TRY {
-          route.second(res, req);
+          string reqUrl(req->getUrl());
+          route.second(res, req, reqUrl);
 
 
           if (!res->hasResponded()) {
@@ -211,9 +212,10 @@ namespace Server {
     for (const auto route : routes_post) {
       app->post(route.first, [route](uResponse res, uRequest req){
         string contentType(req->getHeader("content-type"));
+        string reqUrl(req->getUrl());
 		    auto isAborted = std::make_shared<bool>(false);
 		    auto body = std::make_shared<std::stringstream>();
-		    res->onData([req, res, isAborted, body, route, contentType](std::string_view chunk, bool isFin) mutable {
+		    res->onData([req, res, isAborted, body, route, contentType, reqUrl](std::string_view chunk, bool isFin) mutable {
 		      *body << chunk;
           if (isFin && !*isAborted) {
             CPPTRACE_TRY {
@@ -233,7 +235,7 @@ namespace Server {
                 // todo
               }
 
-              route.second(res, req, j, body->str(), mp);
+              route.second(res, req, j, body->str(), mp, reqUrl);
 
               if (!res->hasResponded()) {
                 res->writeStatus("204");
@@ -259,9 +261,10 @@ namespace Server {
 
     for (const auto route : routes_put) {
       app->put(route.first, [route](uResponse res, uRequest req){
+        string reqUrl(req->getUrl());
 		    auto isAborted = std::make_shared<bool>(false);
 		    auto body = std::make_shared<std::stringstream>();
-		    res->onData([req, res, isAborted, body, route](std::string_view chunk, bool isFin) mutable {
+		    res->onData([req, res, isAborted, body, route, reqUrl](std::string_view chunk, bool isFin) mutable {
 		      *body << chunk;
           if (isFin && !*isAborted) {
             CPPTRACE_TRY {
@@ -277,7 +280,7 @@ namespace Server {
                 // todo
               }
 
-              route.second(res, req, j, body->str(), mp);
+              route.second(res, req, j, body->str(), mp, reqUrl);
 
               if (!res->hasResponded()) {
                 res->writeStatus("204");

@@ -1,6 +1,7 @@
 #include "services/MediaService.h"
 #include "entities/Media.h"
 #include <fstream>
+#include <filesystem>
 
 namespace MediaService {
   Media uploadMedia(User &uploader, string body, string mimeType, string description, bool sensitive) {
@@ -9,7 +10,7 @@ namespace MediaService {
     m.sensitive = sensitive;
     m.description = description;
     
-    std::ofstream file(cfg.mediapath + m.id, std::ios::binary);
+    std::ofstream file(std::filesystem::path(cfg.mediapath) / m.id, std::ios::binary);
     file.write(body.c_str(), body.size());
     file.close();
 

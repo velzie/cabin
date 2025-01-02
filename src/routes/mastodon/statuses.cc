@@ -6,6 +6,7 @@
 #include <common.h>
 #include "database.h"
 #include "querybuilder.h"
+#include "services/MediaService.h"
 #include "utils.h"
 #include "http.h"
 #include "entities/Like.h"
@@ -15,20 +16,45 @@
 POST(post_media, "/api/:v/media") {
   MSAUTH
 
-  if (mp.isValid()) {
-    dbg("?");
-    std::pair<std::string_view, std::string_view> headers[20];
-    while (true) {
-      std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
-      if (!optionalPart.has_value()) {
-        break;
-      }
+  if (!mp.isValid()) ERROR(400, "invalid multipart");
+  std::pair<std::string_view, std::string_view> headers[20];
 
-      for (int i = 0; headers[i].first.length(); i++) {
-        dbg(headers[i]);
+  string mimeType;
+  string fileBody;
+  string description;
+  while (true) {
+    std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
+    if (!optionalPart.has_value()) {
+      break;
+    }
+
+    for (int i = 0; headers[i].first.length(); i++) {
+      if (headers[i].first == "content-type") {
+        mimeType = headers[i].second;
+        fileBody = optionalPart.value();
+      } else if (headers[i].first == "content-disposition") {
+        uWS::ParameterParser pp(headers[i].second);
+        while (true) {
+          auto [key, value] = pp.getKeyValue();
+          if (!key.length()) {
+              break;
+          }
+          if (key != "name") continue;
+          auto data = optionalPart.value();
+
+          if (value == "description") {
+            description = data;
+          }
+        }
       }
     }
   }
+
+
+  dbg("mimetype: {}", mimeType);
+  Media m = MediaService::uploadMedia(authuser, fileBody, mimeType, description, false);
+  json j = m.renderMS(authuser);
+  OK(j, MIMEJSON);
 }
 
 POST(post_status, "/api/v1/statuses") {
