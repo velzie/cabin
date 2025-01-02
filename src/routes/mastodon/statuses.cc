@@ -165,10 +165,17 @@ GET(status, "/api/v1/statuses/:id") {
     ERROR(404, "no note");
   }
 
-  info("force refetching {}", n->uri);
-  Note note = FetchService::fetch<Note>(n->uri, true);
-  json j = note.renderMS(authuser);
-  OK(j, MIMEJSON);
+  if (!n->local) {
+    info("force refetching {}", n->uri);
+    try {
+      Note note = FetchService::fetch<Note>(n->uri, true);
+      OK(note.renderMS(authuser), MIMEJSON);
+    } catch (std::exception e) {
+      error("failed to refetch note");
+    }
+  }
+
+  OK(n->renderMS(authuser), MIMEJSON);
 }
 
 POST(status_like, "/api/v1/statuses/:id/favourite") {
