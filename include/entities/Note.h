@@ -68,9 +68,9 @@ struct Note : Entity {
   time_t recievedAt;
 
   time_t lastUpdatedAt;
-  int remoteRenoteCount;
-  int remoteReplyCount;
-  int remoteLikeCount;
+  optional<int> remoteRenoteCount;
+  optional<int> remoteReplyCount;
+  optional<int> remoteLikeCount;
 
   ORM(note, uri,
     F(uri)
@@ -100,9 +100,9 @@ struct Note : Entity {
     F(recievedAt)
 
     F(lastUpdatedAt)
-    F(remoteRenoteCount)
-    F(remoteReplyCount)
-    F(remoteLikeCount)
+    OPT(remoteRenoteCount)
+    OPT(remoteReplyCount)
+    OPT(remoteLikeCount)
   )
 
   LOOKUPKEY(Note, note, id);

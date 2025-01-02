@@ -2,6 +2,7 @@
 #include "entities/Emoji.h"
 #include "entities/EmojiReact.h"
 #include "entities/Media.h"
+#include "http.h"
 #include "services/FetchService.h"
 #include "services/NotificationService.h"
 
@@ -69,7 +70,6 @@ Note Note::ingest(const json note) {
     // how is direct going to work?
   }
 
-
   n.lastUpdatedAt = utils::millis();
 
   if (note.contains("_misskey_quote") && note["_misskey_quote"].is_string())
@@ -89,7 +89,7 @@ Note Note::ingest(const json note) {
     }
   }
     
-  if (note.at("tag").is_array()) {
+  if (note.contains("tag") && note["tag"].is_array()) {
     for (const auto tag : note["tag"]) {
       if (tag["type"] == "Mention") {
         NoteMention m;
@@ -157,6 +157,56 @@ Note Note::ingest(const json note) {
 
   // now we can safely take the conversation id
   n.conversation = topmost.conversation;
+
+  // update remote stats
+  if (note.contains("likes")) {
+    optional<json> likesCollection;
+    if (note["likes"].is_string()) {
+      auto ia = INSTANCEACTOR;
+      APClient cli(ia, n.host);
+      auto res = cli.Get(note["likes"]);
+      if (res && res->status == 200) {
+        likesCollection = json::parse(res->body);
+      } else {
+        error("failed to fetch likes");
+      }
+    } else if (note["likes"].is_object()) {
+      likesCollection = note["likes"];
+    } else {
+      error("likes is not a string or object");
+    }
+
+    if (likesCollection.has_value()) {
+      if (likesCollection.value().contains("totalItems")) {
+        n.remoteLikeCount = likesCollection.value()["totalItems"];
+      }
+    }
+  }
+
+  if (note.contains("shares")) {
+    optional<json> sharesCollection;
+    if (note["shares"].is_string()) {
+      auto ia = INSTANCEACTOR;
+      APClient cli(ia, n.host);
+      auto res = cli.Get(note["shares"]);
+      if (res && res->status == 200) {
+        sharesCollection = json::parse(res->body);
+      } else {
+        error("failed to fetch shares");
+      }
+    } else if (note["shares"].is_object()) {
+      sharesCollection = note["shares"];
+    } else {
+      error("shares is not a string or object");
+    }
+
+    if (sharesCollection.has_value()) {
+      if (sharesCollection.value().contains("totalItems")) {
+        n.remoteRenoteCount = sharesCollection.value()["totalItems"];
+      }
+    }
+  }
+  
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
   vector<string> alreadyNotifiedIds;
