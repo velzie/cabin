@@ -67,6 +67,7 @@ POST(post_status, "/api/v1/statuses") {
   int visibility = NOTEVISIBILITY_Public;
 
   bool isPreview = false;
+  vector<string> mediaIds;
 
   if (mp.isValid()) {
     // pleroma style
@@ -111,6 +112,8 @@ POST(post_status, "/api/v1/statuses") {
               }
             } else if (value == "spoiler_text") {
               cw = string(data);
+            } else if (value == "media_ids[]") {
+              mediaIds.push_back(string(data));
             }
           }
         }
@@ -135,13 +138,19 @@ POST(post_status, "/api/v1/statuses") {
       }
     }
 
+    if (body["media_ids"].is_array()) {
+      for (auto mediaId : body["media_ids"]) {
+        mediaIds.push_back(mediaId.get<string>());
+      }
+    }
+
     if (body["spoiler_text"].is_string()) {
       cw = body["spoiler_text"].get<string>();
     }
   }
 
   
-  Note note = NoteService::create(authuser, status, cw, replyTo, quote, isPreview, visibility);
+  Note note = NoteService::create(authuser, status, cw, replyTo, quote, isPreview, visibility, mediaIds);
 
   OK(note.renderMS(authuser), MIMEJSON);
 }

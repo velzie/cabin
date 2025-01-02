@@ -33,12 +33,13 @@ namespace NoteService {
     return n;
   }
 
-  Note create(User &owner, string content, optional<string> contentWarning, optional<Note> replyTo, optional<Note> quote, bool preview, int visibility) {
+  Note create(User &owner, string content, optional<string> contentWarning, optional<Note> replyTo, optional<Note> quote, bool preview, int visibility, vector<string> mediaIds) {
     Note note = _create(owner);
     note.content = content;
     note.cw = contentWarning;
     note.sensitive = false;
     note.visibility = visibility;
+    note.mediaIds = mediaIds;
     
 
     // find every emoji inside content (identified by :name:)
