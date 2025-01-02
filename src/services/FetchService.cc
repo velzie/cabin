@@ -6,14 +6,14 @@
 #include <error.h>
 
 namespace FetchService {
-  AnyEntity fetch(const string uri) {
+  AnyEntity fetch(const string uri, bool force) {
 
     auto u = User::lookupuri(uri);
-    if (u.has_value()) return u.value();
+    if (u.has_value() && !force) return u.value();
     auto n = Note::lookupuri(uri);
-    if (n.has_value()) return n.value();
+    if (n.has_value() && !force) return n.value();
     auto b = Bite::lookupuri(uri);
-    if (b.has_value()) return b.value();
+    if (b.has_value() && !force) return b.value();
 
     URL url(uri);
 

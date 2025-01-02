@@ -6,6 +6,7 @@
 #include <common.h>
 #include "database.h"
 #include "querybuilder.h"
+#include "services/FetchService.h"
 #include "services/MediaService.h"
 #include "utils.h"
 #include "http.h"
@@ -164,7 +165,9 @@ GET(status, "/api/v1/statuses/:id") {
     ERROR(404, "no note");
   }
 
-  json j = n.value().renderMS(authuser);
+  info("force refetching {}", n->uri);
+  Note note = FetchService::fetch<Note>(n->uri, true);
+  json j = note.renderMS(authuser);
   OK(j, MIMEJSON);
 }
 
