@@ -4,6 +4,11 @@
 #include "querybuilder.h"
 
 
+GET(suggestions, "/api/v1/suggestions") {
+  MSAUTH
+  OK(json::array(), MIMEJSON);
+}
+
 GET(timeline_federated, "/api/v1/timelines/public") {
   MSAUTH
 
