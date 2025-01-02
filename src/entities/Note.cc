@@ -447,6 +447,10 @@ json Note::renderAP() {
       j["cw"] = cw.value();
     }
 
+    for (const auto mediaId : mediaIds) {
+      j["attachment"].push_back(Media::lookupid(mediaId).value().renderAP());
+    }
+
     if (visibility == NOTEVISIBILITY_Public) {
       j["to"] = {AS_PUBLIC};
       j["cc"] = {FOLLOWERS(uOwner.id)};
