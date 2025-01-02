@@ -55,6 +55,8 @@ set(SOURCES
   src/routes/mastodon/apps.cc
   src/routes/mastodon/accounts.cc
   src/routes/mastodon/statuses.cc
+  src/routes/mastodon/notifications.cc
+  src/routes/mastodon/timeline.cc
 
   src/routes/pleroma/frontend.cc
   src/routes/pleroma/emojis.cc
