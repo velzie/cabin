@@ -38,11 +38,11 @@ Note Note::ingestAnnounce(const json data) {
 }
 
 Note Note::ingest(const json note) {
-  URL url(note["id"]);
+  URL url(note.at("id"));
 
   std::time_t published = utils::isoToMillis(note["published"]);
   Note n;
-  n.uri = note["id"];
+  n.uri = note.at("id");
   n.local = false;
   n.host = url.host;
   n.visibility = 0;
@@ -50,14 +50,16 @@ Note Note::ingest(const json note) {
   n.replyToUri = nullopt;
   n.conversation = utils::genid();
 
-  n.content = note["content"];
+  n.content = note.at("content");
   n.sensitive = false;
-  n.owner = note["attributedTo"];
+  n.owner = note.at("attributedTo");
   n.published = published;
   n.publishedClamped = utils::clampmillis(published);
   n.recievedAt = utils::millis();
 
-  if (
+  if (!note.contains("to") || !note.contains("cc")) {
+    n.visibility = NOTEVISIBILITY_Public;
+  } else if (
       (note["to"].is_string() && note["to"] == AS_PUBLIC) ||
       (note["to"].is_array() && std::find(note["to"].begin(), note["to"].end(), AS_PUBLIC) != note["to"].end())) {
     n.visibility = NOTEVISIBILITY_Public;
@@ -91,9 +93,9 @@ Note Note::ingest(const json note) {
     
   if (note.contains("tag") && note["tag"].is_array()) {
     for (const auto tag : note["tag"]) {
-      if (tag["type"] == "Mention") {
+      if (tag.at("type") == "Mention") {
         NoteMention m;
-        auto mentionee = get<User>(FetchService::fetch(tag["href"]));
+        auto mentionee = get<User>(FetchService::fetch(tag.at("href")));
         if (mentionee.local) {
           localUsersMentioned.push_back(mentionee);
         }
@@ -103,14 +105,14 @@ Note Note::ingest(const json note) {
         m.uri = mentionee.uri;
 
         n.mentions.push_back(m);
-      } else if (tag["type"] == "Hashtag") {
+      } else if (tag.at("type") == "Hashtag") {
         NoteHashtag h;
-        h.href = tag["href"];
-        h.name = tag["name"];
+        h.href = tag.at("href");
+        h.name = tag.at("name");
         h.name.erase(0, 1); // remove hashtag
         
         n.hashtags.push_back(h);
-      } else if (tag["type"] == "Emoji") {
+      } else if (tag.at("type") == "Emoji") {
         Emoji em = Emoji::ingestAPTag(tag, n.host);
         NoteEmoji nem;
         nem.id = em.id;
@@ -124,7 +126,7 @@ Note Note::ingest(const json note) {
 
   if (note.contains("attachment") && note["attachment"].is_array()) {
     for (const auto attachment : (std::vector<json>)note["attachment"]) {
-      if (attachment["type"] == "Document") {
+      if (attachment.at("type") == "Document") {
         Media m = Media::ingest(attachment);
         n.mediaIds.push_back(m.id);
       }
