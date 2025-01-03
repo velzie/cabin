@@ -50,7 +50,12 @@ Note Note::ingest(const json note) {
   n.replyToUri = nullopt;
   n.conversation = utils::genid();
 
-  n.content = note.at("content");
+  if (note.contains("content")) {
+    n.content = note["content"];
+  } else { 
+    n.content = "";
+  }
+
   n.sensitive = false;
   n.owner = note.at("attributedTo");
   n.published = published;

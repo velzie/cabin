@@ -28,7 +28,7 @@ EmojiReact EmojiReact::ingest(const json body) {
     e.emojiId = em.id;
   } else {
     e.emojiId = nullopt;
-    e.emojiText = body["content"];
+    e.emojiText = body.at("content");
   }
 
   INSERT_OR_UPDATE(e, uri, id, utils::genid());
