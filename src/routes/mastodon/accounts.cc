@@ -190,15 +190,35 @@ POST(account_follow, "/api/v1/accounts/:id/follow") {
   MSAUTH
   
   auto user = User::lookupid((string) req->getParameter("id"));
-  if (!user.has_value()) {
-    ERROR(404, "no such user");
-  }
+  if (!user.has_value()) ERROR(404, "no such user");
 
   FollowService::create(authuser, user->uri);
 
   // rerender, not ideal but whatever
   user = User::lookupid((string) req->getParameter("id"));
   
+  OK(user->renderMS(), MIMEJSON);
+}
+
+POST(account_unfollow, "/api/v1/accounts/:id/unfollow") {
+  MSAUTH
+  
+  auto user = User::lookupid((string) req->getParameter("id"));
+  if (!user.has_value()) ERROR(404, "no such user");
+
+  QueryBuilder qb;
+  auto f = qb
+    .select()
+    .from("follow")
+    .where(EQ("follower", authuser.uri))
+    .where(EQ("followee", user->uri))
+    .getOne<Follow>();
+
+  if (!f.has_value()) ERROR(404, "not following");
+
+  FollowService::undo(authuser, f.value());
+
+  user = User::lookupid((string) req->getParameter("id"));
   OK(user->renderMS(), MIMEJSON);
 }
 

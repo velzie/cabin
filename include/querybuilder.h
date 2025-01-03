@@ -73,8 +73,8 @@ class QueryBuilder {
   QueryBuilder deleteFrom(string table) {
     QueryBuilder q = *this;
     q.queryType = "DELETE";
-    q.m_table = table;
     q.reset();
+    q.m_table = table;
     return q;
   }
 
