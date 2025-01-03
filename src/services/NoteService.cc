@@ -93,6 +93,7 @@ namespace NoteService {
     if (replyTo.has_value()) {
       note.replyToUri = replyTo->uri;
       extramentions.push_back(replyTo->owner);
+      note.conversation = replyTo->conversation;
     }
 
     if (quote.has_value()) {
