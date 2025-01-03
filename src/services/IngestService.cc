@@ -38,6 +38,8 @@ namespace IngestService {
       FollowService::ingest(body["id"], body);
     } else if (type == "Reject") {
       FollowService::ingestReject(body["id"], body);
+    } else if (type == "Accept") {
+      FollowService::ingestAccept(body["id"], body);
     } else {
       error("unimplemented activity {}", type);
       body["@context"] = nullptr;

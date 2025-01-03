@@ -119,7 +119,7 @@ namespace NoteService {
         .actor = owner,
         .mentions = extramentions,
         .aspublic = true,
-        .followers = true,
+        .followers = visibility != NOTEVISIBILITY_Direct,
       };
       DeliveryService::QueueDelivery(activity, au);
     }

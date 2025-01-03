@@ -1,5 +1,6 @@
 #include "common.h"
 #include "entities/User.h"
+#include "services/NoteService.h"
 #include "services/NotificationService.h"
 #include "services/FetchService.h"
 #include "services/FollowService.h"
@@ -91,25 +92,51 @@ namespace FollowService {
   // bject":"https://booping.synth.download/users/a005c9wl4pwj0arp","type":"Fol
   // low"},"type":"Reject"}
 
-  // void ingestReject(const string id, const json activity) {
-  //   optional<Follow> follow;
-  //   ASSERT(activity.contains("object"));
-  //   if (activity["object"].is_string()) {
-  //     follow = Follow::lookupuri(activity["object"]);
-  //   } else {
-  //     follow = Follow::lookupuri(activity["object"].at("id"));
-  //   }
-  //   ASSERT(follow.has_value());
-  //
-  //   QueryBuilder qb;
-  //   auto s = qb
-  //     .deleteFrom("follow")
-  //     .where(EQ("id", follow->id))
-  //     .build();
-  //   ASSERT(s.exec());
-  //
-  //   info("{} remove followered us lol", follow->follower);
+  void ingestReject(const string id, const json activity) {
+    optional<Follow> follow;
+    ASSERT(activity.contains("object"));
+    if (activity["object"].is_string()) {
+      follow = Follow::lookupuri(activity["object"]);
+    } else {
+      follow = Follow::lookupuri(activity["object"].at("id"));
+    }
+    ASSERT(follow.has_value());
+
+    QueryBuilder qb;
+    auto s = qb
+      .deleteFrom("follow")
+      .where(EQ("id", follow->id))
+      .build();
+    ASSERT(s.exec());
+
+    User u = User::lookupuri(follow->follower).value();
+    NotificationService::createMisc(u, FMT("Notification(follow_request): Your follow request to {} was rejected", follow->followee));
   }
 
+  // "{"@context":"http
+  // s://www.w3.org/ns/activitystreams","actor":"https://mastodon.social/users/daletr
+  // aita","id":"https://mastodon.social/users/daletraita#accepts/follows/48010540","
+  // object":{"actor":"https://staging.velzie.rip/users/test","id":"https://staging.v
+  // elzie.rip/follows/18174fa485f00da1uLILa0Lz","object":"https://mastodon.social/us
+  // ers/daletraita","type":"Follow"},"type":"Accept"}
+  void ingestAccept(const string id, const json activity) {
+    optional<Follow> follow;
+    ASSERT(activity.contains("object"));
+    if (activity["object"].is_string()) {
+      follow = Follow::lookupuri(activity["object"]);
+    } else {
+      follow = Follow::lookupuri(activity["object"].at("id"));
+    }
+    ASSERT(follow.has_value());
 
+    if (!follow.value().pending) {
+      return; // already accepted
+    }
+
+    User u = User::lookupuri(follow->follower).value();
+    follow.value().pending = false;
+    follow.value().update();
+
+    NotificationService::createMisc(u, FMT("Notification(follow_request): You are now following {}", follow->followee));
+  }
 }

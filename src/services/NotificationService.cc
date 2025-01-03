@@ -1,6 +1,8 @@
 #include "services/NotificationService.h"
+#include "services/NoteService.h"
 
 #include "entities/Emoji.h"
+#include "entities/Note.h"
 #include "entities/Notification.h"
 #include "server.h"
 #include "utils.h"
@@ -87,5 +89,10 @@ namespace NotificationService {
     n.statusUri = note.uri;
 
     publish(n);
+  }
+
+  void createMisc(User &user, string text) {
+    Note note = NoteService::create(user, text, nullopt, nullopt, nullopt, false, NOTEVISIBILITY_Direct, {});
+    createMention(note, user, user);
   }
 }

@@ -79,9 +79,12 @@ int main(int argc, char **argv) {
 
   vector<std::thread> clusters;
   for (int i = 0; i < 10; i++) {
-    clusters.push_back(std::thread([](){
+    clusters.push_back(std::thread([i](){
       Server::Listen();
     }));
+
+    // FIXME: uws is thread safe but our init code is not.. fix this eventually
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   for (auto &t : clusters) {

@@ -10,4 +10,5 @@ namespace NotificationService {
   void createRenote(Note &note, Note &renote, User &renotee, User &renoter);
   void createFavorite(Note &note, User &favoritee, User &favoriter);
   void createReact(Note &note, User &reactee, User &reacter, optional<Emoji> &emoji, optional<string> emojiText);
+  void createMisc(User &user, string text);
 }
