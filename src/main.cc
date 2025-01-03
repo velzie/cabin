@@ -77,8 +77,16 @@ int main(int argc, char **argv) {
     // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
   });
 
-  Server::Listen();
-  s1.join();
+  vector<std::thread> clusters;
+  for (int i = 0; i < 10; i++) {
+    clusters.push_back(std::thread([](){
+      Server::Listen();
+    }));
+  }
+
+  for (auto &t : clusters) {
+    t.join();
+  }
 
   // if (argc > 1) {
   //   URL url(argv[1]);
