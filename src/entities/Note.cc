@@ -8,15 +8,14 @@
 
 
 Note Note::ingestAnnounce(const json data) {
-  string object = data["object"];
+  string object = data.at("object");
   auto note = get<Note>(FetchService::fetch(object));
 
-  User uRenoter = FetchService::fetch<User>(data["actor"]);
+  User uRenoter = FetchService::fetch<User>(data.at("actor"));
+  time_t published = utils::isoToMillis(data.at("published"));
 
-  time_t published = utils::isoToMillis(data["published"]);
   Note rn;
-  rn.uri = data["id"];
-  rn.id = utils::genid();
+  rn.uri = data.at("id");
   rn.local = false;
   rn.host = uRenoter.host;
   rn.visibility = 0;
@@ -27,9 +26,10 @@ Note Note::ingestAnnounce(const json data) {
   rn.published = published;
   rn.publishedClamped = utils::clampmillis(published);
   rn.recievedAt = utils::millis();
-  rn.insert();
 
-  if (note.local) {
+  INSERT_OR_UPDATE(rn, uri, id, utils::genid());
+
+  if (isNew && note.local) {
     User uRenotee = User::lookupuri(note.owner).value();
     NotificationService::createRenote(note, rn, uRenotee, uRenoter);
   }
