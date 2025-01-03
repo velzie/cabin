@@ -78,14 +78,17 @@ namespace Database {
 
 #define INSERT_OR_UPDATE(object, pkey, key, value)\
   auto _query = STATEMENT(FMT("SELECT * FROM {} where {} = ? LIMIT 1", object.__table, #pkey));\
+  bool isNew = false;\
   _query.bind(1, object.pkey);\
   int _r;\
   if (_query.executeStep()) {\
     object.key = (string)_query.getColumn(#key);\
     _r = object.update();\
-  }else {\
+    isNew = false;\
+  } else {\
     object.key = value;\
     _r = object.insert();\
+    isNew = true;\
   }\
 
 #define F(name)\

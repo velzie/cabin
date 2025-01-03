@@ -209,11 +209,13 @@ Note Note::ingest(const json note) {
   
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
-  vector<string> alreadyNotifiedIds;
-  for (auto u : localUsersMentioned) {
-    if (std::find(alreadyNotifiedIds.begin(), alreadyNotifiedIds.end(), u.id) == alreadyNotifiedIds.end()) {
-      NotificationService::createMention(n, uOwner, u);
-      alreadyNotifiedIds.push_back(u.id);
+  if (isNew) {
+    vector<string> alreadyNotifiedIds;
+    for (auto u : localUsersMentioned) {
+      if (std::find(alreadyNotifiedIds.begin(), alreadyNotifiedIds.end(), u.id) == alreadyNotifiedIds.end()) {
+        NotificationService::createMention(n, uOwner, u);
+        alreadyNotifiedIds.push_back(u.id);
+      }
     }
   }
 
