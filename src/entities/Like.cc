@@ -1,4 +1,5 @@
 #include "entities/Like.h"
+#include "database.h"
 #include "entities/User.h"
 #include "services/FetchService.h"
 #include "services/NotificationService.h"
@@ -10,7 +11,6 @@ Like Like::ingest(const json object) {
   URL likeuri(object["id"]);
   Like l = {
     .uri = object["id"],
-    .id = utils::genid(),
     .local = 0,
     .host = likeuri.host,
 
@@ -18,9 +18,9 @@ Like Like::ingest(const json object) {
     .object = object["object"]
   };
 
-  l.insert();
+  INSERT_OR_UPDATE(l, uri, id, utils::genid());
 
-  if (note.local == true) {
+  if (note.local == true && isNew) {
     User favoritee = User::lookupuri(note.owner).value();
     NotificationService::createFavorite(note, favoritee, favoriter);
   }
