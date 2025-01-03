@@ -33,8 +33,30 @@ namespace FollowService {
 
     DeliveryService::QueueDelivery(f.renderAP(), au);
 
-
     return f;
+  }
+
+  void undo(User &user, Follow &follow) {
+    QueryBuilder qb;
+
+    auto s = qb
+      .deleteFrom("follow")
+      .where(EQ("id", follow.id))
+      .build();
+    ASSERT(s.exec());
+
+    json activity = {
+      {"id", API("undos/"+utils::genid())},
+      {"type", "Undo"},
+      {"actor", user.uri},
+      {"object", follow.renderAP()},
+    };
+
+    DeliveryService::Audience au = {
+      .actor = user,
+      .mentions = {follow.followee},
+    };
+    DeliveryService::QueueDelivery(activity, au);
   }
 
   Follow ingest(const string uri, const json follow) {

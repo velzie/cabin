@@ -277,6 +277,27 @@ class QueryBuilder {
       }
 
       return q;
+    } else if (queryType == "DELETE") {
+      query = "DELETE FROM " + m_table.value() + " WHERE ";
+
+      if (!m_constraints.empty()) {
+        for (auto c : m_constraints) {
+          expandUnion(c, query);
+          query += " AND ";
+        }
+      }
+
+      query.erase(query.size() - 5);
+
+      auto q = STATEMENT(query);
+      int ibind = 1;
+
+      for (auto un : m_constraints) {
+        expandUnionBind(un, q, ibind);
+      }
+
+      return q;
+
     } else {
       ASSERT(false);
     }
