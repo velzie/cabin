@@ -36,6 +36,8 @@ namespace IngestService {
       EmojiReact::ingest(body);
     } else if (type == "Follow") {
       FollowService::ingest(body["id"], body);
+    } else if (type == "Reject") {
+      FollowService::ingestReject(body["id"], body);
     } else {
       error("unimplemented activity {}", type);
       body["@context"] = nullptr;

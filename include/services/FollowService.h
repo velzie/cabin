@@ -7,4 +7,5 @@
 namespace FollowService {
   Follow create(User &user, string followee);
   Follow ingest(const string uri, const json follow);
+  void ingestReject(const string id, const json activity);
 }
