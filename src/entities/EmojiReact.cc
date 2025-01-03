@@ -21,7 +21,7 @@ EmojiReact EmojiReact::ingest(const json body) {
   e.object = body.at("object");
 
   optional<Emoji> oem;
-  if (body.contains("tag") && body["tag"].is_array() && body["tag"][0].is_object()) {
+  if (body.contains("tag") && body["tag"].is_array() && body["tag"].at(0).is_object()) {
     Emoji em = Emoji::ingestAPTag(body["tag"].at(0), reacturi.host);
     oem = em;
     e.emojiText = nullopt;
