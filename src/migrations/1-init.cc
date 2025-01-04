@@ -195,6 +195,19 @@ MIGRATION_UP(init, 1) {
     )
   )");
 
+  db->exec(R"(
+    CREATE TABLE usersettings(
+      userId TEXT PRIMARY KEY NOT NULL,
+      email TEXT NOT NULL,
+
+      frontendSettings JSON NOT NULL,
+
+      password TEXT NOT NULL
+    )
+  )");
+
+
+
   setVersion(db, 1);
 }
 
