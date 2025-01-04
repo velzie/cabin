@@ -39,6 +39,7 @@ Note Note::ingestAnnounce(const json data) {
 
 Note Note::ingest(const json note) {
   URL url(note.at("id"));
+  optional<Note> oldNote = Note::lookupuri(note.at("id"));
 
   std::time_t published = utils::isoToMillis(note["published"]);
   Note n;
@@ -143,31 +144,37 @@ Note Note::ingest(const json note) {
 
   auto uOwner = FetchService::fetch<User>(note["attributedTo"]);
 
-  if (note.contains("inReplyTo") && note["inReplyTo"].is_string()) {
-    // lookup parent note, this is recursive
-    // TODO: the current system cannot handle a single instance being offline, every intake will fail
-    auto nReplyTo = FetchService::fetch<Note>(note["inReplyTo"]);
-    if (nReplyTo.local) {
-      User uReplyTo = User::lookupuri(nReplyTo.owner).value();
-      localUsersMentioned.push_back(uReplyTo);
-    }
-
-    n.replyToUri = std::make_optional(note["inReplyTo"]);
-
-    // if we got here without throwing we have every ancestor note
-    // recursively fetch until the initial post in the thread
-    Note topmost = n;
-    while (topmost.replyToUri.has_value()) {
-      topmost = Note::lookupuri(topmost.replyToUri.value()).value();
-    }
-    ASSERT(topmost.id != n.id);
-
-    // now we can safely take the conversation id
-    n.conversation = topmost.conversation;
+  if (oldNote.has_value()) {
+    // doesn't make sense to update the thread meta here
+    n.conversation = oldNote->conversation;
+    n.replyToUri = oldNote->replyToUri;
   } else {
-    // not a reply, create a new tree id
-    n.conversation = utils::genid();
-    n.replyToUri = nullopt;
+    if (note.contains("inReplyTo") && note["inReplyTo"].is_string()) {
+      // lookup parent note, this is recursive
+      // TODO: the current system cannot handle a single instance being offline, every intake will fail
+      auto nReplyTo = FetchService::fetch<Note>(note["inReplyTo"]);
+      if (nReplyTo.local) {
+        User uReplyTo = User::lookupuri(nReplyTo.owner).value();
+        localUsersMentioned.push_back(uReplyTo);
+      }
+
+      n.replyToUri = std::make_optional(note["inReplyTo"]);
+
+      // if we got here without throwing we have every ancestor note
+      // recursively fetch until the initial post in the thread
+      Note topmost = n;
+      while (topmost.replyToUri.has_value()) {
+        topmost = Note::lookupuri(topmost.replyToUri.value()).value();
+      }
+      ASSERT(topmost.id != n.id);
+
+      // now we can safely take the conversation id
+      n.conversation = topmost.conversation;
+    } else {
+      // not a reply, create a new tree id
+      n.conversation = utils::genid();
+      n.replyToUri = nullopt;
+    }
   }
 
   // update remote stats
@@ -221,7 +228,9 @@ Note Note::ingest(const json note) {
   
   INSERT_OR_UPDATE(n, uri, id, utils::genid());
 
-  if (isNew) {
+  if (!oldNote.has_value()) {
+    // only send notifications for new notes
+    // TODO: what if the tags change?
     vector<string> alreadyNotifiedIds;
     for (auto u : localUsersMentioned) {
       if (std::find(alreadyNotifiedIds.begin(), alreadyNotifiedIds.end(), u.id) == alreadyNotifiedIds.end()) {
