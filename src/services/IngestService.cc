@@ -46,7 +46,7 @@ namespace IngestService {
       auto user = User::lookupuri(body.at("actor"));
       ASSERT(body.contains("object") && body["object"].at("type") == "Audio");
       string text = FMT("scrobbled {} - {} {}", body["object"].at("artist").get<string>(), body["object"].at("album").get<string>(), body["object"].at("title").get<string>());
-      NoteService::create(user.value(), text, nullopt, nullopt, nullopt, false, NOTEVISIBILITY_Followers, {});
+      info("{} {}", user->acct(false), text);
     } else {
       error("unimplemented activity {}", type);
       body["@context"] = nullptr;
@@ -60,6 +60,8 @@ namespace IngestService {
         Ingest(activity);    
       } CPPTRACE_CATCH(const InvalidActivityError &e) { 
         trace(e.what());
+      } catch(const FetchError &e) {
+        error("ingest {} failed: {}", (string)activity["type"], e.what());
       } catch(const std::exception &e) {
         error("ingest {} failed: {}", (string)activity["type"], e.what());
         utils::getStackTrace();

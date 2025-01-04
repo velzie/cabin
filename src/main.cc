@@ -29,7 +29,10 @@ json context;
 
 void registeruser();
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::trace);
+  spdlog::set_level(spdlog::level::debug);
+  if (argc > 1 && string(argv[1]) == "trace") {
+    spdlog::set_level(spdlog::level::trace);
+  }
   spdlog::set_pattern("[%M:%S] [%^%L%$] [%&] %v");
 
   int lockFile = open(LOCK_FILE, O_CREAT | O_RDWR, 0666);
@@ -78,7 +81,7 @@ int main(int argc, char **argv) {
   });
 
   vector<std::thread> clusters;
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20; i++) {
     clusters.push_back(std::thread([i](){
       Server::Listen();
     }));

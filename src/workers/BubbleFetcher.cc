@@ -29,7 +29,7 @@ void BubbleFetcher::Update() {
     string uri = post["uri"];
 
     Note n = FetchService::fetch<Note>(uri);
-    debug("pulled in note {}", n.uri);
+    trace("pulled in note {}", n.uri);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 }
