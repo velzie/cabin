@@ -92,17 +92,17 @@ int main(int argc, char **argv) {
   }
 
 
-  auto u = INSTANCEACTOR;
-  json jj = {
-    {"@context", "https://www.w3.org/ns/activitystreams"},
-    {"id", API("relayfollows/0")},
-    {"type", "Follow"},
-    {"actor", u.uri},
-    {"object", "https://www.w3.org/ns/activitystreams#Public"}
-  };
-  APClient cli(u, "relay.kitsu.life");
-  auto c = cli.Post("/inbox", jj);
-  error("{} : ({})", c->status, c->body);
+  // auto u = INSTANCEACTOR;
+  // json jj = {
+  //   {"@context", "https://www.w3.org/ns/activitystreams"},
+  //   {"id", API("relayfollows/0")},
+  //   {"type", "Follow"},
+  //   {"actor", u.uri},
+  //   {"object", "https://www.w3.org/ns/activitystreams#Public"}
+  // };
+  // APClient cli(u, "relay.kitsu.life");
+  // auto c = cli.Post("/inbox", jj);
+  // error("{} : ({})", c->status, c->body);
 
   for (auto &t : clusters) {
     t.join();
