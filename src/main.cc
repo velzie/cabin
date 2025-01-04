@@ -9,6 +9,7 @@
 #include <thread>
 #include "common.h"
 #include "database.h"
+#include "http.h"
 #include "server.h"
 #include "utils.h"
 #include "workers/BubbleFetcher.h"
@@ -90,6 +91,19 @@ int main(int argc, char **argv) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
+
+  auto u = INSTANCEACTOR;
+  json jj = {
+    {"@context", "https://www.w3.org/ns/activitystreams"},
+    {"id", API("relayfollows/0")},
+    {"type", "Follow"},
+    {"actor", u.uri},
+    {"object", "https://www.w3.org/ns/activitystreams#Public"}
+  };
+  APClient cli(u, "relay.kitsu.life");
+  auto c = cli.Post("/inbox", jj);
+  error("{} : ({})", c->status, c->body);
+
   for (auto &t : clusters) {
     t.join();
   }
@@ -111,17 +125,6 @@ int main(int argc, char **argv) {
   //   exit(0);
   // }
   //
-  // auto u = UserService::lookup(ct->userid);
-  // json j = {
-  //   {"@context", "https://www.w3.org/ns/activitystreams"},
-  //   {"id", API("relayfollows/0")},
-  //   {"type", "Follow"},
-  //   {"actor", USERPAGE(ct->userid)},
-  //   {"object", "https://www.w3.org/ns/activitystreams#Public"}
-  // };
-  // APClient cli(u.value(), "relay.toot.io");
-  // auto c = cli.Post("/inbox", j);
-  // error("{} : ({})", c->status, c->body);
 
 
   // json j = {

@@ -74,6 +74,7 @@ json NodeMeta(std::string version) {
         "bubble_timeline",
         "pleroma:bites",
       }},
+      {"federatedTimelineAvailable", true},
       {"localBubbleInstances", cfg.bubbledHosts},
       {"staffAccounts", ARR},
       {"publicTimelineVisibility", {
