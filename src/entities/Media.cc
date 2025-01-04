@@ -12,9 +12,20 @@ json Media::renderAP() {
 }
 
 json Media::renderMS(User &requester) {
+  string type;
+
+  if (mimeType.find("image/") != string::npos) {
+    type = "image";
+  } else if (mimeType.find("video/") != string::npos) {
+    type = "video";
+  } else if (mimeType.find("audio/") != string::npos) {
+    type = "audio";
+  } else {
+    type = "document";
+  }
   return {
     {"id", id},
-    {"type", "image"},
+    {"type", type},
     {"url", url},
     {"preview_url", url},
     {"remote_url", url},
