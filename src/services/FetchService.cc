@@ -28,7 +28,7 @@ namespace FetchService {
 
     if (object["type"] == "Note") {
       return Note::ingest(object);
-    } else if (object["type"] == "Person") {
+    } else if (object["type"] == "Person" || object["type"] == "Service") {
       return User::ingest(object);
     } else if (object["type"] == "Bite") { 
       return BiteService::ingest(object);

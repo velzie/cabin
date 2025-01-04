@@ -48,7 +48,6 @@ Note Note::ingest(const json note) {
   n.visibility = 0;
 
   n.replyToUri = nullopt;
-  n.conversation = utils::genid();
 
   if (note.contains("content")) {
     n.content = note["content"];
@@ -141,29 +140,35 @@ Note Note::ingest(const json note) {
   if (note.contains("sensitive") && note["sensitive"].is_boolean()) {
     n.sensitive = note["sensitive"];
   }
-  if (note.contains("inReplyTo") && !note["inReplyTo"].is_null()) {
-    n.replyToUri = std::make_optional(note["inReplyTo"]);
-  }
 
   auto uOwner = FetchService::fetch<User>(note["attributedTo"]);
 
-  if (n.replyToUri.has_value()) {
-    // TODO: if one ingest fails they will all fail, maybe not good
-    auto nReplyTo = FetchService::fetch<Note>(n.replyToUri.value());
+  if (note.contains("inReplyTo") && note["inReplyTo"].is_string()) {
+    // lookup parent note, this is recursive
+    // TODO: the current system cannot handle a single instance being offline, every intake will fail
+    auto nReplyTo = FetchService::fetch<Note>(note["inReplyTo"]);
     if (nReplyTo.local) {
       User uReplyTo = User::lookupuri(nReplyTo.owner).value();
       localUsersMentioned.push_back(uReplyTo);
     }
-  }
 
-  // recursively fetch until the initial post in the thread
-  Note topmost = n;
-  while (topmost.replyToUri.has_value()) {
-    topmost = Note::lookupuri(topmost.replyToUri.value()).value();
-  }
+    n.replyToUri = std::make_optional(note["inReplyTo"]);
 
-  // now we can safely take the conversation id
-  n.conversation = topmost.conversation;
+    // if we got here without throwing we have every ancestor note
+    // recursively fetch until the initial post in the thread
+    Note topmost = n;
+    while (topmost.replyToUri.has_value()) {
+      topmost = Note::lookupuri(topmost.replyToUri.value()).value();
+    }
+    ASSERT(topmost.id != n.id);
+
+    // now we can safely take the conversation id
+    n.conversation = topmost.conversation;
+  } else {
+    // not a reply, create a new tree id
+    n.conversation = utils::genid();
+    n.replyToUri = nullopt;
+  }
 
   // update remote stats
   if (note.contains("likes")) {

@@ -61,9 +61,9 @@ namespace IngestService {
       } CPPTRACE_CATCH(const InvalidActivityError &e) { 
         trace(e.what());
       } catch(const FetchError &e) {
-        error("ingest {} failed: {}", (string)activity["type"], e.what());
+        error("ingest {} failed: {} @ {}", (string)activity["type"], e.what(), (string)activity["id"]);
       } catch(const std::exception &e) {
-        error("ingest {} failed: {}", (string)activity["type"], e.what());
+        error("ingest {} failed: {} @ {}", (string)activity["type"], e.what(), (string)activity["id"]);
         utils::getStackTrace();
       }
     });
