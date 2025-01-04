@@ -9,6 +9,7 @@
 #include "utils.h"
 
 #include "services/FollowService.h"
+#include "services/NoteService.h"
 #include "entities/Like.h"
 
 #include <cpptrace/from_current.hpp>
@@ -40,6 +41,12 @@ namespace IngestService {
       FollowService::ingestReject(body["id"], body);
     } else if (type == "Accept") {
       FollowService::ingestAccept(body["id"], body);
+    } else if (type == "Listen") {
+     // {"@context":null,"actor":"https://pl.noob.quest/users/iris","cc":[],"context":"https://pl.noob.quest/contexts/872f7b3d-81b2-47c5-9d0d-09f50b616f15","directMessage":false,"id":"https://pl.noob.quest/activities/b1085785-00c2-4170-b0d0-e63c71f0762c","object":{"actor":"https://pl.noob.quest/users/iris","album":"Flex Musix","artist":"OsamaSon","attachment":[],"attributedTo":"https://pl.noob.quest/users/iris","cc":["https://pl.noob.quest/users/iris/followers"],"context":"https://pl.noob.quest/contexts/872f7b3d-81b2-47c5-9d0d-09f50b616f15","conversation":"https://pl.noob.quest/contexts/872f7b3d-81b2-47c5-9d0d-09f50b616f15","id":"https://pl.noob.quest/objects/8e2185fa-5019-4acb-8075-f03abdd283e2","length":144601,"published":"2025-01-04T01:17:37.997368Z","tag":[],"title":"Blonde","to":["https://www.w3.org/ns/activitystreams#Public"],"type":"Audio"},"published":"2025-01-04T01:17:37.997312Z","to":["https://www.w3.org/ns/activitystreams#Public"],"type":"Listen"} 
+      auto user = User::lookupuri(body.at("actor"));
+      ASSERT(body.contains("object") && body["object"].at("type") == "Audio");
+      string text = FMT("scrobbled {} - {} {}", body["object"].at("artist").get<string>(), body["object"].at("album").get<string>(), body["object"].at("title").get<string>());
+      NoteService::create(user.value(), text, nullopt, nullopt, nullopt, false, NOTEVISIBILITY_Followers, {});
     } else {
       error("unimplemented activity {}", type);
       body["@context"] = nullptr;

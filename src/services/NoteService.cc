@@ -21,7 +21,7 @@ namespace NoteService {
     Note n;
     n.uri = NOTE(id);
     n.id = id;
-    n.local = 1;
+    n.local = owner.local;
     n.host = cfg.domain;
     n.visibility = NOTEVISIBILITY_Public;
 
