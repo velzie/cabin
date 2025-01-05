@@ -1,6 +1,9 @@
+#include "Multipart.h"
 #include "entities/Emoji.h"
+#include "entities/OauthToken.h"
 #include "querybuilder.h"
 #include "entities/Notification.h"
+#include "entities/UserSettings.h"
 #include <router.h>
 #include <common.h>
 #include <QueryParser.h>
@@ -55,6 +58,23 @@ POST(apps, "/api/v1/apps") {
 GET(authorize, "/oauth/authorize") {
   ASSERT(req->getQuery("response_type") == "code");
 
+  res->writeHeader("Content-Type", "text/html");
+  res->end(R"(
+    <form method="post">
+      <div>
+          <input type="checkbox" name="isPleroma" id="isPleroma" value="1">
+          <label for="isPleroma">This client supports the Pleroma API</label>
+      </div>
+      <input type="text" placeholder="Username" name="username" required>
+      <input type="password" placeholder="password" name="password" required>
+      <button type="submit">submit</button>
+    </form>
+  )");
+}
+
+std::map<string, OauthToken> tokens;
+POST(authorize_post, "/oauth/authorize") {
+  ASSERT(req->getQuery("response_type") == "code");
 
   string client_id(req->getQuery("client_id"));
   string redirect_uri (req->getQuery("redirect_uri"));
@@ -62,26 +82,90 @@ GET(authorize, "/oauth/authorize") {
   string scope(req->getQuery("scope"));
   if (scope.empty()) scope = "read";
 
-  json sanitized = redirect_uri;
+  string query("?" + bodyraw);
+  string username(uWS::getDecodedQueryValue("username", query));
+  string password(uWS::getDecodedQueryValue("password", query));
+  bool isPleroma = uWS::getDecodedQueryValue("isPleroma", query) == "1";
 
+  QueryBuilder qb;
+  auto user = qb.select().from("user").where(EQ("local", true)).where(EQ("username", username)).getOne<User>();
+  if (!user.has_value()) ERROR(401, "invalid username or password");
+  auto settings = UserSettings::lookupuserId(user->id).value();
+  if (settings.password != password) ERROR(401, "invalid username or password");
 
-  res->writeHeader("Content-Type", "text/html");
-  res->end(FMT(R"(
-    <button id="redirect">click to oauth</button>
-    <script>
-      let url = {}
-      redirect.onclick = () => window.location = url + "?code=placeholder_code"
-    </script>
-  )", sanitized.dump()));
+  OauthToken oauth;
+  oauth.id = utils::genid();
+  oauth.userId = user->id;
+
+  oauth.scopes = {};
+  while (!scope.empty()) {
+    size_t pos = scope.find(" ");
+    if (pos == string::npos) {
+      oauth.scopes.push_back(scope);
+      break;
+    }
+    oauth.scopes.push_back(scope.substr(0, pos));
+    scope = scope.substr(pos + 1);
+  }
+  oauth.isPleroma = isPleroma;
+  oauth.clientId = client_id;
+  oauth.token = utils::genid(); // FIXME: ...
+  oauth.insert();
+
+  string code = utils::genid();
+  tokens[code] = oauth;
+
+  REDIRECT(redirect_uri + "?code=" + code);
 }
 
 POST(token, "/oauth/token") {
-  string query("?" + bodyraw);
-  string scopes(uWS::getDecodedQueryValue("scopes", query));
+  string code;
+  string scopes;
+
+
+  if (req->getHeader("content-type") == "application/json") {
+    code = body.at("code");
+    scopes = body.at("scope");
+  } else if (mp.isValid()) {
+    std::pair<std::string_view, std::string_view> headers[20];
+    while (true) {
+      optional<std::string_view> optionalPart = mp.getNextPart(headers);
+      if (!optionalPart.has_value()) break;
+
+      for (int i = 0; headers[i].first.length(); i++) {
+        if (headers[i].first == "content-disposition") {
+          uWS::ParameterParser pp(headers[i].second);
+          while (true) {
+            auto [key, value] = pp.getKeyValue();
+            if (key.empty()) break;
+            if (key == "name") {
+              if (value == "code") {
+                code = optionalPart.value();
+              } else if (value == "scope") {
+                scopes = optionalPart.value();
+              }
+            }
+          }
+        }
+      }
+    }
+  } else {
+    string query("?" + bodyraw);
+    code = uWS::getDecodedQueryValue("code", query);
+    scopes = uWS::getDecodedQueryValue("scope", query);
+  }
+
+
   std::time_t current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
+
+  if (code.empty()) ERROR(400, "missing code");
+  if (!tokens.count(code)) ERROR(400, "invalid code");
+  auto token = tokens[code];
+  tokens.erase(code);
+
   json r = {
-    {"access_token", "placeholder_token"},
+    {"access_token", token.token},
     {"token_type", "Bearer"},
     {"scope", scopes},
     {"created_at", current_time},
@@ -178,7 +262,7 @@ GET(instance, "/api/:v/instance") {
           "audio/m4a",
           "audio/x-m4a",
           "audio/mp4",
-          "audio/3gpp",
+    "audio/3gpp",
           "video/x-ms-asf",
         }},
         {"image_size_limit", 10485760},

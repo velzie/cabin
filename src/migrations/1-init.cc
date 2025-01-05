@@ -206,6 +206,19 @@ MIGRATION_UP(init, 1) {
     )
   )");
 
+  db->exec(R"(
+    CREATE TABLE oauthtoken(
+      id TEXT PRIMARY KEY NOT NULL,
+      userId TEXT NOT NULL,
+
+      scopes JSON NOT NULL,
+      clientId TEXT NOT NULL,
+      isPleroma BOOLEAN NOT NULL,
+
+      token TEXT NOT NULL
+    )
+  )");
+
 
 
   setVersion(db, 1);
