@@ -16,7 +16,7 @@
 #include <shared_mutex>
 #include <stdexcept>
 #include "router.h"
-#include <execinfo.h> 
+#include <execinfo.h>
 #include <cpptrace/from_current.hpp>
 #include <filesystem>
 #include <fstream>
@@ -86,7 +86,7 @@ namespace Server {
       //   }
       // }
     }
-    
+
     managingSessionsLock.unlock();
   }
 
@@ -230,7 +230,7 @@ namespace Server {
               } else if (mp.isValid()) {
                 auto *s = new string(body->str());
                 mp.setBody(*s);
-                
+
               } else if (contentType == "application/x-www-form-urlencoded") {
                 // todo
               }
@@ -304,7 +304,7 @@ namespace Server {
       });
     }
 
-    app->listen(2001,[](auto *listen_socket) {
+    app->listen(cfg.socketport,[](auto *listen_socket) {
 	  }).run();
   }
 }

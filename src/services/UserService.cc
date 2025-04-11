@@ -1,3 +1,4 @@
+#include "entities/UserSettings.h"
 #define USE_DB
 #include "SQLiteCpp/Statement.h"
 #include <stdexcept>
@@ -95,6 +96,13 @@ void registeruser() {
     .isCat = true,
     .speakAsCat = false,
   };
-  u.insert();
-  
+  auto usr = u.insert();
+
+  UserSettings us = {
+      .userId = cfg.instanceactor,
+      .email = "test@test.com",
+      .password = "test"
+  };
+  us.insert();
+
 }

@@ -9,12 +9,19 @@ add_subdirectory(.third-party/spdlog)
 add_subdirectory(.third-party/dbg-macro)
 add_subdirectory(.third-party/fmt)
 add_subdirectory(wrapusockets)
-add_subdirectory(wrapcpptrace)
+
+include(FetchContent)
+FetchContent_Declare(
+  cpptrace
+  GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
+  GIT_TAG        v0.7.3
+)
+FetchContent_MakeAvailable(cpptrace)
 
 include_directories(include)
 include_directories(.third-party/uWebSockets/src)
 
-set(SOURCES 
+set(SOURCES
   .third-party/httplib.cc
 
   src/main.cc

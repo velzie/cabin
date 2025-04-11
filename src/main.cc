@@ -2,27 +2,24 @@
 #include <filesystem>
 #include <openssl/http.h>
 
-#include <fstream>
-#include <iostream>
-#include <fmt/format.h>
-#include <spdlog/common.h>
-#include <thread>
 #include "common.h"
 #include "database.h"
 #include "http.h"
 #include "server.h"
 #include "utils.h"
 #include "workers/BubbleFetcher.h"
+#include <fmt/format.h>
+#include <fstream>
+#include <iostream>
+#include <spdlog/common.h>
+#include <thread>
 
-
-Config default_config = {
-  .domain = "your.domain",
-  .sockethost = "0.0.0.0",
-  .socketport = 2001,
-  .instanceactor = "test3",
-  .mediapath = "media",
-  .bubbledHosts = {"wetdry.world"}
-};
+Config default_config = {.domain = "your.domain",
+                         .sockethost = "0.0.0.0",
+                         .socketport = 2001,
+                         .instanceactor = "test3",
+                         .mediapath = "media",
+                         .bubbledHosts = {"wetdry.world"}};
 Config cfg;
 json context;
 
@@ -38,13 +35,13 @@ int main(int argc, char **argv) {
 
   int lockFile = open(LOCK_FILE, O_CREAT | O_RDWR, 0666);
   if (lockFile < 0) {
-      std::cerr << "Error: Unable to open lock file." << std::endl;
-      exit(EXIT_FAILURE);
+    std::cerr << "Error: Unable to open lock file." << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   if (lockf(lockFile, F_TLOCK, 0) < 0) {
-      std::cerr << "Error: Unable to lock file." << std::endl;
-      exit(EXIT_FAILURE);
+    std::cerr << "Error: Unable to lock file." << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   string config_path = "config.json";
@@ -62,38 +59,35 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  json j = json::parse(std::string((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>()));
+  json j = json::parse(std::string((std::istreambuf_iterator<char>(s)),
+                                   std::istreambuf_iterator<char>()));
   cfg = j.template get<Config>();
 
   std::ifstream contextst("context.json");
-  context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)), std::istreambuf_iterator<char>()));
+  context = json::parse(std::string((std::istreambuf_iterator<char>(contextst)),
+                                    std::istreambuf_iterator<char>()));
 
   if (!std::filesystem::exists(cfg.mediapath)) {
     std::filesystem::create_directories(cfg.mediapath);
   }
 
-  info("loaded ({})", cfg.domain); 
-
+  info("loaded ({})", cfg.domain);
 
   Database::Init();
   BubbleFetcher::Launch();
-  std::thread s1([](){
-    // NoteService::fetchRemote("https://brain.worm.pink/objects/1944398f-007c-42e6-8dfd-efcada1500a8");
-  });
+
+  // registeruser();
 
   vector<std::thread> clusters;
   for (int i = 0; i < 20; i++) {
-    clusters.push_back(std::thread([i](){
-      Server::Listen();
-    }));
+    clusters.push_back(std::thread([i]() { Server::Listen(); }));
 
     // FIXME: uws is thread safe but our init code is not.. fix this eventually
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
-
   // auto u = INSTANCEACTOR;
-  // json jj = {
+  // json jj = {,
   //   {"@context", "https://www.w3.org/ns/activitystreams"},
   //   {"id", API("relayfollows/0")},
   //   {"type", "Follow"},
@@ -126,7 +120,6 @@ int main(int argc, char **argv) {
   // }
   //
 
-
   // json j = {
   //   {"id", API("follows/0")},
   //   {"type", "Follow"},
@@ -136,31 +129,30 @@ int main(int argc, char **argv) {
   // APClient cli(u.value(), "booping.synth.download");
   // auto c = cli.Post("/inbox", j);
   // error("{} : ({})", c->status, c->body);
-  
- // json j = {
- //    {"id", API("bites/0")},
- //    {"type", "Bite"},
- //    {"actor", USERPAGE(ct->userid)},
- //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
- //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
- //    {"published", utils::dateISO()},
- //  };
- //  APClient cli(u.value(), "is.notfire.cc");
- //  auto c = cli.Post("/inbox", j);
- //  error("{} : ({})", c->status, c->body);
 
- // json j = {
- //    {"id", API("bites/0")},
- //    {"type", "Bite"},
- //    {"actor", USERPAGE(ct->userid)},
- //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
- //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
- //    {"published", utils::dateISO()},
- //  };
- //  APClient cli(u.value(), "is.notfire.cc");
- //  auto c = cli.Post("/inbox", j);
- //  error("{} : ({})", c->status, c->body);
+  // json j = {
+  //    {"id", API("bites/0")},
+  //    {"type", "Bite"},
+  //    {"actor", USERPAGE(ct->userid)},
+  //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+  //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+  //    {"published", utils::dateISO()},
+  //  };
+  //  APClient cli(u.value(), "is.notfire.cc");
+  //  auto c = cli.Post("/inbox", j);
+  //  error("{} : ({})", c->status, c->body);
 
+  // json j = {
+  //    {"id", API("bites/0")},
+  //    {"type", "Bite"},
+  //    {"actor", USERPAGE(ct->userid)},
+  //    {"target", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+  //    {"to", "https://is.notfire.cc/users/9yr98tgk15rj9zaw"},
+  //    {"published", utils::dateISO()},
+  //  };
+  //  APClient cli(u.value(), "is.notfire.cc");
+  //  auto c = cli.Post("/inbox", j);
+  //  error("{} : ({})", c->status, c->body);
 
   return 0;
 }

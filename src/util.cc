@@ -94,7 +94,12 @@ time_t isoToMillis(const std::string &isoTime) {
    return parseiso8601utc(isoTime.c_str());
 }
 
+
 } // namespace utils
+
+bool startsWith(const string& str, const string& prefix) {
+  return str.substr(0, prefix.length()) == prefix;
+}
 
 URL::URL(string s) {
   std::regex urlRegex(
