@@ -63,6 +63,11 @@ void *register_route_put(std::string route, __BodyHandler h);
   return; }
 
 
+optional<User> auth_handler(uRequest req);
+
 #define MSAUTH\
-  auto _authuser = User::lookupid(cfg.instanceactor);\
-  User authuser = _authuser.value();
+    auto __user = auth_handler(req);\
+    if (!__user.has_value()) {\
+        ERROR(401, "Unauthorized");\
+    }\
+    User authuser = __user.value();

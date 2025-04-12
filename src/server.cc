@@ -4,6 +4,8 @@
 #include "Loop.h"
 #include "entities/Note.h"
 #include "entities/Notification.h"
+#include "entities/OauthToken.h"
+#include "entities/User.h"
 #include "fmt/format.h"
 #include "common.h"
 #include "server.h"
@@ -46,6 +48,20 @@ void *register_route_post(std::string route, __BodyHandler h) {
 void *register_route_put(std::string route, __BodyHandler h) {
   routes_put[route] = h;
   return nullptr;
+}
+
+optional<User> auth_handler(uRequest req) {
+    string authorization(req->getHeader("authorization"));
+    if (!startsWith(authorization, "Bearer ")) return nullopt;
+    string token = authorization.substr(7, authorization.length());
+
+    auto tk = OauthToken::lookuptoken(token);
+    if (!tk.has_value()) return nullopt;
+
+    auto user = User::lookupid(tk->userId);
+    ASSERT(user.has_value());
+
+    return user.value();
 }
 
 

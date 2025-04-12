@@ -72,7 +72,7 @@ POST(post_status, "/api/v1/statuses") {
 
   if (mp.isValid()) {
     // pleroma style
-    
+
     std::pair<std::string_view, std::string_view> headers[20];
     while (true) {
       std::optional<std::string_view> optionalPart = mp.getNextPart(headers);
@@ -150,7 +150,7 @@ POST(post_status, "/api/v1/statuses") {
     }
   }
 
-  
+
   Note note = NoteService::create(authuser, status, cw, replyTo, quote, isPreview, visibility, mediaIds);
 
   OK(note.renderMS(authuser), MIMEJSON);
@@ -430,7 +430,7 @@ GET(timelines, "/api/v1/timelines/home") {
   QueryBuilder followers;
   query = query.where(
       OR(
-        IN("owner", 
+        IN("owner",
           followers
           .select({"followee"})
           .from("follow")

@@ -11,3 +11,5 @@ namespace utils {
   time_t clampmillis(time_t t);
   void getStackTrace();
 }
+
+bool startsWith(const string& str, const string& prefix);

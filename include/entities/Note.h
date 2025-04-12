@@ -54,7 +54,7 @@ struct Note : Entity {
 
   string content;
   optional<string> cw;
-  int sensitive;
+  bool sensitive;
 
   string owner;
 
@@ -86,7 +86,7 @@ struct Note : Entity {
 
     F(content)
     OPT(cw)
-    F(sensitive)
+    BOOL(sensitive)
 
     F(owner)
 
